@@ -1,10 +1,14 @@
 /**
  * GameDetailView.jsx
- * หน้ารายละเอียดเกมและ Media Player สไตล์ Steam
- * - ปรับปรุงใหม่ตามคำขอ: เอา WebGL ออกจากกรอบบน เพราะมีปุ่ม "เล่นบนเว็บทันที (WebGL)" ด้านล่างแล้ว
- * - รวมรูปภาพและวิดีโอตัวอย่างไว้ใน Media Gallery เดียวกัน สลับดูผ่าน Thumbnail Slider ได้ทันที
- * - แถบ Action Bar ชัดเจน: ปุ่มสีเขียว "เล่นบนเว็บทันที (WebGL)" และปุ่มสีฟ้า "ดาวน์โหลดไฟล์ PC (.ZIP)"
- * - ระบบรีวิวให้คะแนนดาว พร้อมแท็บแจ้งบั๊กถึง Dev และโมดอลโดเนท PromptPay
+ * หน้ารายละเอียดเกมและ Media Player สไตล์ Steam & itch.io
+ * - ไม่แสดง WebGL ค้างด้านบนเพื่อความสะอาดตา ให้ผู้ใช้ดู Media Showcase (ภาพ/วิดีโอ) และกดปุ่ม Launch ด้านล่าง
+ * - Media Gallery รวมรูปภาพและคลิปวิดีโอตัวอย่างไว้ที่เดียวกัน
+ * - Action Bar: ปุ่มสีเขียว "เล่นบนเว็บทันที (WebGL)" และปุ่มสีฟ้า "ดาวน์โหลดไฟล์ PC (.ZIP)"
+ * - itch.io / CrazyGames: คู่มือการควบคุมเกม (Controls Guide) แสดงปุ่มคีย์บอร์ดเสมือน
+ * - Steam: ความต้องการของระบบ (System Requirements) สเปกขั้นต่ำและที่แนะนำ
+ * - itch.io / Steam DevLog: ประวัติการอัปเดตแพตช์ (Patch Notes & Changelog)
+ * - Wishlist (❤️ คลังเกมโปรด) และปุ่มแชร์ลิงก์เกม (Share / Copy Link)
+ * - ระบบรีวิวให้คะแนนดาว, แจ้งบั๊กถึงนักพัฒนา, และโดเนทพร้อมเพย์ (PromptPay QR)
  */
 
 import React, { useState } from 'react';
@@ -28,7 +32,16 @@ import {
   Send,
   Layers,
   ChevronRight,
-  Eye
+  Eye,
+  Share2,
+  Copy,
+  History,
+  Cpu,
+  Monitor,
+  Keyboard,
+  Tag,
+  Sparkles,
+  ExternalLink
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { useAuth } from '../../context/AuthContext';
@@ -39,16 +52,20 @@ export const GameDetailView = ({ game }) => {
     openGamePlayer, 
     downloadPcGame, 
     addReview, 
-    addBugReport 
+    addBugReport,
+    wishlist,
+    toggleWishlist,
+    setSelectedEngine
   } = useGame();
   const { currentUser } = useAuth();
+
+  const isWishlisted = wishlist?.includes(game.id);
 
   // รวบรวม Media Gallery (วิดีโอและรูปภาพรวมกัน ไม่แยกให้รกตา)
   const mediaItems = React.useMemo(() => {
     if (game.mediaGallery && game.mediaGallery.length > 0) {
       return game.mediaGallery;
     }
-    // Fallback ถ้าไม่มี mediaGallery ในข้อมูลเดิม
     const list = [];
     if (game.trailerUrl) {
       list.push({
@@ -75,7 +92,7 @@ export const GameDetailView = ({ game }) => {
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const activeMedia = mediaItems[selectedMediaIndex] || mediaItems[0];
 
-  // ตัวสลับแท็บคอมเมนต์: 'reviews' | 'bugs'
+  // ตัวสลับแท็บคอมเมนต์: 'reviews' | 'bugs' | 'patchNotes'
   const [activeCommunityTab, setActiveCommunityTab] = useState('reviews');
 
   // จัดการการรีวิว
@@ -92,6 +109,9 @@ export const GameDetailView = ({ game }) => {
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
   const [donateAmount, setDonateAmount] = useState(50);
   const [donateSuccess, setDonateSuccess] = useState(false);
+
+  // แจ้งเตือนคัดลอกลิงก์สำเร็จ
+  const [copyLinkNotice, setCopyLinkNotice] = useState(false);
 
   // ดาวน์โหลดไฟล์ PC แจ้งเตือน
   const [downloadSuccessNotice, setDownloadSuccessNotice] = useState(false);
@@ -148,11 +168,47 @@ export const GameDetailView = ({ game }) => {
     }, 2500);
   };
 
+  // คัดลอกลิงก์เกม
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard?.writeText(url);
+    setCopyLinkNotice(true);
+    setTimeout(() => setCopyLinkNotice(false), 3000);
+  };
+
+  // รายการปุ่มกด (Controls)
+  const defaultControls = [
+    { key: '[ W ][ A ][ S ][ D ] หรือ [ ลูกศร ]', action: 'ควบคุมทิศทาง / การเคลื่อนที่' },
+    { key: '[ Spacebar ]', action: 'กระโดด / แอ็กชันพิเศษ' },
+    { key: '[ คลิกซ้ายเมาส์ ]', action: 'เลือก / โจมตี / ตอบสนอง' }
+  ];
+  const controlsList = (game.controls && game.controls.length > 0) ? game.controls : defaultControls;
+
+  // ความต้องการของระบบ (Requirements)
+  const defaultRequirements = {
+    os: 'Windows 10 / 11, macOS, Linux',
+    browser: 'Google Chrome, Microsoft Edge, Firefox, Safari (รองรับ WebGL 2.0)',
+    memory: 'RAM 2 GB ขึ้นไป (แนะนำ 4 GB สำหรับ 3D)',
+    graphics: 'รองรับการเรนเดอร์ WebGL / Hardware Acceleration'
+  };
+  const requirements = game.requirements || defaultRequirements;
+
+  // ประวัติแพตช์ (Patch Notes)
+  const defaultPatchNotes = [
+    {
+      version: game.version || 'v1.0.0',
+      date: game.createdAt || '2026-10-15',
+      title: 'เปิดตัวเวอร์ชันแรกอย่างเป็นทางการ (Official Release)',
+      details: 'เปิดให้ผู้เล่นทดสอบและเล่นฟรีผ่านเบราว์เซอร์ WebGL และดาวน์โหลดไฟล์ PC'
+    }
+  ];
+  const patchNotesList = (game.patchNotes && game.patchNotes.length > 0) ? game.patchNotes : defaultPatchNotes;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       
-      {/* Top Breadcrumb & Navigation */}
-      <div className="flex items-center justify-between">
+      {/* Top Breadcrumb & Actions Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <button
           onClick={() => setSelectedGameForDetail(null)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111827] hover:bg-gray-800 text-gray-300 hover:text-white text-xs font-semibold border border-gray-800 transition cursor-pointer"
@@ -161,16 +217,47 @@ export const GameDetailView = ({ game }) => {
           <span>กลับสู่หน้าร้านค้า (Storefront)</span>
         </button>
 
-        <div className="flex items-center gap-2 text-xs text-gray-400">
-          <span className="px-2.5 py-1 rounded-lg bg-indigo-950/60 text-indigo-400 border border-indigo-700/40 font-mono">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Wishlist Button */}
+          <button
+            onClick={() => toggleWishlist(game.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer ${
+              isWishlisted
+                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-lg shadow-rose-500/10'
+                : 'bg-[#111827] text-gray-300 border-gray-800 hover:border-rose-500/40 hover:text-rose-400'
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}`} />
+            <span>{isWishlisted ? 'อยู่ในคลังเกมโปรด' : 'เพิ่มในเกมโปรด (Wishlist)'}</span>
+          </button>
+
+          {/* Share Button */}
+          <button
+            onClick={handleCopyLink}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111827] hover:bg-gray-800 text-gray-300 hover:text-white text-xs font-semibold border border-gray-800 transition cursor-pointer"
+          >
+            <Share2 className="w-4 h-4 text-indigo-400" />
+            <span>แชร์เกม</span>
+          </button>
+
+          {/* Engine & Category Badges */}
+          <span className="px-2.5 py-1 rounded-lg bg-indigo-950/60 text-indigo-400 border border-indigo-700/40 font-mono text-xs">
             {game.engine}
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-gray-800 text-gray-300">
+          <span className="px-2.5 py-1 rounded-lg bg-gray-800 text-gray-300 text-xs">
             {game.category}
           </span>
-          <span className="text-gray-500 font-mono">{game.version}</span>
+          <span className="text-gray-500 font-mono text-xs">{game.version}</span>
         </div>
       </div>
+
+      {/* Copy Link Notice */}
+      {copyLinkNotice && (
+        <div className="p-3 rounded-xl bg-indigo-950/80 border border-indigo-500/40 text-indigo-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-indigo-400" />
+          <span>คัดลอกลิงก์เกมเรียบร้อยแล้ว! สามารถแชร์ให้เพื่อนเล่นได้ทันที</span>
+        </div>
+      )}
 
       {/* Header Info */}
       <div className="space-y-2">
@@ -180,77 +267,93 @@ export const GameDetailView = ({ game }) => {
         <p className="text-sm text-gray-400 max-w-3xl leading-relaxed">
           {game.tagline}
         </p>
+
+        {/* Tags list */}
+        {game.tags && (
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            {game.tags.map((tag, idx) => (
+              <span
+                key={idx}
+                className="px-2 py-0.5 rounded-md bg-[#161F30] text-indigo-300 text-[11px] font-medium border border-indigo-500/20"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main Steam-style Media & Sidebar Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Left 2 Cols: Media Showcase (วิดีโอและรูปภาพรวมกัน สไตล์ Steam แท้ๆ) */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* Left 2 Cols: Media Showcase & Launch Options */}
+        <div className="lg:col-span-2 space-y-6">
           
           {/* Main Display Viewer (16:9) */}
-          <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-indigo-500/30 shadow-2xl">
-            {activeMedia?.type === 'video' ? (
-              <iframe
-                src={activeMedia.url}
-                title={activeMedia.title || `${game.title} Trailer`}
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-              />
-            ) : (
-              <img
-                src={activeMedia?.url || game.thumbnail}
-                alt={activeMedia?.title || game.title}
-                className="w-full h-full object-cover animate-in fade-in duration-300"
-              />
-            )}
-
-            {/* Media Title Label overlay */}
-            <div className="absolute top-3 left-3 px-3 py-1 rounded-lg bg-black/75 backdrop-blur-md text-[11px] font-semibold text-gray-200 border border-white/10 flex items-center gap-1.5">
+          <div className="space-y-3">
+            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-indigo-500/30 shadow-2xl">
               {activeMedia?.type === 'video' ? (
-                <>
-                  <Video className="w-3.5 h-3.5 text-rose-400" />
-                  <span>{activeMedia.title || 'วิดีโอตัวอย่าง'}</span>
-                </>
+                <iframe
+                  src={activeMedia.url}
+                  title={activeMedia.title || `${game.title} Trailer`}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                />
               ) : (
-                <>
-                  <Layers className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{activeMedia?.title || 'ภาพสกรีนช็อต'}</span>
-                </>
+                <img
+                  src={activeMedia?.url || game.thumbnail}
+                  alt={activeMedia?.title || game.title}
+                  className="w-full h-full object-cover animate-in fade-in duration-300"
+                />
               )}
+
+              {/* Media Title Label overlay */}
+              <div className="absolute top-3 left-3 px-3 py-1 rounded-lg bg-black/75 backdrop-blur-md text-[11px] font-semibold text-gray-200 border border-white/10 flex items-center gap-1.5">
+                {activeMedia?.type === 'video' ? (
+                  <>
+                    <Video className="w-3.5 h-3.5 text-rose-400" />
+                    <span>{activeMedia.title || 'วิดีโอตัวอย่าง'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>{activeMedia?.title || 'ภาพสกรีนช็อต'}</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Unified Thumbnail Carousel (รวมรูปและวิดีโอไว้ที่เดียวกัน) */}
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+              {mediaItems.map((item, idx) => (
+                <button
+                  key={item.id || idx}
+                  onClick={() => setSelectedMediaIndex(idx)}
+                  className={`relative aspect-video w-28 shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                    selectedMediaIndex === idx
+                      ? 'border-indigo-500 ring-2 ring-indigo-500/40 scale-105'
+                      : 'border-gray-800 opacity-60 hover:opacity-100 hover:border-gray-600'
+                  }`}
+                >
+                  <img
+                    src={item.thumbnail || item.url}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {item.type === 'video' && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <div className="p-1 rounded-full bg-rose-600 text-white">
+                        <Play className="w-3.5 h-3.5 fill-white" />
+                      </div>
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Unified Thumbnail Carousel (รวมรูปและวิดีโอไว้ที่เดียวกัน) */}
-          <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
-            {mediaItems.map((item, idx) => (
-              <button
-                key={item.id || idx}
-                onClick={() => setSelectedMediaIndex(idx)}
-                className={`relative aspect-video w-28 shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-                  selectedMediaIndex === idx
-                    ? 'border-indigo-500 ring-2 ring-indigo-500/40 scale-105'
-                    : 'border-gray-800 opacity-60 hover:opacity-100 hover:border-gray-600'
-                }`}
-              >
-                <img
-                  src={item.thumbnail || item.url}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-                {item.type === 'video' && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <div className="p-1 rounded-full bg-rose-600 text-white">
-                      <Play className="w-3.5 h-3.5 fill-white" />
-                    </div>
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-
           {/* Dedicated Action Bar (เด็ดขาด: ปุ่มสีเขียว WebGL และปุ่มสีฟ้า PC) */}
-          <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-4">
+          <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-4 shadow-xl">
             <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 font-mono">
               เลือกวิธีการเล่นเกม (Launch Options)
             </h3>
@@ -315,6 +418,62 @@ export const GameDetailView = ({ game }) => {
                 <span className="font-mono text-[11px] text-sky-400">100% Ready</span>
               </div>
             )}
+          </div>
+
+          {/* itch.io / CrazyGames style: Controls Guide (คู่มือปุ่มควบคุม) */}
+          <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-3">
+            <div className="flex items-center gap-2">
+              <Keyboard className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-bold text-white font-['Rajdhani',sans-serif]">
+                คู่มือการควบคุมเกม (Controls & Keybindings)
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              {controlsList.map((ctrl, i) => (
+                <div 
+                  key={i}
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#0B0F19] border border-gray-800/80 text-xs"
+                >
+                  <span className="font-mono font-semibold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/30">
+                    {ctrl.key}
+                  </span>
+                  <span className="text-gray-300 text-right">{ctrl.action}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Steam style: System Requirements (ความต้องการของระบบ) */}
+          <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-3">
+            <div className="flex items-center gap-2">
+              <Monitor className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-bold text-white font-['Rajdhani',sans-serif]">
+                ความต้องการของระบบ (System Requirements)
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+              <div className="p-3 rounded-xl bg-[#0B0F19] border border-gray-800/80 space-y-1">
+                <span className="text-gray-400 block text-[11px]">ระบบปฏิบัติการ (OS):</span>
+                <span className="text-gray-200 font-medium">{requirements.os}</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#0B0F19] border border-gray-800/80 space-y-1">
+                <span className="text-gray-400 block text-[11px]">เบราว์เซอร์ที่แนะนำ:</span>
+                <span className="text-gray-200 font-medium">{requirements.browser}</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#0B0F19] border border-gray-800/80 space-y-1">
+                <span className="text-gray-400 block text-[11px]">หน่วยความจำ (RAM):</span>
+                <span className="text-gray-200 font-medium">{requirements.memory}</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#0B0F19] border border-gray-800/80 space-y-1">
+                <span className="text-gray-400 block text-[11px]">กราฟิก / การ์ดจอ:</span>
+                <span className="text-gray-200 font-medium">{requirements.graphics}</span>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -394,11 +553,11 @@ export const GameDetailView = ({ game }) => {
 
       </div>
 
-      {/* Community Section: Reviews & Bug Reports */}
+      {/* Community & DevLog Section: Reviews, Bug Reports, and Patch Notes */}
       <section className="space-y-6 pt-6 border-t border-gray-800">
         
         {/* Tab Headers */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setActiveCommunityTab('reviews')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
@@ -421,6 +580,19 @@ export const GameDetailView = ({ game }) => {
           >
             <Bug className="w-4 h-4" />
             <span>แจ้งบั๊ก (Bug Report) ถึงผู้พัฒนา ({game.bugReports?.length || 0})</span>
+          </button>
+
+          {/* Steam & itch.io Patch Notes Tab */}
+          <button
+            onClick={() => setActiveCommunityTab('patchNotes')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              activeCommunityTab === 'patchNotes'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
+                : 'bg-[#111827] text-gray-400 hover:text-white border border-gray-800'
+            }`}
+          >
+            <History className="w-4 h-4 text-emerald-400" />
+            <span>ประวัติอัปเดต / Patch Notes ({patchNotesList.length})</span>
           </button>
         </div>
 
@@ -603,6 +775,53 @@ export const GameDetailView = ({ game }) => {
               )}
             </div>
 
+          </div>
+        )}
+
+        {/* Tab 3: Steam & itch.io Patch Notes / DevLog Timeline */}
+        {activeCommunityTab === 'patchNotes' && (
+          <div className="space-y-4">
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-[#111827] to-[#0B0F19] border border-emerald-500/30 flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <History className="w-4 h-4 text-emerald-400" />
+                  <span>ประวัติแพตช์และบันทึกการเปลี่ยนแปลง (Changelog & DevLog)</span>
+                </h4>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  ติดตามการอัปเดตฟีเจอร์ใหม่, การแก้บั๊ก และบันทึกจากผู้พัฒนาเกม {game.title}
+                </p>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold">
+                เวอร์ชันปัจจุบัน {game.version}
+              </span>
+            </div>
+
+            <div className="relative border-l-2 border-gray-800 ml-4 space-y-6 pt-2">
+              {patchNotesList.map((patch, idx) => (
+                <div key={idx} className="relative pl-6">
+                  {/* Timeline node dot */}
+                  <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-[#111827] ${
+                    idx === 0 ? 'bg-emerald-400 ring-4 ring-emerald-500/20' : 'bg-gray-600'
+                  }`} />
+
+                  <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-950/60 text-emerald-400 border border-emerald-700/40 font-mono text-xs font-bold">
+                          {patch.version}
+                        </span>
+                        <h5 className="text-sm font-bold text-white">{patch.title}</h5>
+                      </div>
+                      <span className="text-gray-500 text-[11px] font-mono">{patch.date}</span>
+                    </div>
+
+                    <p className="text-xs text-gray-300 leading-relaxed whitespace-pre-line">
+                      {patch.details}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

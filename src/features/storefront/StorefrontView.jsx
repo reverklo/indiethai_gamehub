@@ -16,11 +16,12 @@ import {
   Eye, 
   Star, 
   Download, 
-  ChevronRight,
-  Flame,
-  Radio,
-  Loader2,
-  HardDrive
+  ChevronRight, 
+  Flame, 
+  Radio, 
+  Loader2, 
+  HardDrive,
+  Heart
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { useFetchBrowserGames } from '../../hooks/useFetchBrowserGames';
@@ -33,7 +34,11 @@ export const StorefrontView = () => {
     setSelectedEngine, 
     setSelectedGameForDetail, 
     downloadPcGame,
-    searchQuery 
+    searchQuery,
+    wishlist,
+    toggleWishlist,
+    isWishlistOnly,
+    setIsWishlistOnly 
   } = useGame();
 
   // ดึงข้อมูลเกมเบราว์เซอร์สดจาก FreeToGame API ผ่าน Custom Hook
@@ -206,6 +211,23 @@ export const StorefrontView = () => {
 
       {/* 4. Games Grid: ปรับปุ่มเป็นการ์ดคลีนและเน้น "ดาวน์โหลด PC" */}
       <section className="space-y-5">
+        
+        {/* Wishlist Only Active Banner */}
+        {isWishlistOnly && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-950/60 to-[#111827] border border-rose-500/40 flex items-center justify-between text-xs animate-in fade-in">
+            <div className="flex items-center gap-2.5 text-rose-300 font-bold">
+              <Heart className="w-4 h-4 fill-rose-500 text-rose-500 animate-pulse" />
+              <span>กำลังแสดงเฉพาะคลังเกมโปรดของคุณ (Wishlist - {displayedGames.length} เกม)</span>
+            </div>
+            <button
+              onClick={() => setIsWishlistOnly(false)}
+              className="px-3 py-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold cursor-pointer transition"
+            >
+              แสดงเกมทั้งหมด
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2 font-['Rajdhani',sans-serif]">
             <Gamepad2 className="w-5 h-5 text-indigo-400" />
@@ -229,9 +251,27 @@ export const StorefrontView = () => {
             </p>
           </div>
         ) : displayedGames.length === 0 ? (
-          <div className="text-center py-20 bg-[#111827]/60 rounded-3xl border border-gray-800 space-y-3">
-            <Gamepad2 className="w-12 h-12 text-gray-600 mx-auto" />
-            <p className="text-gray-300 font-semibold">ไม่พบเกมที่ตรงกับคำค้นหา</p>
+          <div className="text-center py-20 bg-[#111827]/60 rounded-3xl border border-gray-800 space-y-4">
+            {isWishlistOnly ? (
+              <>
+                <Heart className="w-12 h-12 text-rose-500/50 mx-auto" />
+                <p className="text-white font-bold text-base">ยังไม่มีเกมในคลังเกมโปรดของคุณ</p>
+                <p className="text-gray-400 text-xs max-w-sm mx-auto">
+                  คลิกที่ไอคอนรูปหัวใจ ❤️ ที่มุมขวาบนของการ์ดเกมเพื่อบันทึกเกมที่คุณชอบไว้เล่นภายหลัง
+                </p>
+                <button
+                  onClick={() => setIsWishlistOnly(false)}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition cursor-pointer shadow-lg shadow-indigo-500/20"
+                >
+                  สำรวจเกมทั้งหมด
+                </button>
+              </>
+            ) : (
+              <>
+                <Gamepad2 className="w-12 h-12 text-gray-600 mx-auto" />
+                <p className="text-gray-300 font-semibold">ไม่พบเกมที่ตรงกับคำค้นหา</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -241,7 +281,7 @@ export const StorefrontView = () => {
                 onClick={() => setSelectedGameForDetail(game)}
                 className="group flex flex-col bg-[#111827] rounded-2xl border border-gray-800/90 overflow-hidden hover:border-indigo-500/50 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer"
               >
-                {/* Thumbnail Container (Cleaned up, no messy badge spam) */}
+                {/* Thumbnail Container */}
                 <div className="relative aspect-video w-full overflow-hidden bg-gray-900">
                   <img
                     src={game.coverImage || game.thumbnail}
@@ -255,8 +295,24 @@ export const StorefrontView = () => {
                     {game.engine}
                   </span>
 
+                  {/* Wishlist Quick Toggle (Top Right) */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleWishlist(game.id);
+                    }}
+                    title={wishlist?.includes(game.id) ? 'ลบออกจากเกมโปรด' : 'เพิ่มในเกมโปรด (Wishlist)'}
+                    className={`absolute top-3 right-3 p-1.5 rounded-xl backdrop-blur-md transition-all cursor-pointer z-10 ${
+                      wishlist?.includes(game.id)
+                        ? 'bg-rose-500/30 text-rose-400 border border-rose-500/50 shadow-lg shadow-rose-500/20 ring-1 ring-rose-500/30'
+                        : 'bg-black/60 text-gray-400 hover:text-rose-400 hover:bg-black/80 border border-white/10'
+                    }`}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${wishlist?.includes(game.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
+                  </button>
+
                   {/* Rating */}
-                  <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/75 text-amber-400 text-xs font-bold backdrop-blur-sm border border-amber-500/30">
+                  <div className="absolute top-3 right-11 flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/75 text-amber-400 text-xs font-bold backdrop-blur-sm border border-amber-500/30">
                     <Star className="w-3.5 h-3.5 fill-amber-400" />
                     <span>{game.rating > 0 ? game.rating.toFixed(1) : 'New'}</span>
                   </div>

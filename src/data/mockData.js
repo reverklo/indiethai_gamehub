@@ -1,6 +1,6 @@
 /**
  * IndieThai Hub - Enhanced Mock Data
- * รวมข้อมูลเกมอินดี้ WebGL/HTML5 พร้อม Media Gallery รวมรูปและวิดีโอสำหรับ Dev
+ * รวมข้อมูลเกมอินดี้ WebGL/HTML5 พร้อม Media Gallery, Controls Guide, System Requirements และ Patch Notes
  */
 
 export const INITIAL_GAMES = [
@@ -25,7 +25,6 @@ export const INITIAL_GAMES = [
     webglUrl: 'https://play2048.co/',
     downloadUrl: 'https://github.com/gabrielecirulli/2048/archive/refs/heads/master.zip',
     thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-    // Media Gallery รวมทั้งวิดีโอและรูปภาพไว้ด้วยกัน ให้ Dev จัดการได้เอง
     mediaGallery: [
       {
         id: 'm1',
@@ -47,13 +46,34 @@ export const INITIAL_GAMES = [
         url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80',
         thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&auto=format&fit=crop&q=80',
         title: 'บรรยากาศศิลปะไทยร่วมสมัย'
+      }
+    ],
+    // itch.io & CrazyGames style controls
+    controls: [
+      { key: 'ปุ่มลูกศร (Arrow Keys)', action: 'เลื่อนบล็อกตัวเลข ขึ้น/ลง/ซ้าย/ขวา' },
+      { key: '[ W ] [ A ] [ S ] [ D ]', action: 'เลื่อนบล็อกตัวเลขทางเลือก' },
+      { key: '[ R ]', action: 'รีสตาร์ตกระดานใหม่' }
+    ],
+    // Steam style requirements
+    requirements: {
+      os: 'Windows 10 / 11, macOS, Linux',
+      browser: 'Google Chrome, Microsoft Edge, Firefox, Safari (รองรับ WebGL 2.0)',
+      memory: 'RAM 2 GB ขึ้นไป',
+      graphics: 'รองรับการเรนเดอร์ WebGL / Hardware Acceleration'
+    },
+    // itch.io & Steam devlog patch notes
+    patchNotes: [
+      {
+        version: 'v1.4.2',
+        date: '2026-10-25',
+        title: 'แพตช์ปรับปรุงประสิทธิภาพและเสียงสังเคราะห์',
+        details: 'เพิ่มเพลงพื้นหลังแบบ Thai Synthwave 2 เพลงใหม่, ปรับปรุงการตอบสนองของการสัมผัสบนมือถือ และลดการใช้หน่วยความจำลง 20%'
       },
       {
-        id: 'm4',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200&auto=format&fit=crop&q=80',
-        thumbnail: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&auto=format&fit=crop&q=80',
-        title: 'ระบบการรวมบล็อก 2048'
+        version: 'v1.0.0',
+        date: '2026-10-15',
+        title: 'เปิดตัวเกมเวอร์ชันแรก (First Release)',
+        details: 'เปิดให้ทดลองเล่นเกมพัซเซิล 2048 สไตล์ไซเบอร์สยามบนเบราว์เซอร์อย่างเป็นทางการ'
       }
     ],
     promptPayNumber: '089-765-4321',
@@ -109,13 +129,24 @@ export const INITIAL_GAMES = [
         url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80',
         thumbnail: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400&auto=format&fit=crop&q=80',
         title: 'แกนหมุนหกเหลี่ยมความเร็วสูง'
-      },
+      }
+    ],
+    controls: [
+      { key: '[ ลูกศรซ้าย / ขวา ]', action: 'หมุนแกนหกเหลี่ยมตามหรือทวนเข็มนาฬิกา' },
+      { key: '[ ลูกศรลง ]', action: 'เร่งความเร็วการหล่นของบล็อก' }
+    ],
+    requirements: {
+      os: 'Windows 10 / 11, macOS, Linux',
+      browser: 'เบราว์เซอร์ทุกตัวที่รองรับ HTML5 Canvas & WebGL',
+      memory: 'RAM 2 GB',
+      graphics: 'Graphics card มาตรฐานทั่วไป'
+    },
+    patchNotes: [
       {
-        id: 'm3',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&auto=format&fit=crop&q=80',
-        thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&auto=format&fit=crop&q=80',
-        title: 'เอฟเฟกต์การระเบิดบล็อก'
+        version: 'v2.0.1',
+        date: '2026-10-20',
+        title: 'Neon Pulse Update 2.0',
+        details: 'เพิ่มระบบ Dynamic Lighting, ดนตรี Synthwave ปรับจังหวะตามความเร็วเกม และแก้ปัญหาเฟรมตกบนจอ 144Hz'
       }
     ],
     promptPayNumber: '081-999-8877',
@@ -168,13 +199,25 @@ export const INITIAL_GAMES = [
         url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
         thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&auto=format&fit=crop&q=80',
         title: 'เครื่องบินเรโทรไซเบอร์ 3D'
-      },
+      }
+    ],
+    controls: [
+      { key: '[ ลูกศรขึ้น / ลง ]', action: 'ปรับระดับความสูงของเครื่องบิน (Pitch)' },
+      { key: '[ ลูกศรซ้าย / ขวา ]', action: 'เลี้ยวทิศทางซ้ายและขวา (Roll & Yaw)' },
+      { key: '[ Spacebar ]', action: 'บูสต์ไอพ่นความเร็วสูง (Nitro Boost)' }
+    ],
+    requirements: {
+      os: 'Windows 10 / 11 64-bit',
+      browser: 'Google Chrome หรือ Edge แนะนำเปิด Hardware Acceleration',
+      memory: 'RAM 4 GB ขึ้นไป',
+      graphics: 'NVIDIA GTX 750 / AMD Radeon หรือเทียบเท่า'
+    },
+    patchNotes: [
       {
-        id: 'm3',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=1200&auto=format&fit=crop&q=80',
-        thumbnail: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=400&auto=format&fit=crop&q=80',
-        title: 'วิหารลอยฟ้ายามพระอาทิตย์ตก'
+        version: 'v1.1.0',
+        date: '2026-10-30',
+        title: 'อัปเดตระบบไอพ่นบูสต์และมุมกล้องใหม่',
+        details: 'เพิ่มมุมกล้อง First-person ภายในห้องนักบิน, ปรับปรุงฟิสิกส์การร่อนของเครื่องบิน และแก้ปัญหาเสียงหลุดใน WebAssembly'
       }
     ],
     promptPayNumber: '095-444-3322',
@@ -193,56 +236,41 @@ export const INITIAL_GAMES = [
     bugReports: [
       { id: 'bug-2', user: 'SkyWalker', title: 'เสียงเอฟเฟกต์ลมกระตุกเล็กน้อยเมื่อสลับหน้าจอ', status: 'investigating', date: '2026-11-02' }
     ]
+  }
+];
+
+export const MOCK_NOTIFICATIONS = [
+  {
+    id: 'notif-1',
+    role: 'player',
+    title: '🎮 เกมโปรดอัปเดตใหม่!',
+    message: 'เกม 2048 Cyber Siam ปล่อยแพตช์ v1.4.2 พร้อมเพลงประกอบใหม่แล้ว',
+    time: '10 นาทีที่แล้ว',
+    isRead: false
   },
   {
-    id: 'game-4',
-    title: 'Ayutthaya Cyber Samurai: Prototype',
-    slug: 'ayutthaya-cyber-samurai-prototype',
-    tagline: 'เกมแอ็กชัน 2D Side-scroller ในบรรยากาศอยุธยาปี 2099',
-    description: 'ตัวอย่างเกมต้นแบบ (Prototype) โครงการเกมสัญชาติไทยที่นำเสนอการต่อสู้ด้วยดาบไซเบอร์และเวทมนตร์โบราณ รันด้วย Godot 4 WebGL',
-    developer: 'SiamPixel Studio',
-    developerId: 'usr-dev-1',
-    category: 'Action',
-    engine: 'Godot HTML5',
-    version: 'v0.8.5-alpha',
-    rating: 4.6,
-    ratingCount: 88,
-    playCount: 5200,
-    downloadCount: 940,
-    downloadSize: '85 MB',
-    hasWebgl: true,
-    hasPcDownload: true,
-    webglUrl: 'https://play2048.co/',
-    downloadUrl: '#',
-    thumbnail: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80',
-    mediaGallery: [
-      {
-        id: 'm1',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&auto=format&fit=crop&q=80',
-        thumbnail: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&auto=format&fit=crop&q=80',
-        title: 'ภาพคอนเซปต์ซามูไรอยุธยา 2099'
-      },
-      {
-        id: 'm2',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=1200&auto=format&fit=crop&q=80',
-        thumbnail: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=400&auto=format&fit=crop&q=80',
-        title: 'ฉากเมืองโบราณนีออน'
-      }
-    ],
-    promptPayNumber: '089-765-4321',
-    status: 'approved',
-    createdAt: '2026-11-01',
-    tags: ['Godot', 'Cyberpunk', 'Action', 'Thai Lore'],
-    featured: false,
-    securityScan: {
-      status: 'Clean',
-      details: 'ผ่านเกณฑ์ความปลอดภัย Godot Web Export',
-      scannedAt: '2026-11-01 11:00'
-    },
-    reviews: [],
-    bugReports: []
+    id: 'notif-2',
+    role: 'developer',
+    title: '✅ อนุมัติเกมขึ้นสโตร์เรียบร้อย!',
+    message: 'แอดมินได้ทำการอนุมัติเกม "2048 Cyber Siam" ขึ้นหน้า Storefront แล้ว',
+    time: '1 ชั่วโมงที่แล้ว',
+    isRead: false
+  },
+  {
+    id: 'notif-3',
+    role: 'developer',
+    title: '🐛 มีผู้เล่นรายงานบั๊กใหม่',
+    message: 'มีผู้ใช้แจ้งปัญหาในเกม Swoop 3D Siam Flight (เสียงกระตุกเล็กน้อย)',
+    time: '2 ชั่วโมงที่แล้ว',
+    isRead: true
+  },
+  {
+    id: 'notif-4',
+    role: 'admin',
+    title: '🛡️ มีเกมใหม่รอการตรวจสอบ',
+    message: 'สตูดิโอ GhostByte ได้ส่งเกม Krasue: The Night Flight เข้าคิวตรวจสอบ',
+    time: '30 นาทีที่แล้ว',
+    isRead: false
   }
 ];
 
@@ -313,30 +341,6 @@ export const MOCK_USERS_LIST = [
     gamesPublished: 2,
     isBanned: false,
     registeredAt: '2026-09-01'
-  },
-  {
-    id: 'usr-dev-2',
-    username: 'BangkokArcade',
-    name: 'วิชัย อาร์เคด (Bangkok Arcade Labs)',
-    email: 'bkk.arcade@games.th',
-    role: 'developer',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    tokenBalance: 80,
-    gamesPublished: 1,
-    isBanned: false,
-    registeredAt: '2026-09-15'
-  },
-  {
-    id: 'usr-dev-3',
-    username: 'CyberChonDev',
-    name: 'ชลิต สายการบิน (CyberChon Dev)',
-    email: 'chon.fly@cyber.th',
-    role: 'developer',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    tokenBalance: 40,
-    gamesPublished: 1,
-    isBanned: false,
-    registeredAt: '2026-09-28'
   },
   {
     id: 'usr-admin-1',

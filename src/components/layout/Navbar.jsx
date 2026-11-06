@@ -3,8 +3,10 @@
  * แถบนำทางด้านบนสไตล์ Cyberpunk
  * - โลโก้ IndieThai Hub
  * - ช่องค้นหาเกมและตัวกรอง Engine
+ * - กระดิ่งแจ้งเตือน Real-time (Notification Center 🔔) สไตล์ Steam
+ * - ปุ่มคลังเกมโปรด (Wishlist ❤️)
  * - แสดงยอดเหรียญ Token สำหรับ Developer พร้อมปุ่มเติม
- * - ปุ่มเข้าสู่ระบบ / สมัครสมาชิก หรือโปรไฟล์ผู้ใช้พร้อมปุ่มออกจากระบบ (Logout)
+ * - โปรไฟล์ผู้ใช้พร้อมระบบสลับบทบาทและออกจากระบบ
  */
 
 import React, { useState } from 'react';
@@ -20,7 +22,11 @@ import {
   LogOut,
   LogIn,
   Heart,
-  Sparkles
+  Bell,
+  Check,
+  CheckCheck,
+  Sparkles,
+  ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
@@ -34,8 +40,7 @@ export const Navbar = () => {
     devTokenBalance, 
     topUpTokens,
     openAuthModal,
-    logout,
-    isAuthenticated 
+    logout 
   } = useAuth();
 
   const { 
@@ -44,13 +49,21 @@ export const Navbar = () => {
     selectedEngine, 
     setSelectedEngine,
     pendingGames,
-    wishlist 
+    wishlist,
+    isWishlistOnly,
+    setIsWishlistOnly,
+    notifications,
+    unreadNotificationCount,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    setSelectedGameForDetail 
   } = useGame();
 
   const [topUpSuccessNotice, setTopUpSuccessNotice] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
-  // กดเติมเหรียญด่วน 100 Tokens
+  // เติมเหรียญด่วน 100 Tokens
   const handleQuickTopUp = () => {
     topUpTokens(100);
     setTopUpSuccessNotice(true);
@@ -90,8 +103,14 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-20 gap-4">
           
           {/* Logo & Brand */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="relative group cursor-pointer">
+          <div 
+            onClick={() => {
+              setSelectedGameForDetail(null);
+              setIsWishlistOnly(false);
+            }}
+            className="flex items-center gap-3 shrink-0 cursor-pointer"
+          >
+            <div className="relative group">
               <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#6366F1] via-indigo-500 to-[#10B981] p-0.5 shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-all duration-300">
                 <div className="w-full h-full bg-[#0B0F19] rounded-[10px] flex items-center justify-center">
                   <Gamepad2 className="w-6 h-6 text-indigo-400 group-hover:scale-110 group-hover:text-emerald-400 transition-transform duration-300" />
@@ -158,6 +177,90 @@ export const Navbar = () => {
           {/* Actions & Role Controls */}
           <div className="flex items-center gap-3">
 
+            {/* Wishlist Shortcut Button */}
+            {currentRole === 'player' && (
+              <button
+                onClick={() => {
+                  setSelectedGameForDetail(null);
+                  setIsWishlistOnly(!isWishlistOnly);
+                }}
+                title="คลังเกมโปรด (Wishlist)"
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                  isWishlistOnly
+                    ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-lg shadow-rose-500/10'
+                    : 'bg-[#111827] text-gray-300 border-gray-800 hover:border-rose-500/40 hover:text-rose-400'
+                }`}
+              >
+                <Heart className={`w-4 h-4 ${isWishlistOnly ? 'fill-rose-500 text-rose-500' : 'text-rose-400'}`} />
+                <span className="hidden sm:inline">เกมโปรด</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-950/80 text-rose-300 font-mono">
+                  {wishlist.length}
+                </span>
+              </button>
+            )}
+
+            {/* 🔔 Notification Center (Steam-style) */}
+            <div className="relative">
+              <button
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                title="ศูนย์การแจ้งเตือน"
+                className="relative p-2.5 rounded-xl bg-[#111827] border border-gray-800 text-gray-300 hover:text-white hover:border-indigo-500 transition cursor-pointer"
+              >
+                <Bell className="w-4 h-4" />
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-md">
+                    {unreadNotificationCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown Menu */}
+              {isNotifOpen && (
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-[#111827] border border-gray-800 shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center justify-between border-b border-gray-800 pb-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-indigo-400" />
+                      <h4 className="text-xs font-bold text-white">การแจ้งเตือน (Notifications)</h4>
+                    </div>
+
+                    {unreadNotificationCount > 0 && (
+                      <button
+                        onClick={markAllNotificationsAsRead}
+                        className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
+                      >
+                        <CheckCheck className="w-3 h-3" />
+                        <span>อ่านทั้งหมด</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                    {notifications.length === 0 ? (
+                      <p className="text-center py-6 text-xs text-gray-500">ไม่มีการแจ้งเตือนในขณะนี้</p>
+                    ) : (
+                      notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          onClick={() => markNotificationAsRead(notif.id)}
+                          className={`p-2.5 rounded-xl text-xs transition cursor-pointer border ${
+                            notif.isRead
+                              ? 'bg-[#0B0F19]/60 border-transparent text-gray-400'
+                              : 'bg-indigo-950/20 border-indigo-500/30 text-gray-200'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-white text-[11px]">{notif.title}</span>
+                            <span className="text-[10px] text-gray-500">{notif.time}</span>
+                          </div>
+                          <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{notif.message}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Developer Token Balance Widget (แสดงถ้า Role เป็น Developer) */}
             {currentRole === 'developer' && (
               <div className="flex items-center gap-2 bg-[#161F30] border border-amber-500/30 px-3 py-1.5 rounded-xl shadow-lg shadow-amber-500/5">
@@ -173,7 +276,6 @@ export const Navbar = () => {
                   </div>
                 </div>
 
-                {/* Top-up Button */}
                 <button
                   onClick={handleQuickTopUp}
                   title="เติมเหรียญจำลองสำหรับ Dev (+100 Tokens)"

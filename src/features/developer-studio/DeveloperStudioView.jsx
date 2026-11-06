@@ -26,7 +26,8 @@ import {
   Heart,
   X,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  History
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
@@ -35,7 +36,13 @@ import { TOKEN_COST_PER_GAME } from '../../data/mockData';
 
 export const DeveloperStudioView = () => {
   const { currentUser, devTokenBalance, topUpTokens } = useAuth();
-  const { myDeveloperGames, updateGameVersion, updateBugStatus, openGamePlayer } = useGame();
+  const { 
+    myDeveloperGames, 
+    updateGameVersionWithPatchNotes, 
+    updateBugStatus, 
+    openGamePlayer,
+    setSelectedGameForDetail 
+  } = useGame();
 
   // ตัวควบคุมการแสดงหน้าฟอร์มอัปโหลดเกม
   const [isUploading, setIsUploading] = useState(false);
@@ -43,13 +50,15 @@ export const DeveloperStudioView = () => {
   // แจ้งเตือน Toast
   const [toastMessage, setToastMessage] = useState(null);
 
-  // โมดอลอัปเดตเวอร์ชันเกม
+  // โมดอลอัปเดตเวอร์ชันและ Patch Notes
   const [updateVersionGame, setUpdateVersionGame] = useState(null);
   const [newVersionInput, setNewVersionInput] = useState('');
+  const [patchTitleInput, setPatchTitleInput] = useState('');
+  const [patchDetailsInput, setPatchDetailsInput] = useState('');
 
   // โมดอลดูรายงานและฟีดแบ็กของเกม (Feedback & Bug Tracker Modal)
   const [selectedGameForFeedback, setSelectedGameForFeedback] = useState(null);
-  const [feedbackTab, setFeedbackTab] = useState('bugs'); // 'bugs' | 'reviews' | 'monetization'
+  const [feedbackTab, setFeedbackTab] = useState('bugs'); // 'bugs' | 'reviews' | 'patchNotes' | 'monetization'
 
   // คำนวณสถิติภาพรวมสตูดิโอ
   const totalPlays = myDeveloperGames.reduce((acc, g) => acc + (g.playCount || 0), 0);
@@ -65,15 +74,30 @@ export const DeveloperStudioView = () => {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  // ฟังก์ชันเปิดโมดอลอัปเดตเวอร์ชันและแพตช์โน้ต
+  const handleOpenVersionModal = (game) => {
+    setUpdateVersionGame(game);
+    setNewVersionInput(game.version || 'v1.0.0');
+    setPatchTitleInput(`อัปเดตแพตช์เวอร์ชัน ${game.version || 'ใหม่'}`);
+    setPatchDetailsInput('1. ปรับปรุงประสิทธิภาพและความเสถียรบน WebGL\n2. แก้ไขข้อผิดพลาดตามที่ผู้เล่นรายงาน');
+  };
+
   // ฟังก์ชันส่งอัปเดตเวอร์ชัน
   const handleVersionSubmit = (e) => {
     e.preventDefault();
     if (!newVersionInput.trim() || !updateVersionGame) return;
 
-    const res = updateGameVersion(updateVersionGame.id, newVersionInput);
+    const res = updateGameVersionWithPatchNotes(
+      updateVersionGame.id,
+      newVersionInput,
+      patchTitleInput,
+      patchDetailsInput
+    );
     setToastMessage(res.message);
     setUpdateVersionGame(null);
     setNewVersionInput('');
+    setPatchTitleInput('');
+    setPatchDetailsInput('');
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -351,14 +375,23 @@ export const DeveloperStudioView = () => {
                           <span>ดูรายงาน & บั๊ก</span>
                         </button>
 
+                        {/* ปุ่มอัปเดตเวอร์ชันพร้อม Patch Notes */}
                         <button
-                          onClick={() => {
-                            setUpdateVersionGame(game);
-                            setNewVersionInput(game.version);
-                          }}
-                          className="px-2.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold transition cursor-pointer"
+                          onClick={() => handleOpenVersionModal(game)}
+                          className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-600 hover:text-white text-emerald-400 text-xs font-semibold transition cursor-pointer"
                         >
-                          แก้เวอร์ชัน
+                          <History className="w-3.5 h-3.5 inline mr-1" />
+                          <span>อัปเดตแพตช์</span>
+                        </button>
+
+                        {/* ปุ่มดูหน้าร้านค้า */}
+                        <button
+                          onClick={() => setSelectedGameForDetail(game)}
+                          className="px-2.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold transition cursor-pointer"
+                          title="เปิดดูหน้าร้านค้า"
+                        >
+                          <Eye className="w-3.5 h-3.5 inline mr-1" />
+                          <span>หน้าร้าน</span>
                         </button>
 
                         <button
@@ -432,6 +465,18 @@ export const DeveloperStudioView = () => {
                   >
                     <Star className="w-4 h-4 text-amber-400" />
                     <span>รีวิวจากผู้เล่น ({selectedGameForFeedback.reviews?.length || 0})</span>
+                  </button>
+
+                  <button
+                    onClick={() => setFeedbackTab('patchNotes')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      feedbackTab === 'patchNotes'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
+                        : 'bg-[#0B0F19] text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <History className="w-4 h-4 text-emerald-400" />
+                    <span>ประวัติแพตช์ ({selectedGameForFeedback.patchNotes?.length || 0})</span>
                   </button>
 
                   <button
@@ -549,7 +594,38 @@ export const DeveloperStudioView = () => {
                     </div>
                   )}
 
-                  {/* Tab 3: Monetization info */}
+                  {/* Tab 3: Patch Notes History */}
+                  {feedbackTab === 'patchNotes' && (
+                    <div className="space-y-3">
+                      {(!selectedGameForFeedback.patchNotes || selectedGameForFeedback.patchNotes.length === 0) ? (
+                        <div className="p-8 text-center bg-[#0B0F19] rounded-2xl border border-gray-800 text-gray-400 text-xs">
+                          <History className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                          <p className="text-white font-semibold">ยังไม่มีประวัติแพตช์สำหรับเกมนี้</p>
+                          <p className="text-gray-500 mt-0.5">กดปุ่ม "อัปเดตแพตช์" ที่ตารางเกมเพื่อปล่อยการอัปเดตแรก</p>
+                        </div>
+                      ) : (
+                        selectedGameForFeedback.patchNotes.map((patch, idx) => (
+                          <div
+                            key={idx}
+                            className="p-4 rounded-2xl bg-[#0B0F19] border border-gray-800 space-y-2"
+                          >
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 rounded font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+                                  {patch.version}
+                                </span>
+                                <strong className="text-white">{patch.title}</strong>
+                              </div>
+                              <span className="text-gray-500 font-mono text-[10px]">{patch.date}</span>
+                            </div>
+                            <p className="text-xs text-gray-300 leading-relaxed whitespace-pre-line">{patch.details}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tab 4: Monetization info */}
                   {feedbackTab === 'monetization' && (
                     <div className="p-6 rounded-2xl bg-[#0B0F19] border border-gray-800 space-y-4 text-xs">
                       <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
@@ -582,45 +658,77 @@ export const DeveloperStudioView = () => {
             </div>
           )}
 
-          {/* Update Version Modal */}
+          {/* Update Version & Patch Notes Modal (Steam / itch.io style) */}
           {updateVersionGame && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-              <div className="bg-[#111827] border border-indigo-500/40 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
-                <h3 className="text-base font-bold text-white flex items-center gap-2 font-['Rajdhani',sans-serif]">
-                  <Edit3 className="w-4 h-4 text-indigo-400" />
-                  <span>อัปเดตเวอร์ชันเกม</span>
-                </h3>
+              <div className="bg-[#111827] border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+                <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 font-['Rajdhani',sans-serif]">
+                    <History className="w-4 h-4 text-emerald-400" />
+                    <span>ปล่อยแพตช์และบันทึก Patch Notes ใหม่</span>
+                  </h3>
+                  <button
+                    onClick={() => setUpdateVersionGame(null)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
 
                 <p className="text-xs text-gray-400">
-                  เกม: <strong className="text-white">{updateVersionGame.title}</strong>
+                  เกม: <strong className="text-white">{updateVersionGame.title}</strong> (เวอร์ชันเดิม: <span className="font-mono text-indigo-400">{updateVersionGame.version}</span>)
                 </p>
 
-                <form onSubmit={handleVersionSubmit} className="space-y-4 text-xs">
+                <form onSubmit={handleVersionSubmit} className="space-y-3.5 text-xs">
                   <div>
-                    <label className="block text-gray-300 mb-1 font-medium">เลขเวอร์ชันใหม่ (เช่น v1.1.0, v2.0-beta):</label>
+                    <label className="block text-gray-300 mb-1 font-medium">เลขเวอร์ชันใหม่ (Version Number) *</label>
                     <input
                       type="text"
                       required
                       value={newVersionInput}
                       onChange={(e) => setNewVersionInput(e.target.value)}
-                      placeholder="v1.1.0"
-                      className="w-full bg-[#0B0F19] border border-gray-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500"
+                      placeholder="เช่น v1.5.0 หรือ v2.0-beta"
+                      className="w-full bg-[#0B0F19] border border-gray-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
                     />
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-800">
+                  <div>
+                    <label className="block text-gray-300 mb-1 font-medium">หัวข้อการอัปเดต (Patch Title) *</label>
+                    <input
+                      type="text"
+                      required
+                      value={patchTitleInput}
+                      onChange={(e) => setPatchTitleInput(e.target.value)}
+                      placeholder="เช่น อัปเดตปรับปรุงเฟรมเรตและเพิ่มเพลงใหม่"
+                      className="w-full bg-[#0B0F19] border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-300 mb-1 font-medium">รายละเอียดแพตช์ (Changelog & Notes) *</label>
+                    <textarea
+                      rows={4}
+                      required
+                      value={patchDetailsInput}
+                      onChange={(e) => setPatchDetailsInput(e.target.value)}
+                      placeholder="ระบุสิ่งที่เปลี่ยนแปลง แก้ไข หรือฟีเจอร์ใหม่สำหรับผู้เล่น..."
+                      className="w-full bg-[#0B0F19] border border-gray-800 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-800">
                     <button
                       type="button"
                       onClick={() => setUpdateVersionGame(null)}
-                      className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-gray-800 text-gray-300 hover:text-white cursor-pointer"
                     >
                       ยกเลิก
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold cursor-pointer"
+                      className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-gray-950 font-bold shadow-lg shadow-emerald-500/20 cursor-pointer"
                     >
-                      บันทึกเวอร์ชัน
+                      🚀 ปล่อยแพตช์สู่นักเล่น
                     </button>
                   </div>
                 </form>

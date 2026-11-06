@@ -2,18 +2,20 @@
  * GameContext.jsx
  * ศูนย์รวม State และฟังก์ชันสำหรับจัดการข้อมูลเกมอินดี้ WebGL/PC
  * - จัดการคลังเกม, กรอง Engine, อนุมัติ/ปฏิเสธเกม, หักเหรียญ Token
- * - จัดการรายงานบั๊ก (Bug Tracking): ให้ Dev ตรวจสอบและอัปเดตสถานะบั๊กเป็น 'fixed' หรือ 'investigating'
- * - ระบบ Wishlist / บันทึกเกมโปรด
+ * - จัดการรายงานบั๊ก (Bug Tracking)
+ * - ระบบ Wishlist (คลังเกมโปรด ❤️)
+ * - ระบบศูนย์การแจ้งเตือน (Notification Center 🔔) สไตล์ Steam
+ * - ระบบบันทึกแพตช์โน้ต (Patch Notes / DevLog) สไตล์ itch.io
  */
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { INITIAL_GAMES, TOKEN_COST_PER_GAME } from '../data/mockData';
+import { INITIAL_GAMES, TOKEN_COST_PER_GAME, MOCK_NOTIFICATIONS } from '../data/mockData';
 import { useAuth } from './AuthContext';
 
 const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
-  const { currentUser, devTokenBalance, updateTokenBalance } = useAuth();
+  const { currentUser, currentRole, devTokenBalance, updateTokenBalance } = useAuth();
 
   // รายการเกมทั้งหมด
   const [games, setGames] = useState(() => {
@@ -22,7 +24,7 @@ export const GameProvider = ({ children }) => {
       try {
         return JSON.parse(saved);
       } catch (e) {
-        console.error('Failed to parse saved games, fallback to initial.', e);
+        console.error('Failed to parse saved games', e);
       }
     }
     return INITIAL_GAMES;
@@ -31,14 +33,20 @@ export const GameProvider = ({ children }) => {
   // รายการเกมที่กดบันทึกเป็นรายการโปรด (Wishlist)
   const [wishlist, setWishlist] = useState(() => {
     const saved = localStorage.getItem('indiethai_wishlist');
-    return saved ? JSON.parse(saved) : [];
+    return saved ? JSON.parse(saved) : ['game-1', 'game-3'];
   });
 
-  // ตัวกรอง (Search, Engine, Category, Sort)
+  // ระบบแจ้งเตือน (Notification Center 🔔)
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('indiethai_notifications');
+    return saved ? JSON.parse(saved) : MOCK_NOTIFICATIONS;
+  });
+
+  // ตัวกรอง (Search, Engine, Category, Sort, WishlistOnly)
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEngine, setSelectedEngine] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('popular'); // 'popular' | 'rating' | 'newest'
+  const [isWishlistOnly, setIsWishlistOnly] = useState(false);
 
   // จัดการเกมที่กำลังเปิดดูหน้ารายละเอียด GameDetailView สไตล์ Steam
   const [selectedGameForDetail, setSelectedGameForDetail] = useState(null);
@@ -54,6 +62,10 @@ export const GameProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('indiethai_wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
+
+  useEffect(() => {
+    localStorage.setItem('indiethai_notifications', JSON.stringify(notifications));
+  }, [notifications]);
 
   // ซิงค์ selectedGameForDetail หากข้อมูลใน games มีการอัปเดต
   useEffect(() => {
@@ -85,9 +97,20 @@ export const GameProvider = ({ children }) => {
     );
   }, [games, currentUser]);
 
-  // กรองและจัดเรียงเกมที่อนุมัติแล้ว
+  // กรองการแจ้งเตือนตามบทบาทปัจจุบัน
+  const roleNotifications = useMemo(() => {
+    return notifications.filter(
+      (n) => n.role === currentRole || n.role === 'all'
+    );
+  }, [notifications, currentRole]);
+
+  const unreadNotificationCount = useMemo(() => {
+    return roleNotifications.filter((n) => !n.isRead).length;
+  }, [roleNotifications]);
+
+  // กรองเกมที่อนุมัติแล้ว
   const filteredApprovedGames = useMemo(() => {
-    let result = approvedGames.filter((game) => {
+    return approvedGames.filter((game) => {
       const matchSearch =
         game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         game.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -96,22 +119,11 @@ export const GameProvider = ({ children }) => {
 
       const matchEngine = selectedEngine === 'All' || game.engine === selectedEngine;
       const matchCategory = selectedCategory === 'All' || game.category === selectedCategory;
+      const matchWishlist = !isWishlistOnly || wishlist.includes(game.id);
 
-      return matchSearch && matchEngine && matchCategory;
+      return matchSearch && matchEngine && matchCategory && matchWishlist;
     });
-
-    // เรียงลำดับ
-    if (sortBy === 'rating') {
-      result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    } else if (sortBy === 'newest') {
-      result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else {
-      // popular
-      result.sort((a, b) => (b.playCount || 0) - (a.playCount || 0));
-    }
-
-    return result;
-  }, [approvedGames, searchQuery, selectedEngine, selectedCategory, sortBy]);
+  }, [approvedGames, searchQuery, selectedEngine, selectedCategory, isWishlistOnly, wishlist]);
 
   /**
    * สลับสถานะ Wishlist
@@ -128,8 +140,64 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * ฟังก์ชันสำหรับ Developer: อัปเดตสถานะของบั๊กที่ถูกรายงาน (Bug Tracking)
-   * เช่น จาก 'pending' -> 'investigating' -> 'fixed'
+   * อ่านการแจ้งเตือน
+   */
+  const markNotificationAsRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.role === currentRole ? { ...n, isRead: true } : n))
+    );
+  };
+
+  /**
+   * ฟังก์ชันสำหรับ Developer: อัปเดตเวอร์ชันเกมพร้อมบันทึก Patch Notes / DevLog
+   */
+  const updateGameVersionWithPatchNotes = (gameId, newVersion, patchTitle, patchDetails) => {
+    const newPatch = {
+      version: newVersion,
+      date: new Date().toISOString().split('T')[0],
+      title: patchTitle || `อัปเดตเวอร์ชัน ${newVersion}`,
+      details: patchDetails || 'ปรับปรุงประสิทธิภาพและความเสถียรของเกม'
+    };
+
+    setGames((prev) =>
+      prev.map((g) => {
+        if (g.id === gameId) {
+          const currentPatches = g.patchNotes || [];
+          return {
+            ...g,
+            version: newVersion,
+            patchNotes: [newPatch, ...currentPatches]
+          };
+        }
+        return g;
+      })
+    );
+
+    // สร้างแจ้งเตือนอัตโนมัติถึง Player
+    const newNotif = {
+      id: `notif-${Date.now()}`,
+      role: 'player',
+      title: `🎮 เกมโปรดอัปเดตใหม่ (${newVersion})`,
+      message: `${patchTitle || 'มีการปล่อยแพตช์ใหม่'} สามารถทดลองเล่นเวอร์ชันล่าสุดได้แล้ว`,
+      time: 'เพิ่งอัปเดต',
+      isRead: false
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+
+    return {
+      success: true,
+      message: `อัปเดตแพตช์โน้ตเวอร์ชัน ${newVersion} สำเร็จเรียบร้อย!`
+    };
+  };
+
+  /**
+   * อัปเดตสถานะของบั๊ก
    */
   const updateBugStatus = (gameId, bugId, newStatus) => {
     setGames((prev) =>
@@ -154,7 +222,7 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * ฟังก์ชันลงเกมใหม่สำหรับ Developer (หัก 50 Tokens)
+   * ลงเกมใหม่สำหรับ Developer (หัก 50 Tokens)
    */
   const submitNewGame = (gameData) => {
     const cost = TOKEN_COST_PER_GAME;
@@ -188,13 +256,35 @@ export const GameProvider = ({ children }) => {
       hasPcDownload: Boolean(gameData.hasPcDownload ?? true),
       webglUrl: gameData.webglUrl || 'https://play2048.co/',
       downloadUrl: gameData.downloadUrl || 'https://github.com/gabrielecirulli/2048/archive/refs/heads/master.zip',
-      trailerUrl: gameData.trailerUrl || 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1',
       thumbnail:
         gameData.thumbnail ||
         'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80',
-      screenshots: [
-        gameData.thumbnail ||
-          'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80'
+      mediaGallery: gameData.mediaGallery || [
+        {
+          id: 'm-1',
+          type: 'image',
+          url: gameData.thumbnail || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80',
+          thumbnail: gameData.thumbnail || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&auto=format&fit=crop&q=80',
+          title: 'ภาพสกรีนช็อตเกมเพลย์'
+        }
+      ],
+      controls: [
+        { key: '[ ลูกศร ] หรือ [ WASD ]', action: 'ควบคุมการเคลื่อนที่' },
+        { key: '[ Spacebar ]', action: 'กระโดด / แอ็กชันพิเศษ' }
+      ],
+      requirements: {
+        os: 'Windows 10 / 11 64-bit, macOS, Linux',
+        browser: 'เบราว์เซอร์ที่รองรับ WebGL 2.0 (Chrome, Edge, Firefox, Safari)',
+        memory: 'RAM 4 GB ขึ้นไป',
+        graphics: 'รองรับ Hardware Acceleration'
+      },
+      patchNotes: [
+        {
+          version: gameData.version || 'v1.0.0',
+          date: new Date().toISOString().split('T')[0],
+          title: 'เปิดตัวเกมรอบ Early Access / Beta',
+          details: 'เปิดให้ผู้เล่นทดสอบผ่านระบบ WebGL และดาวน์โหลดไฟล์ PC'
+        }
       ],
       promptPayNumber: gameData.promptPayNumber || currentUser.promptPayNumber || '089-765-4321',
       status: 'pending',
@@ -212,6 +302,17 @@ export const GameProvider = ({ children }) => {
 
     setGames((prev) => [newGame, ...prev]);
 
+    // สร้างแจ้งเตือนถึง Admin
+    const adminNotif = {
+      id: `notif-admin-${Date.now()}`,
+      role: 'admin',
+      title: '🛡️ มีเกมใหม่รอการตรวจสอบ',
+      message: `สตูดิโอ ${newGame.developer} ได้ส่งเกม "${newGame.title}" เข้าคิวตรวจสอบ`,
+      time: 'เมื่อสักครู่',
+      isRead: false
+    };
+    setNotifications((prev) => [adminNotif, ...prev]);
+
     return {
       success: true,
       message: `ส่งเกม "${newGame.title}" เข้าคิวตรวจสอบเรียบร้อยแล้ว! (หักค่าธรรมเนียม ${cost} Tokens)`,
@@ -220,12 +321,34 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * ฟังก์ชันสำหรับ Admin: อนุมัติเกม
+   * อนุมัติเกม
    */
   const approveGame = (gameId) => {
+    let approvedGameTitle = '';
+    let targetDevId = '';
+
     setGames((prev) =>
-      prev.map((game) => (game.id === gameId ? { ...game, status: 'approved' } : game))
+      prev.map((game) => {
+        if (game.id === gameId) {
+          approvedGameTitle = game.title;
+          targetDevId = game.developerId;
+          return { ...game, status: 'approved' };
+        }
+        return game;
+      })
     );
+
+    // แจ้งเตือนไปยัง Dev
+    const devNotif = {
+      id: `notif-dev-${Date.now()}`,
+      role: 'developer',
+      title: '🎉 เกมของคุณได้รับอนุมัติแล้ว!',
+      message: `เกม "${approvedGameTitle}" ผ่านการตรวจสอบความปลอดภัยและขึ้นสู่หน้าสโตร์เรียบร้อยแล้ว`,
+      time: 'เมื่อสักครู่',
+      isRead: false
+    };
+    setNotifications((prev) => [devNotif, ...prev]);
+
     return {
       success: true,
       message: 'อนุมัติเกมขึ้นสโตร์เรียบร้อยแล้ว!'
@@ -233,7 +356,7 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * ฟังก์ชันสำหรับ Admin: ปฏิเสธเกม
+   * ปฏิเสธเกม
    */
   const rejectGame = (gameId, reason = 'ไฟล์ WebGL หรือข้อมูลเกมยังไม่สมบูรณ์') => {
     setGames((prev) =>
@@ -246,19 +369,6 @@ export const GameProvider = ({ children }) => {
     return {
       success: true,
       message: `ปฏิเสธเกมเรียบร้อยแล้ว (${reason})`
-    };
-  };
-
-  /**
-   * อัปเดตเวอร์ชันเกม
-   */
-  const updateGameVersion = (gameId, newVersion) => {
-    setGames((prev) =>
-      prev.map((g) => (g.id === gameId ? { ...g, version: newVersion } : g))
-    );
-    return {
-      success: true,
-      message: `อัปเดตเวอร์ชันเป็น ${newVersion} สำเร็จ!`
     };
   };
 
@@ -316,13 +426,15 @@ export const GameProvider = ({ children }) => {
       user: user || currentUser?.name || 'Anonymous',
       title,
       description,
-      status: 'pending', // 'pending' | 'investigating' | 'fixed'
+      status: 'pending',
       date: new Date().toISOString().split('T')[0]
     };
 
+    let targetGameTitle = '';
     setGames((prev) =>
       prev.map((g) => {
         if (g.id === gameId) {
+          targetGameTitle = g.title;
           return {
             ...g,
             bugReports: [newBug, ...(g.bugReports || [])]
@@ -331,6 +443,17 @@ export const GameProvider = ({ children }) => {
         return g;
       })
     );
+
+    // แจ้งเตือน Dev ทันที
+    const bugNotif = {
+      id: `notif-bug-${Date.now()}`,
+      role: 'developer',
+      title: '🐛 มีผู้เล่นรายงานบั๊กใหม่',
+      message: `มีผู้ใช้แจ้งปัญหาในเกม "${targetGameTitle}": "${title}"`,
+      time: 'เมื่อสักครู่',
+      isRead: false
+    };
+    setNotifications((prev) => [bugNotif, ...prev]);
 
     return {
       success: true,
@@ -364,7 +487,9 @@ export const GameProvider = ({ children }) => {
    */
   const resetToDefaultGames = () => {
     setGames(INITIAL_GAMES);
+    setNotifications(MOCK_NOTIFICATIONS);
     localStorage.removeItem('indiethai_games');
+    localStorage.removeItem('indiethai_notifications');
   };
 
   const value = {
@@ -375,14 +500,18 @@ export const GameProvider = ({ children }) => {
     filteredApprovedGames,
     wishlist,
     toggleWishlist,
+    notifications: roleNotifications,
+    unreadNotificationCount,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
     searchQuery,
     setSearchQuery,
     selectedEngine,
     setSelectedEngine,
     selectedCategory,
     setSelectedCategory,
-    sortBy,
-    setSortBy,
+    isWishlistOnly,
+    setIsWishlistOnly,
     selectedGameForDetail,
     setSelectedGameForDetail,
     activePlayingGame,
@@ -391,7 +520,7 @@ export const GameProvider = ({ children }) => {
     submitNewGame,
     approveGame,
     rejectGame,
-    updateGameVersion,
+    updateGameVersionWithPatchNotes,
     updateBugStatus,
     downloadPcGame,
     addReview,
