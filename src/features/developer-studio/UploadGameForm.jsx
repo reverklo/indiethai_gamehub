@@ -3,6 +3,7 @@
  * ฟอร์มอัปโหลดเกมหน้าเดียวสำหรับสตูดิโอนักพัฒนา
  * - ระบุชื่อ, หมวดหมู่, Engine, เบอร์พร้อมเพย์
  * - Drag & Drop โซนอัปโหลดไฟล์ WebGL .zip
+ * - **ใหม่**: Media Showcase Manager ให้ Dev อัปโหลด/จัดการทั้งรูปภาพและวิดีโอตัวอย่างรวมกันได้เองอย่างอิสระ
  * - หัก 50 Tokens เมื่อกดส่ง และส่งเกมไปเข้าคิวแอดมินทันที
  */
 
@@ -11,12 +12,15 @@ import {
   UploadCloud, 
   FileArchive, 
   Coins, 
-  CheckCircle2, 
   AlertCircle, 
   ArrowLeft, 
   PlusCircle,
   FileCheck,
-  X
+  Video,
+  Image as ImageIcon,
+  Trash2,
+  Plus,
+  Play
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
@@ -38,10 +42,32 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
     downloadSize: '85 MB',
     hasWebgl: true,
     hasPcDownload: true,
-    promptPayNumber: currentUser.promptPayNumber || '089-765-4321',
-    thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80',
-    trailerUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1'
+    promptPayNumber: currentUser?.promptPayNumber || '089-765-4321',
+    thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80'
   });
+
+  // Media Gallery ที่ Dev จัดการเอง (รวมทั้งรูปภาพและวิดีโอ)
+  const [mediaList, setMediaList] = useState([
+    {
+      id: 'm-default-1',
+      type: 'video',
+      url: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1',
+      thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&auto=format&fit=crop&q=80',
+      title: 'วิดีโอตัวอย่างเกม (Trailer)'
+    },
+    {
+      id: 'm-default-2',
+      type: 'image',
+      url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80',
+      thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&auto=format&fit=crop&q=80',
+      title: 'ภาพสกรีนช็อตเกมเพลย์'
+    }
+  ]);
+
+  // ช่องสำหรับเพิ่มสื่อใหม่
+  const [newMediaType, setNewMediaType] = useState('image'); // 'image' | 'video'
+  const [newMediaUrl, setNewMediaUrl] = useState('');
+  const [newMediaTitle, setNewMediaTitle] = useState('');
 
   // Drag & drop file simulation
   const [uploadedZipFile, setUploadedZipFile] = useState(null);
@@ -55,6 +81,31 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+  };
+
+  // เพิ่มสื่อใหม่เข้ารายการ
+  const handleAddMedia = () => {
+    if (!newMediaUrl.trim()) return;
+
+    const newItem = {
+      id: `m-${Date.now()}`,
+      type: newMediaType,
+      url: newMediaUrl.trim(),
+      thumbnail:
+        newMediaType === 'video'
+          ? 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&auto=format&fit=crop&q=80'
+          : newMediaUrl.trim(),
+      title: newMediaTitle.trim() || (newMediaType === 'video' ? 'วิดีโอตัวอย่าง' : `ภาพตัวอย่าง ${mediaList.length + 1}`)
+    };
+
+    setMediaList((prev) => [...prev, newItem]);
+    setNewMediaUrl('');
+    setNewMediaTitle('');
+  };
+
+  // ลบสื่อ
+  const handleRemoveMedia = (id) => {
+    setMediaList((prev) => prev.filter((m) => m.id !== id));
   };
 
   const handleDragOver = (e) => {
@@ -114,6 +165,7 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
 
     const result = submitNewGame({
       ...formData,
+      mediaGallery: mediaList,
       uploadedZipName: uploadedZipFile?.name
     });
 
@@ -286,10 +338,97 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
           </div>
         </div>
 
-        {/* Section 2: Drag & Drop WebGL Zip Upload Zone */}
+        {/* Section 2: 🌟 Media Showcase Manager (รูปภาพและวิดีโอรวมกัน ให้ Dev จัดการเอง) */}
+        <div className="space-y-4 pt-4 border-t border-gray-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-indigo-300 uppercase tracking-wider font-mono">
+                2. จัดการรูปภาพและวิดีโอตัวอย่างเกม (Media Showcase)
+              </h3>
+              <p className="text-[11px] text-gray-400">
+                เพิ่มทั้งรูปสกรีนช็อตและลิงก์ YouTube Trailer ไว้ด้วยกัน ระบบจะรวมเป็น Carousel ให้ผู้เล่นกดดูได้อย่างลื่นไหล
+              </p>
+            </div>
+          </div>
+
+          {/* Current Media List */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {mediaList.map((item, idx) => (
+              <div
+                key={item.id}
+                className="relative aspect-video rounded-xl overflow-hidden bg-black border border-gray-700 group"
+              >
+                <img
+                  src={item.thumbnail || item.url}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                />
+                
+                {item.type === 'video' && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                    <Play className="w-5 h-5 text-rose-500 fill-rose-500" />
+                  </div>
+                )}
+
+                <span className="absolute bottom-1 left-1.5 text-[9px] px-1.5 py-0.5 rounded bg-black/80 text-gray-200 truncate max-w-[85%] font-medium">
+                  {item.title}
+                </span>
+
+                {/* Delete button */}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveMedia(item.id)}
+                  title="ลบรายการนี้"
+                  className="absolute top-1.5 right-1.5 p-1 rounded-md bg-rose-600/90 text-white opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Add New Media Controls */}
+          <div className="p-3.5 rounded-2xl bg-[#0B0F19] border border-gray-800 flex flex-col sm:flex-row items-center gap-3">
+            <select
+              value={newMediaType}
+              onChange={(e) => setNewMediaType(e.target.value)}
+              className="bg-[#111827] border border-gray-700 rounded-xl px-3 py-2 text-white font-semibold text-xs cursor-pointer shrink-0"
+            >
+              <option value="image">🖼️ รูปสกรีนช็อต (Image)</option>
+              <option value="video">🎬 วิดีโอตัวอย่าง (YouTube Embed)</option>
+            </select>
+
+            <input
+              type="url"
+              value={newMediaUrl}
+              onChange={(e) => setNewMediaUrl(e.target.value)}
+              placeholder={newMediaType === 'video' ? 'https://www.youtube.com/embed/...' : 'https://images.unsplash.com/... หรือ URL รูปภาพ'}
+              className="flex-1 bg-[#111827] border border-gray-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500"
+            />
+
+            <input
+              type="text"
+              value={newMediaTitle}
+              onChange={(e) => setNewMediaTitle(e.target.value)}
+              placeholder="ชื่อภาพ/วิดีโอ เช่น ฉากบอส"
+              className="w-32 bg-[#111827] border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+            />
+
+            <button
+              type="button"
+              onClick={handleAddMedia}
+              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>เพิ่มสื่อ</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Section 3: Drag & Drop WebGL Zip Upload Zone */}
         <div className="space-y-3 pt-4 border-t border-gray-800">
           <h3 className="text-sm font-bold text-indigo-300 uppercase tracking-wider font-mono">
-            2. ไฟล์เกม WebGL Build (.ZIP Archive)
+            3. ไฟล์เกม WebGL Build (.ZIP Archive)
           </h3>
 
           <div
@@ -344,10 +483,10 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
           </div>
         </div>
 
-        {/* Section 3: WebGL & PC URLs & PromptPay */}
+        {/* Section 4: WebGL & PC URLs & PromptPay */}
         <div className="space-y-4 pt-4 border-t border-gray-800">
           <h3 className="text-sm font-bold text-indigo-300 uppercase tracking-wider font-mono">
-            3. ลิงก์เล่นเกม และช่องทางสนับสนุน (Links & Monetization)
+            4. ลิงก์เล่นเกม และช่องทางสนับสนุน (Links & Monetization)
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -435,4 +574,3 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
     </div>
   );
 };
-

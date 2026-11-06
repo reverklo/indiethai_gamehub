@@ -3,8 +3,8 @@
  * หน้าร้านค้าหลักและศูนย์รวมเกมอินดี้สัญชาติไทย
  * - แบนเนอร์กิจกรรม Game Jam
  * - แท็บกรอง Engine (Unity, Godot, WebGL, ฯลฯ)
- * - สวิตช์สลับดูระหว่าง "เกมอินดี้สัญชาติไทย" และ "เกมเบราว์เซอร์สดจาก FreeToGame API (useFetchBrowserGames)"
- * - การ์ดแสดงรายการเกมพร้อมป้ายบอกชัดเจน (WebGL / PC Download)
+ * - สวิตช์สลับดูระหว่าง "เกมอินดี้สัญชาติไทย" และ "เกมเบราว์เซอร์สดจาก FreeToGame API"
+ * - การ์ดแสดงรายการเกม ปรับปุ่มให้เป็น "ดาวน์โหลด PC" ตามความต้องการของผู้ใช้ ไม่รกตา
  */
 
 import React, { useState } from 'react';
@@ -16,13 +16,11 @@ import {
   Eye, 
   Star, 
   Download, 
-  Play, 
-  Laptop, 
-  Globe, 
   ChevronRight,
   Flame,
   Radio,
-  Loader2
+  Loader2,
+  HardDrive
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { useFetchBrowserGames } from '../../hooks/useFetchBrowserGames';
@@ -34,7 +32,7 @@ export const StorefrontView = () => {
     selectedEngine, 
     setSelectedEngine, 
     setSelectedGameForDetail, 
-    openGamePlayer,
+    downloadPcGame,
     searchQuery 
   } = useGame();
 
@@ -43,6 +41,9 @@ export const StorefrontView = () => {
 
   // ตัวสลับหมวดหมู่แสดงผล: 'local' (เกมอินดี้ไทย) | 'api' (เกมเบราว์เซอร์จาก FreeToGame API)
   const [sourceTab, setSourceTab] = useState('local');
+
+  // แจ้งเตือนเมื่อกดดาวน์โหลด
+  const [downloadToast, setDownloadToast] = useState(null);
 
   // กรองเกมจาก API ตามคำค้นหา
   const filteredApiGames = apiGames.filter((game) => {
@@ -56,9 +57,31 @@ export const StorefrontView = () => {
 
   const displayedGames = sourceTab === 'local' ? filteredApprovedGames : filteredApiGames;
 
+  const handleDownloadClick = (e, game) => {
+    e.stopPropagation();
+    downloadPcGame(game.id);
+
+    if (game.downloadUrl && game.downloadUrl !== '#') {
+      window.open(game.downloadUrl, '_blank');
+      setDownloadToast(`กำลังเริ่มดาวน์โหลด ${game.title} (.ZIP) ขนาด ${game.downloadSize || '100 MB'}`);
+    } else {
+      setDownloadToast(`กำลังเตรียมแพ็กเกจดาวน์โหลดของ ${game.title}`);
+    }
+
+    setTimeout(() => setDownloadToast(null), 3500);
+  };
+
   return (
     <div className="space-y-10 animate-in fade-in duration-300">
       
+      {/* Toast Notification */}
+      {downloadToast && (
+        <div className="fixed top-24 right-6 z-50 p-4 rounded-2xl bg-sky-950/90 border border-sky-500/50 text-sky-200 text-xs font-bold shadow-2xl flex items-center gap-3 animate-in slide-in-from-top-3">
+          <Download className="w-5 h-5 text-sky-400 shrink-0 animate-bounce" />
+          <span>{downloadToast}</span>
+        </div>
+      )}
+
       {/* 1. Game Jam Cyberpunk Event Banner */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#111827] via-[#161F30] to-[#0B0F19] border border-indigo-500/30 p-6 sm:p-10 shadow-2xl">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-96 h-96 rounded-full bg-gradient-to-br from-indigo-500/20 to-emerald-500/20 blur-3xl pointer-events-none"></div>
@@ -181,7 +204,7 @@ export const StorefrontView = () => {
         </section>
       )}
 
-      {/* 4. Games Grid with Clear Badges (WebGL vs PC Download) */}
+      {/* 4. Games Grid: ปรับปุ่มเป็นการ์ดคลีนและเน้น "ดาวน์โหลด PC" */}
       <section className="space-y-5">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2 font-['Rajdhani',sans-serif]">
@@ -215,13 +238,11 @@ export const StorefrontView = () => {
             {displayedGames.map((game) => (
               <div
                 key={game.id}
-                className="group flex flex-col bg-[#111827] rounded-2xl border border-gray-800/90 overflow-hidden hover:border-indigo-500/50 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300"
+                onClick={() => setSelectedGameForDetail(game)}
+                className="group flex flex-col bg-[#111827] rounded-2xl border border-gray-800/90 overflow-hidden hover:border-indigo-500/50 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer"
               >
-                {/* Thumbnail Container */}
-                <div 
-                  onClick={() => setSelectedGameForDetail(game)}
-                  className="relative aspect-video w-full overflow-hidden bg-gray-900 cursor-pointer"
-                >
+                {/* Thumbnail Container (Cleaned up, no messy badge spam) */}
+                <div className="relative aspect-video w-full overflow-hidden bg-gray-900">
                   <img
                     src={game.coverImage || game.thumbnail}
                     alt={game.title}
@@ -240,21 +261,13 @@ export const StorefrontView = () => {
                     <span>{game.rating > 0 ? game.rating.toFixed(1) : 'New'}</span>
                   </div>
 
-                  {/* Platform Badges (WebGL vs PC) */}
-                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 flex-wrap">
-                    {(game.isWebGL || game.hasWebgl) && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/90 text-gray-950 shadow-md">
-                        <Globe className="w-3 h-3" />
-                        เล่นบนเว็บได้ทันที
-                      </span>
-                    )}
-                    {game.hasPcDownload && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-500/90 text-gray-950 shadow-md">
-                        <Laptop className="w-3 h-3" />
-                        ดาวน์โหลด PC (.ZIP)
-                      </span>
-                    )}
-                  </div>
+                  {/* File Size Badge if PC Downloadable */}
+                  {game.hasPcDownload && (
+                    <div className="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] font-mono font-bold text-sky-300 bg-sky-950/80 px-2 py-0.5 rounded-md backdrop-blur-sm border border-sky-500/40">
+                      <HardDrive className="w-3 h-3 text-sky-400" />
+                      <span>{game.downloadSize || 'PC .ZIP'}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Content Section */}
@@ -267,10 +280,7 @@ export const StorefrontView = () => {
                       <span>โดย <strong className="text-gray-300">{game.studio || game.developer}</strong></span>
                     </div>
 
-                    <h3 
-                      onClick={() => setSelectedGameForDetail(game)}
-                      className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-1 font-['Rajdhani',sans-serif] cursor-pointer"
-                    >
+                    <h3 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-1 font-['Rajdhani',sans-serif]">
                       {game.title}
                     </h3>
 
@@ -279,37 +289,40 @@ export const StorefrontView = () => {
                     </p>
                   </div>
 
-                  {/* Stats and Action Bar */}
+                  {/* Stats and Action Bar: เปลี่ยนเป็นปุ่ม "ดาวน์โหลด PC" ตามที่ผู้ใช้ต้องการ */}
                   <div className="pt-3 border-t border-gray-800/80 space-y-3">
                     <div className="flex items-center justify-between text-[11px] text-gray-400">
                       <span className="flex items-center gap-1">
                         <Eye className="w-3 h-3 text-emerald-400" />
                         เล่นแล้ว {(game.playsCount || game.playCount || 0).toLocaleString()} ครั้ง
                       </span>
-                      {game.hasPcDownload && (
-                        <span className="flex items-center gap-1">
-                          <Download className="w-3 h-3 text-sky-400" />
-                          {game.downloadCount ? game.downloadCount.toLocaleString() : 0} โหลด
-                        </span>
-                      )}
+                      <span className="flex items-center gap-1">
+                        <Download className="w-3 h-3 text-sky-400" />
+                        {game.downloadCount ? game.downloadCount.toLocaleString() : 0} โหลด
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {/* Button: ดูรายละเอียด */}
                       <button
-                        onClick={() => setSelectedGameForDetail(game)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedGameForDetail(game);
+                        }}
                         className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold transition cursor-pointer"
                       >
                         <span>รายละเอียด</span>
                         <ChevronRight className="w-3.5 h-3.5" />
                       </button>
 
+                      {/* Button: ดาวน์โหลด PC (.ZIP) แทนปุ่ม WebGL ที่รก */}
                       <button
-                        onClick={() => openGamePlayer(game)}
-                        title="เล่น WebGL บนเบราว์เซอร์ทันที"
-                        className="flex items-center justify-center gap-1 px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 text-xs font-bold transition shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer"
+                        onClick={(e) => handleDownloadClick(e, game)}
+                        title="ดาวน์โหลดไฟล์เกม PC (.ZIP) ลงเครื่อง"
+                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-gray-950 text-xs font-bold transition shadow-md shadow-sky-500/20 active:scale-95 cursor-pointer"
                       >
-                        <Play className="w-3.5 h-3.5 fill-gray-950" />
-                        <span>เล่น WebGL</span>
+                        <Download className="w-3.5 h-3.5" />
+                        <span>ดาวน์โหลด PC</span>
                       </button>
                     </div>
                   </div>

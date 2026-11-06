@@ -1,6 +1,6 @@
 /**
  * IndieThai Hub - Enhanced Mock Data
- * รวมข้อมูลเกมอินดี้ WebGL/HTML5, ผู้ใช้จำลอง, และรีวิว/แจ้งบั๊ก
+ * รวมข้อมูลเกมอินดี้ WebGL/HTML5 พร้อม Media Gallery รวมรูปและวิดีโอสำหรับ Dev
  */
 
 export const INITIAL_GAMES = [
@@ -24,12 +24,37 @@ export const INITIAL_GAMES = [
     hasPcDownload: true,
     webglUrl: 'https://play2048.co/',
     downloadUrl: 'https://github.com/gabrielecirulli/2048/archive/refs/heads/master.zip',
-    trailerUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1',
     thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-    screenshots: [
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200&auto=format&fit=crop&q=80'
+    // Media Gallery รวมทั้งวิดีโอและรูปภาพไว้ด้วยกัน ให้ Dev จัดการได้เอง
+    mediaGallery: [
+      {
+        id: 'm1',
+        type: 'video',
+        url: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1',
+        thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80',
+        title: 'วิดีโอตัวอย่างเกมเพลย์ 60FPS'
+      },
+      {
+        id: 'm2',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80',
+        thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80',
+        title: 'หน้าจอหลักและโหมด Cyber Synth'
+      },
+      {
+        id: 'm3',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80',
+        thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&auto=format&fit=crop&q=80',
+        title: 'บรรยากาศศิลปะไทยร่วมสมัย'
+      },
+      {
+        id: 'm4',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200&auto=format&fit=crop&q=80',
+        thumbnail: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&auto=format&fit=crop&q=80',
+        title: 'ระบบการรวมบล็อก 2048'
+      }
     ],
     promptPayNumber: '089-765-4321',
     status: 'approved',
@@ -69,11 +94,29 @@ export const INITIAL_GAMES = [
     hasPcDownload: true,
     webglUrl: 'https://hextris.io/',
     downloadUrl: 'https://github.com/Hextris/hextris/archive/refs/heads/gh-pages.zip',
-    trailerUrl: 'https://www.youtube.com/embed/fJ9rUzIMcZQ?autoplay=0&mute=1',
     thumbnail: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
-    screenshots: [
-      'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&auto=format&fit=crop&q=80'
+    mediaGallery: [
+      {
+        id: 'm1',
+        type: 'video',
+        url: 'https://www.youtube.com/embed/fJ9rUzIMcZQ?autoplay=1&mute=1',
+        thumbnail: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400&auto=format&fit=crop&q=80',
+        title: 'Trailer จังหวะนีออนสุดมันส์'
+      },
+      {
+        id: 'm2',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80',
+        thumbnail: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400&auto=format&fit=crop&q=80',
+        title: 'แกนหมุนหกเหลี่ยมความเร็วสูง'
+      },
+      {
+        id: 'm3',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&auto=format&fit=crop&q=80',
+        thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&auto=format&fit=crop&q=80',
+        title: 'เอฟเฟกต์การระเบิดบล็อก'
+      }
     ],
     promptPayNumber: '081-999-8877',
     status: 'approved',
@@ -110,11 +153,29 @@ export const INITIAL_GAMES = [
     hasPcDownload: true,
     webglUrl: 'https://swoop.seromi.net/',
     downloadUrl: 'https://github.com/seromi/swoop/archive/refs/heads/master.zip',
-    trailerUrl: 'https://www.youtube.com/embed/kJQP7kiw5Fk?autoplay=0&mute=1',
     thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80',
-    screenshots: [
-      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=1200&auto=format&fit=crop&q=80'
+    mediaGallery: [
+      {
+        id: 'm1',
+        type: 'video',
+        url: 'https://www.youtube.com/embed/kJQP7kiw5Fk?autoplay=1&mute=1',
+        thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&auto=format&fit=crop&q=80',
+        title: 'วิดีโอเที่ยวบินสาธิตเกาะลอยฟ้า'
+      },
+      {
+        id: 'm2',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
+        thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&auto=format&fit=crop&q=80',
+        title: 'เครื่องบินเรโทรไซเบอร์ 3D'
+      },
+      {
+        id: 'm3',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=1200&auto=format&fit=crop&q=80',
+        thumbnail: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=400&auto=format&fit=crop&q=80',
+        title: 'วิหารลอยฟ้ายามพระอาทิตย์ตก'
+      }
     ],
     promptPayNumber: '095-444-3322',
     status: 'approved',
@@ -150,13 +211,25 @@ export const INITIAL_GAMES = [
     downloadCount: 940,
     downloadSize: '85 MB',
     hasWebgl: true,
-    hasPcDownload: false, // เล่นเว็บเท่านั้น
+    hasPcDownload: true,
     webglUrl: 'https://play2048.co/',
     downloadUrl: '#',
-    trailerUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1',
     thumbnail: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80',
-    screenshots: [
-      'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&auto=format&fit=crop&q=80'
+    mediaGallery: [
+      {
+        id: 'm1',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&auto=format&fit=crop&q=80',
+        thumbnail: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&auto=format&fit=crop&q=80',
+        title: 'ภาพคอนเซปต์ซามูไรอยุธยา 2099'
+      },
+      {
+        id: 'm2',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=1200&auto=format&fit=crop&q=80',
+        thumbnail: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=400&auto=format&fit=crop&q=80',
+        title: 'ฉากเมืองโบราณนีออน'
+      }
     ],
     promptPayNumber: '089-765-4321',
     status: 'approved',
@@ -167,82 +240,6 @@ export const INITIAL_GAMES = [
       status: 'Clean',
       details: 'ผ่านเกณฑ์ความปลอดภัย Godot Web Export',
       scannedAt: '2026-11-01 11:00'
-    },
-    reviews: [],
-    bugReports: []
-  },
-  {
-    id: 'game-5',
-    title: 'Krasue: The Night Flight (Alpha Build)',
-    slug: 'krasue-night-flight-alpha',
-    tagline: 'เกมหลบหลีกเอาตัวรอดกระสือสไตล์พิกเซลอาร์ต WebGL',
-    description: 'เกมที่ส่งเข้ามาล่าสุดจากสตูดิโอ GhostByte รอการตรวจสอบจากแอดมิน IndieThai Hub ควบคุมดวงไฟกระสือหลบสิ่งกีดขวางและแสงไฟชาวบ้านในยามราตรี',
-    developer: 'GhostByte Indie Dev',
-    developerId: 'usr-dev-4',
-    category: 'Horror',
-    engine: 'Godot HTML5',
-    version: 'v0.3.0',
-    rating: 0,
-    ratingCount: 0,
-    playCount: 140,
-    downloadCount: 30,
-    downloadSize: '35 MB',
-    hasWebgl: true,
-    hasPcDownload: true,
-    webglUrl: 'https://hextris.io/',
-    downloadUrl: '#',
-    trailerUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1',
-    thumbnail: 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=800&auto=format&fit=crop&q=80',
-    screenshots: [
-      'https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=1200&auto=format&fit=crop&q=80'
-    ],
-    promptPayNumber: '090-111-2233',
-    status: 'pending', // สถานะรอตรวจโดย Admin
-    createdAt: '2026-11-05',
-    tags: ['Pending Review', 'Thai Myth', 'Horror', 'Pixel Art'],
-    featured: false,
-    securityScan: {
-      status: 'Clean',
-      details: 'Sandbox Scan: ผ่านเกณฑ์ความปลอดภัยเบื้องต้น, ไฟล์ manifest.json ถูกต้อง',
-      scannedAt: '2026-11-05 16:45'
-    },
-    reviews: [],
-    bugReports: []
-  },
-  {
-    id: 'game-6',
-    title: 'Bangkok Drift 2088',
-    slug: 'bangkok-drift-2088',
-    tagline: 'ซิ่งรถตุ๊กตุ๊กติดไอพ่นดริฟต์บนทางด่วนลอยฟ้า',
-    description: 'เกมแข่งรถ WebGL จำลองทางด่วนกรุงเทพฯ ยุคอนาคต รอการตรวจสอบสิทธิ์และโค้ดความปลอดภัยก่อนเปิดให้ผู้เล่นทั่วไปเข้าทดสอบ',
-    developer: 'SiamPixel Studio',
-    developerId: 'usr-dev-1',
-    category: 'Racing',
-    engine: 'Unity WebGL',
-    version: 'v0.5.0-beta',
-    rating: 0,
-    ratingCount: 0,
-    playCount: 45,
-    downloadCount: 12,
-    downloadSize: '180 MB',
-    hasWebgl: true,
-    hasPcDownload: true,
-    webglUrl: 'https://swoop.seromi.net/',
-    downloadUrl: '#',
-    trailerUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1',
-    thumbnail: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=800&auto=format&fit=crop&q=80',
-    screenshots: [
-      'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=1200&auto=format&fit=crop&q=80'
-    ],
-    promptPayNumber: '089-765-4321',
-    status: 'pending', // สถานะรอตรวจโดย Admin
-    createdAt: '2026-11-06',
-    tags: ['Pending Review', 'Racing', 'Unity 3D', 'Sci-Fi'],
-    featured: false,
-    securityScan: {
-      status: 'Clean',
-      details: 'Sandbox Scan: ไม่พบสคริปต์ภายนอกที่ไม่ได้รับอนุญาต, WebGL Binary สมบูรณ์',
-      scannedAt: '2026-11-06 10:15'
     },
     reviews: [],
     bugReports: []
@@ -270,7 +267,7 @@ export const MOCK_USERS = {
     email: 'dev@indiethai.hub',
     role: 'developer',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-    tokenBalance: 150, // Developer เริ่มต้น 150 Tokens ตามที่โจทย์ระบุ
+    tokenBalance: 150,
     studioName: 'SiamPixel Studio',
     promptPayNumber: '089-765-4321',
     bio: 'สตูดิโอเกมอินดี้ไทย มุ่งมั่นพัฒนาเกม WebGL คุณภาพสูงสู่ระดับสากล',
@@ -340,18 +337,6 @@ export const MOCK_USERS_LIST = [
     gamesPublished: 1,
     isBanned: false,
     registeredAt: '2026-09-28'
-  },
-  {
-    id: 'usr-dev-4',
-    username: 'GhostByteTH',
-    name: 'GhostByte Indie Dev',
-    email: 'ghostbyte@indie.th',
-    role: 'developer',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
-    tokenBalance: 10,
-    gamesPublished: 1,
-    isBanned: false,
-    registeredAt: '2026-10-12'
   },
   {
     id: 'usr-admin-1',

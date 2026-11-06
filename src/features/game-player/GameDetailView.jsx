@@ -1,10 +1,10 @@
 /**
  * GameDetailView.jsx
  * หน้ารายละเอียดเกมและ Media Player สไตล์ Steam
- * - มีสวิตช์สลับดูวิดีโอตัวอย่าง (Trailer) กับการรันเกม WebGL ใน iframe (16:9 Sandbox)
- * - แถบปุ่ม Action แยกเด็ดขาด: ปุ่มสีเขียว "เล่นบนเว็บทันที (WebGL)" และปุ่มสีฟ้า "ดาวน์โหลดไฟล์ PC (.ZIP)"
- * - ระบบรีวิวให้คะแนนดาว พร้อมแท็บแยก "แจ้งบั๊ก (Bug Report)" ถึงผู้พัฒนา
- * - โมดอลจำลอง QR PromptPay โดเนทสนับสนุนค่ากาแฟ (20, 50, 100 บาท)
+ * - ปรับปรุงใหม่ตามคำขอ: เอา WebGL ออกจากกรอบบน เพราะมีปุ่ม "เล่นบนเว็บทันที (WebGL)" ด้านล่างแล้ว
+ * - รวมรูปภาพและวิดีโอตัวอย่างไว้ใน Media Gallery เดียวกัน สลับดูผ่าน Thumbnail Slider ได้ทันที
+ * - แถบ Action Bar ชัดเจน: ปุ่มสีเขียว "เล่นบนเว็บทันที (WebGL)" และปุ่มสีฟ้า "ดาวน์โหลดไฟล์ PC (.ZIP)"
+ * - ระบบรีวิวให้คะแนนดาว พร้อมแท็บแจ้งบั๊กถึง Dev และโมดอลโดเนท PromptPay
  */
 
 import React, { useState } from 'react';
@@ -16,7 +16,6 @@ import {
   Star, 
   Video, 
   Gamepad2, 
-  Image as ImageIcon, 
   ShieldCheck, 
   Bug, 
   MessageSquare, 
@@ -24,11 +23,12 @@ import {
   QrCode, 
   Coffee, 
   X, 
-  ExternalLink,
-  Laptop,
-  Globe,
+  Laptop, 
+  Globe, 
   Send,
-  AlertCircle
+  Layers,
+  ChevronRight,
+  Eye
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { useAuth } from '../../context/AuthContext';
@@ -43,8 +43,37 @@ export const GameDetailView = ({ game }) => {
   } = useGame();
   const { currentUser } = useAuth();
 
-  // ตัวสลับโหมด Media Player: 'webgl' | 'trailer' | 'screenshots'
-  const [activeMediaTab, setActiveMediaTab] = useState(game.hasWebgl ? 'webgl' : 'trailer');
+  // รวบรวม Media Gallery (วิดีโอและรูปภาพรวมกัน ไม่แยกให้รกตา)
+  const mediaItems = React.useMemo(() => {
+    if (game.mediaGallery && game.mediaGallery.length > 0) {
+      return game.mediaGallery;
+    }
+    // Fallback ถ้าไม่มี mediaGallery ในข้อมูลเดิม
+    const list = [];
+    if (game.trailerUrl) {
+      list.push({
+        id: 'fallback-vid',
+        type: 'video',
+        url: game.trailerUrl,
+        thumbnail: game.thumbnail,
+        title: 'วิดีโอตัวอย่างเกม (Trailer)'
+      });
+    }
+    (game.screenshots || [game.thumbnail]).forEach((imgUrl, i) => {
+      list.push({
+        id: `fallback-img-${i}`,
+        type: 'image',
+        url: imgUrl,
+        thumbnail: imgUrl,
+        title: `ภาพตัวอย่าง ${i + 1}`
+      });
+    });
+    return list;
+  }, [game]);
+
+  // สื่อปัจจุบันที่กำลังแสดงผลในจอหลัก
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+  const activeMedia = mediaItems[selectedMediaIndex] || mediaItems[0];
 
   // ตัวสลับแท็บคอมเมนต์: 'reviews' | 'bugs'
   const [activeCommunityTab, setActiveCommunityTab] = useState('reviews');
@@ -75,7 +104,7 @@ export const GameDetailView = ({ game }) => {
     const res = addReview(game.id, {
       rating: newRating,
       comment: reviewComment,
-      user: currentUser.name
+      user: currentUser?.name || 'Anonymous'
     });
 
     setReviewNotice(res.message);
@@ -91,7 +120,7 @@ export const GameDetailView = ({ game }) => {
     const res = addBugReport(game.id, {
       title: bugTitle,
       description: bugDescription,
-      user: currentUser.name
+      user: currentUser?.name || 'Anonymous'
     });
 
     setBugNotice(res.message);
@@ -103,8 +132,11 @@ export const GameDetailView = ({ game }) => {
   // ดาวน์โหลดไฟล์ PC
   const handleDownloadPc = () => {
     downloadPcGame(game.id);
+    if (game.downloadUrl && game.downloadUrl !== '#') {
+      window.open(game.downloadUrl, '_blank');
+    }
     setDownloadSuccessNotice(true);
-    setTimeout(() => setDownloadSuccessNotice(false), 3000);
+    setTimeout(() => setDownloadSuccessNotice(false), 3500);
   };
 
   // กดยืนยันโดเนท PromptPay
@@ -153,81 +185,71 @@ export const GameDetailView = ({ game }) => {
       {/* Main Steam-style Media & Sidebar Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Left 2 Cols: 16:9 Media Sandbox Player */}
+        {/* Left 2 Cols: Media Showcase (วิดีโอและรูปภาพรวมกัน สไตล์ Steam แท้ๆ) */}
         <div className="lg:col-span-2 space-y-4">
           
-          {/* Media Mode Switcher Tabs */}
-          <div className="flex items-center gap-2 border-b border-gray-800 pb-3">
-            {game.hasWebgl && (
+          {/* Main Display Viewer (16:9) */}
+          <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-indigo-500/30 shadow-2xl">
+            {activeMedia?.type === 'video' ? (
+              <iframe
+                src={activeMedia.url}
+                title={activeMedia.title || `${game.title} Trailer`}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              />
+            ) : (
+              <img
+                src={activeMedia?.url || game.thumbnail}
+                alt={activeMedia?.title || game.title}
+                className="w-full h-full object-cover animate-in fade-in duration-300"
+              />
+            )}
+
+            {/* Media Title Label overlay */}
+            <div className="absolute top-3 left-3 px-3 py-1 rounded-lg bg-black/75 backdrop-blur-md text-[11px] font-semibold text-gray-200 border border-white/10 flex items-center gap-1.5">
+              {activeMedia?.type === 'video' ? (
+                <>
+                  <Video className="w-3.5 h-3.5 text-rose-400" />
+                  <span>{activeMedia.title || 'วิดีโอตัวอย่าง'}</span>
+                </>
+              ) : (
+                <>
+                  <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>{activeMedia?.title || 'ภาพสกรีนช็อต'}</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Unified Thumbnail Carousel (รวมรูปและวิดีโอไว้ที่เดียวกัน) */}
+          <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+            {mediaItems.map((item, idx) => (
               <button
-                onClick={() => setActiveMediaTab('webgl')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                  activeMediaTab === 'webgl'
-                    ? 'bg-emerald-500 text-gray-950 shadow-md shadow-emerald-500/20'
-                    : 'bg-[#111827] text-gray-400 hover:text-white border border-gray-800'
+                key={item.id || idx}
+                onClick={() => setSelectedMediaIndex(idx)}
+                className={`relative aspect-video w-28 shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                  selectedMediaIndex === idx
+                    ? 'border-indigo-500 ring-2 ring-indigo-500/40 scale-105'
+                    : 'border-gray-800 opacity-60 hover:opacity-100 hover:border-gray-600'
                 }`}
               >
-                <Gamepad2 className="w-4 h-4" />
-                <span>🕹️ รันเกม WebGL ใน iframe (16:9 Sandbox)</span>
+                <img
+                  src={item.thumbnail || item.url}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                />
+                {item.type === 'video' && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <div className="p-1 rounded-full bg-rose-600 text-white">
+                      <Play className="w-3.5 h-3.5 fill-white" />
+                    </div>
+                  </div>
+                )}
               </button>
-            )}
-
-            <button
-              onClick={() => setActiveMediaTab('trailer')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                activeMediaTab === 'trailer'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                  : 'bg-[#111827] text-gray-400 hover:text-white border border-gray-800'
-              }`}
-            >
-              <Video className="w-4 h-4" />
-              <span>🎬 วิดีโอตัวอย่าง (Trailer)</span>
-            </button>
-
-            <button
-              onClick={() => setActiveMediaTab('screenshots')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                activeMediaTab === 'screenshots'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                  : 'bg-[#111827] text-gray-400 hover:text-white border border-gray-800'
-              }`}
-            >
-              <ImageIcon className="w-4 h-4" />
-              <span>🖼️ ภาพตัวอย่าง</span>
-            </button>
+            ))}
           </div>
 
-          {/* 16:9 Sandbox Frame */}
-          <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-indigo-500/30 shadow-2xl">
-            {activeMediaTab === 'webgl' && game.hasWebgl && (
-              <iframe
-                src={game.webglUrl}
-                title={game.title}
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-              />
-            )}
-
-            {activeMediaTab === 'trailer' && (
-              <iframe
-                src={game.trailerUrl}
-                title={`${game.title} Trailer`}
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-              />
-            )}
-
-            {activeMediaTab === 'screenshots' && (
-              <img
-                src={game.screenshots?.[0] || game.thumbnail}
-                alt={game.title}
-                className="w-full h-full object-cover"
-              />
-            )}
-          </div>
-
-          {/* Action Bar (เด็ดขาด: ปุ่มสีเขียว WebGL และปุ่มสีฟ้า PC) */}
+          {/* Dedicated Action Bar (เด็ดขาด: ปุ่มสีเขียว WebGL และปุ่มสีฟ้า PC) */}
           <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 font-mono">
               เลือกวิธีการเล่นเกม (Launch Options)
@@ -238,10 +260,7 @@ export const GameDetailView = ({ game }) => {
               {/* Green Action: เล่นบนเว็บทันที (WebGL) */}
               <button
                 disabled={!game.hasWebgl}
-                onClick={() => {
-                  setActiveMediaTab('webgl');
-                  openGamePlayer(game);
-                }}
+                onClick={() => openGamePlayer(game)}
                 className={`flex items-center justify-between p-4 rounded-xl font-bold transition-all shadow-lg cursor-pointer ${
                   game.hasWebgl
                     ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-gray-950 shadow-emerald-500/20 active:scale-95'
@@ -254,7 +273,7 @@ export const GameDetailView = ({ game }) => {
                   </div>
                   <div>
                     <span className="text-sm font-extrabold block">เล่นบนเว็บทันที (WebGL)</span>
-                    <span className="text-[11px] opacity-80 block font-normal">ไม่ต้องโหลด รันได้ใน 1 วินาที</span>
+                    <span className="text-[11px] opacity-80 block font-normal">ไม่ต้องโหลด รันได้ใน 1 วินาที 60FPS</span>
                   </div>
                 </div>
                 <Play className="w-5 h-5 fill-current" />
@@ -291,7 +310,7 @@ export const GameDetailView = ({ game }) => {
               <div className="p-3 rounded-xl bg-sky-950/60 border border-sky-500/40 text-sky-300 text-xs flex items-center justify-between animate-in fade-in">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-sky-400" />
-                  <span>เริ่มการดาวน์โหลดไฟล์ {game.title} .zip (ยอดดาวน์โหลดบันทึกเรียบร้อย)</span>
+                  <span>เริ่มการดาวน์โหลดไฟล์ {game.title} .zip สำเร็จ!</span>
                 </div>
                 <span className="font-mono text-[11px] text-sky-400">100% Ready</span>
               </div>
@@ -337,18 +356,18 @@ export const GameDetailView = ({ game }) => {
                 <span className="text-gray-400">คะแนนรีวิว:</span>
                 <span className="text-amber-400 font-bold flex items-center gap-1">
                   <Star className="w-3.5 h-3.5 fill-amber-400" />
-                  {game.rating > 0 ? `${game.rating} (${game.ratingCount} รีวิว)` : 'ยังไม่มีรีวิว'}
+                  {game.rating > 0 ? `${game.rating} (${game.ratingCount || 0} รีวิว)` : 'ยังไม่มีรีวิว'}
                 </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-400">ยอดการเล่นออนไลน์:</span>
-                <span className="text-gray-200 font-mono">{game.playCount.toLocaleString()} ครั้ง</span>
+                <span className="text-gray-200 font-mono">{(game.playCount || 0).toLocaleString()} ครั้ง</span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-400">ยอดดาวน์โหลด PC:</span>
-                <span className="text-sky-300 font-mono">{game.downloadCount.toLocaleString()} ครั้ง</span>
+                <span className="text-sky-300 font-mono">{(game.downloadCount || 0).toLocaleString()} ครั้ง</span>
               </div>
             </div>
 
@@ -562,9 +581,15 @@ export const GameDetailView = ({ game }) => {
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                           bug.status === 'fixed'
                             ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            : bug.status === 'investigating'
+                            ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
                             : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                         }`}>
-                          {bug.status === 'fixed' ? 'แก้ไขแล้ว' : 'กำลังตรวจสอบ'}
+                          {bug.status === 'fixed'
+                            ? '✅ แก้ไขแล้ว'
+                            : bug.status === 'investigating'
+                            ? '🔍 กำลังตรวจสอบ'
+                            : '⏳ รอตรวจสอบ'}
                         </span>
                       </div>
                       <span className="text-gray-500 font-mono text-[10px]">{bug.date}</span>
@@ -659,4 +684,3 @@ export const GameDetailView = ({ game }) => {
     </div>
   );
 };
-
