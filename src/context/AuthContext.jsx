@@ -1,7 +1,7 @@
 /**
  * AuthContext.jsx
- * จัดการข้อมูลผู้ใช้ปัจจุบัน การสลับ Role (Player, Developer, Admin) ยอดเหรียญ Token
- * และฟังก์ชันการจัดการผู้ใช้สำหรับฝั่ง Admin Backoffice
+ * จัดการข้อมูลผู้ใช้, ระบบเข้าสู่ระบบ (Login), สมัครสมาชิก (Register),
+ * สลับ Role, ยอดเหรียญ Token และฟังก์ชันสำหรับ Admin
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -10,79 +10,153 @@ import { MOCK_USERS, MOCK_USERS_LIST } from '../data/mockData';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // เก็บ State ข้อมูลผู้ใช้จำลองตาม Role
-  const [usersState, setUsersState] = useState(() => {
-    const saved = localStorage.getItem('indiethai_users');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved users, resetting...', e);
-      }
-    }
-    return MOCK_USERS;
-  });
-
-  // รายชื่อผู้ใช้ทั้งหมดในระบบสำหรับหน้า Admin User Management
+  // รายชื่อผู้ใช้ทั้งหมดในระบบ
   const [usersList, setUsersList] = useState(() => {
     const saved = localStorage.getItem('indiethai_users_list');
     if (saved) {
       try {
         return JSON.parse(saved);
       } catch (e) {
-        console.error('Failed to parse saved users list, resetting...', e);
+        console.error('Failed to parse saved users list', e);
       }
     }
     return MOCK_USERS_LIST;
   });
 
-  // Role ปัจจุบัน: 'player' | 'developer' | 'admin'
-  const [currentRole, setCurrentRole] = useState(() => {
-    return localStorage.getItem('indiethai_current_role') || 'player';
+  // ข้อมูลผู้ใช้ปัจจุบันที่ล็อกอินอยู่
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('indiethai_current_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse current user', e);
+      }
+    }
+    return MOCK_USERS.developer; // ค่าเริ่มต้นให้เป็น Developer เพื่อความสะดวกในการทดสอบ
   });
 
-  // บันทึกลง LocalStorage
-  useEffect(() => {
-    localStorage.setItem('indiethai_users', JSON.stringify(usersState));
-  }, [usersState]);
+  // Role ปัจจุบัน
+  const currentRole = currentUser?.role || 'player';
 
+  // สถานะล็อกอิน
+  const isAuthenticated = Boolean(currentUser);
+
+  // ควบคุมการเปิดปิด Auth Modal (Login / Register)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState('login'); // 'login' | 'register'
+
+  // บันทึกลง LocalStorage
   useEffect(() => {
     localStorage.setItem('indiethai_users_list', JSON.stringify(usersList));
   }, [usersList]);
 
   useEffect(() => {
-    localStorage.setItem('indiethai_current_role', currentRole);
-  }, [currentRole]);
+    if (currentUser) {
+      localStorage.setItem('indiethai_current_user', JSON.stringify(currentUser));
+      localStorage.setItem('indiethai_current_role', currentUser.role);
+    } else {
+      localStorage.removeItem('indiethai_current_user');
+    }
+  }, [currentUser]);
 
-  // ดึงข้อมูล User ประจำ Role นั้นๆ
-  const currentUser = usersState[currentRole] || usersState.player;
+  /**
+   * ฟังก์ชันเข้าสู่ระบบ (Login)
+   */
+  const login = (email, password) => {
+    const user = usersList.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase()
+    );
 
-  // ฟังก์ชันสลับ Role
+    if (!user) {
+      return { success: false, message: 'ไม่พบบัญชีอีเมลนี้ในระบบ' };
+    }
+
+    if (user.isBanned) {
+      return { success: false, message: 'บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อแอดมิน' };
+    }
+
+    // ในระบบจำลอง ยอมรับรหัสผ่านที่กรอก
+    setCurrentUser(user);
+    setIsAuthModalOpen(false);
+    return { success: true, message: `ยินดีต้อนรับกลับมา, ${user.name}!`, user };
+  };
+
+  /**
+   * ฟังก์ชันสมัครสมาชิกใหม่ (Register)
+   */
+  const register = ({ name, username, email, password, role = 'player', studioName, promptPayNumber }) => {
+    // เช็คอีเมลซ้ำ
+    const existing = usersList.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    if (existing) {
+      return { success: false, message: 'อีเมลนี้มีผู้ใช้งานแล้วในระบบ' };
+    }
+
+    const newUser = {
+      id: `usr-${Date.now()}`,
+      username: username || email.split('@')[0],
+      name,
+      email,
+      role, // 'player' หรือ 'developer'
+      avatar:
+        role === 'developer'
+          ? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
+          : 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
+      tokenBalance: role === 'developer' ? 150 : 0, // Dev ได้เหรียญเริ่มต้น 150 Tokens
+      studioName: studioName || (role === 'developer' ? `${name} Studio` : ''),
+      promptPayNumber: promptPayNumber || '089-000-0000',
+      bio: role === 'developer' ? 'นักพัฒนาเกมอินดี้หน้าใหม่ไฟแรง' : 'ผู้เล่นเกมอินดี้',
+      isBanned: false,
+      registeredAt: new Date().toISOString().split('T')[0]
+    };
+
+    setUsersList((prev) => [newUser, ...prev]);
+    setCurrentUser(newUser);
+    setIsAuthModalOpen(false);
+
+    return {
+      success: true,
+      message: `สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ IndieThai Hub ${role === 'developer' ? '(ได้รับ 150 Tokens สำหรับลงเกม)' : ''}`,
+      user: newUser
+    };
+  };
+
+  /**
+   * ฟังก์ชันออกจากระบบ (Logout)
+   */
+  const logout = () => {
+    // รีเซ็ตกลับเป็นผู้เล่น Guest
+    setCurrentUser(MOCK_USERS.player);
+    return { success: true, message: 'ออกจากระบบเรียบร้อยแล้ว' };
+  };
+
+  /**
+   * ฟังก์ชัน Quick Login สำหรับ Demo (สลับเป็น Player, Dev, Admin ได้ทันที)
+   */
   const switchRole = (newRole) => {
-    if (['player', 'developer', 'admin'].includes(newRole)) {
-      setCurrentRole(newRole);
+    if (MOCK_USERS[newRole]) {
+      // ค้นหาข้อมูลล่าสุดใน usersList
+      const userInList = usersList.find((u) => u.role === newRole) || MOCK_USERS[newRole];
+      setCurrentUser(userInList);
     }
   };
 
-  // จัดการยอดเหรียญ tokenBalance (หักหรือเพิ่ม)
+  /**
+   * อัปเดตยอด Token ของผู้ใช้ปัจจุบัน
+   */
   const updateTokenBalance = (delta, targetRole = currentRole) => {
-    setUsersState((prev) => {
-      const user = prev[targetRole];
-      if (!user) return prev;
-      const updatedBalance = Math.max(0, (user.tokenBalance || 0) + delta);
+    setCurrentUser((prev) => {
+      if (!prev) return prev;
+      const updatedBalance = Math.max(0, (prev.tokenBalance || 0) + delta);
       return {
         ...prev,
-        [targetRole]: {
-          ...user,
-          tokenBalance: updatedBalance
-        }
+        tokenBalance: updatedBalance
       };
     });
 
-    // อัปเดตใน usersList ด้วย
     setUsersList((prev) =>
       prev.map((u) => {
-        if (u.role === targetRole || (targetRole === 'developer' && u.id === 'usr-dev-1')) {
+        if (u.id === currentUser?.id || (targetRole === 'developer' && u.role === 'developer')) {
           return {
             ...u,
             tokenBalance: Math.max(0, (u.tokenBalance || 0) + delta)
@@ -93,7 +167,9 @@ export const AuthProvider = ({ children }) => {
     );
   };
 
-  // ฟังก์ชันจำลองการเติม Token สำหรับ Developer
+  /**
+   * เติมเหรียญจำลอง (+100 Tokens)
+   */
   const topUpTokens = (amount = 100) => {
     updateTokenBalance(amount, 'developer');
     return {
@@ -103,30 +179,27 @@ export const AuthProvider = ({ children }) => {
     };
   };
 
-  // ฟังก์ชันสำหรับ Admin: ปรับยอดเหรียญผู้ใช้
+  /**
+   * ฟังก์ชันสำหรับ Admin: ปรับยอด Token
+   */
   const adminAdjustUserToken = (userId, newBalance) => {
     setUsersList((prev) =>
       prev.map((u) => (u.id === userId ? { ...u, tokenBalance: Math.max(0, Number(newBalance)) } : u))
     );
 
-    // หากเป็น dev ตัวหลัก
-    if (userId === 'usr-dev-1') {
-      setUsersState((prev) => ({
+    if (currentUser?.id === userId) {
+      setCurrentUser((prev) => ({
         ...prev,
-        developer: {
-          ...prev.developer,
-          tokenBalance: Math.max(0, Number(newBalance))
-        }
+        tokenBalance: Math.max(0, Number(newBalance))
       }));
     }
 
-    return {
-      success: true,
-      message: `ปรับยอด Token ของผู้ใช้เรียบร้อยแล้ว`
-    };
+    return { success: true, message: 'ปรับยอด Token ของผู้ใช้เรียบร้อยแล้ว' };
   };
 
-  // ฟังก์ชันสำหรับ Admin: สลับสถานะ แบน / ยกเลิกแบน
+  /**
+   * ฟังก์ชันสำหรับ Admin: สลับสถานะ แบน / ปลดแบน
+   */
   const adminToggleBanUser = (userId) => {
     let updatedStatus = false;
     setUsersList((prev) =>
@@ -138,33 +211,41 @@ export const AuthProvider = ({ children }) => {
         return u;
       })
     );
+
     return {
       success: true,
-      message: updatedStatus ? `ระงับบัญชีผู้ใช้เรียบร้อยแล้ว` : `ปลดระงับบัญชีผู้ใช้เรียบร้อยแล้ว`
+      message: updatedStatus ? 'ระงับบัญชีผู้ใช้เรียบร้อยแล้ว' : 'ปลดระงับบัญชีผู้ใช้เรียบร้อยแล้ว'
     };
   };
 
-  // รีเซ็ตข้อมูลกลับสู่ค่าเริ่มต้น
-  const resetToDefaultUsers = () => {
-    setUsersState(MOCK_USERS);
-    setUsersList(MOCK_USERS_LIST);
-    localStorage.removeItem('indiethai_users');
-    localStorage.removeItem('indiethai_users_list');
+  const openAuthModal = (mode = 'login') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
   };
 
   const value = {
     currentUser,
     currentRole,
-    usersState,
+    isAuthenticated,
     usersList,
-    tokenBalance: currentUser.tokenBalance || 0,
-    devTokenBalance: usersState.developer?.tokenBalance || 0,
+    tokenBalance: currentUser?.tokenBalance || 0,
+    devTokenBalance: currentUser?.role === 'developer' ? currentUser?.tokenBalance : 150,
+    isAuthModalOpen,
+    authModalMode,
+    openAuthModal,
+    closeAuthModal,
+    login,
+    register,
+    logout,
     switchRole,
     updateTokenBalance,
     topUpTokens,
     adminAdjustUserToken,
-    adminToggleBanUser,
-    resetToDefaultUsers
+    adminToggleBanUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

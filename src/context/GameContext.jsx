@@ -1,7 +1,9 @@
 /**
  * GameContext.jsx
  * ศูนย์รวม State และฟังก์ชันสำหรับจัดการข้อมูลเกมอินดี้ WebGL/PC
- * รองรับการค้นหา, กรอง Engine, อนุมัติ/ปฏิเสธเกม, หักเหรียญ Token, ระบบรีวิว, และแจ้งบั๊ก
+ * - จัดการคลังเกม, กรอง Engine, อนุมัติ/ปฏิเสธเกม, หักเหรียญ Token
+ * - จัดการรายงานบั๊ก (Bug Tracking): ให้ Dev ตรวจสอบและอัปเดตสถานะบั๊กเป็น 'fixed' หรือ 'investigating'
+ * - ระบบ Wishlist / บันทึกเกมโปรด
  */
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
@@ -26,10 +28,17 @@ export const GameProvider = ({ children }) => {
     return INITIAL_GAMES;
   });
 
-  // ตัวกรอง (Search, Engine, Category)
+  // รายการเกมที่กดบันทึกเป็นรายการโปรด (Wishlist)
+  const [wishlist, setWishlist] = useState(() => {
+    const saved = localStorage.getItem('indiethai_wishlist');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // ตัวกรอง (Search, Engine, Category, Sort)
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEngine, setSelectedEngine] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortBy, setSortBy] = useState('popular'); // 'popular' | 'rating' | 'newest'
 
   // จัดการเกมที่กำลังเปิดดูหน้ารายละเอียด GameDetailView สไตล์ Steam
   const [selectedGameForDetail, setSelectedGameForDetail] = useState(null);
@@ -42,7 +51,11 @@ export const GameProvider = ({ children }) => {
     localStorage.setItem('indiethai_games', JSON.stringify(games));
   }, [games]);
 
-  // ซิงค์ selectedGameForDetail หากข้อมูลใน games เปลี่ยนแปลง
+  useEffect(() => {
+    localStorage.setItem('indiethai_wishlist', JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  // ซิงค์ selectedGameForDetail หากข้อมูลใน games มีการอัปเดต
   useEffect(() => {
     if (selectedGameForDetail) {
       const updated = games.find((g) => g.id === selectedGameForDetail.id);
@@ -52,12 +65,12 @@ export const GameProvider = ({ children }) => {
     }
   }, [games]);
 
-  // เกมที่ได้รับอนุมัติแล้ว (สำหรับหน้า Storefront)
+  // เกมที่ได้รับอนุมัติแล้ว
   const approvedGames = useMemo(() => {
     return games.filter((g) => g.status === 'approved');
   }, [games]);
 
-  // เกมที่รอตรวจสอบความปลอดภัย (สำหรับหน้า Admin Moderation Queue)
+  // เกมที่รอตรวจสอบความปลอดภัย (Moderation Queue)
   const pendingGames = useMemo(() => {
     return games.filter((g) => g.status === 'pending');
   }, [games]);
@@ -65,13 +78,16 @@ export const GameProvider = ({ children }) => {
   // เกมในสังกัดของสตูดิโอ Developer ปัจจุบัน
   const myDeveloperGames = useMemo(() => {
     return games.filter(
-      (g) => g.developerId === currentUser?.id || g.developer === currentUser?.studioName
+      (g) =>
+        g.developerId === currentUser?.id ||
+        g.developer === currentUser?.studioName ||
+        (currentUser?.role === 'developer' && (g.developerId === 'usr-dev-1' || g.developer.includes('SiamPixel')))
     );
   }, [games, currentUser]);
 
-  // กรองเกมที่อนุมัติแล้วตาม Search, Engine และ Category
+  // กรองและจัดเรียงเกมที่อนุมัติแล้ว
   const filteredApprovedGames = useMemo(() => {
-    return approvedGames.filter((game) => {
+    let result = approvedGames.filter((game) => {
       const matchSearch =
         game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         game.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -83,15 +99,65 @@ export const GameProvider = ({ children }) => {
 
       return matchSearch && matchEngine && matchCategory;
     });
-  }, [approvedGames, searchQuery, selectedEngine, selectedCategory]);
+
+    // เรียงลำดับ
+    if (sortBy === 'rating') {
+      result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if (sortBy === 'newest') {
+      result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else {
+      // popular
+      result.sort((a, b) => (b.playCount || 0) - (a.playCount || 0));
+    }
+
+    return result;
+  }, [approvedGames, searchQuery, selectedEngine, selectedCategory, sortBy]);
 
   /**
-   * ฟังก์ชันลงเกมใหม่สำหรับ Developer:
-   * - หัก 50 Tokens
-   * - ส่งเข้าคิวรอตรวจของ Admin ทันที
+   * สลับสถานะ Wishlist
+   */
+  const toggleWishlist = (gameId) => {
+    setWishlist((prev) => {
+      const isExist = prev.includes(gameId);
+      if (isExist) {
+        return prev.filter((id) => id !== gameId);
+      } else {
+        return [...prev, gameId];
+      }
+    });
+  };
+
+  /**
+   * ฟังก์ชันสำหรับ Developer: อัปเดตสถานะของบั๊กที่ถูกรายงาน (Bug Tracking)
+   * เช่น จาก 'pending' -> 'investigating' -> 'fixed'
+   */
+  const updateBugStatus = (gameId, bugId, newStatus) => {
+    setGames((prev) =>
+      prev.map((g) => {
+        if (g.id === gameId) {
+          const updatedBugs = (g.bugReports || []).map((b) =>
+            b.id === bugId ? { ...b, status: newStatus } : b
+          );
+          return {
+            ...g,
+            bugReports: updatedBugs
+          };
+        }
+        return g;
+      })
+    );
+
+    return {
+      success: true,
+      message: `อัปเดตสถานะบั๊กเป็น "${newStatus === 'fixed' ? 'แก้ไขแล้ว' : newStatus === 'investigating' ? 'กำลังตรวจสอบ' : 'รอดำเนินการ'}" เรียบร้อยแล้ว`
+    };
+  };
+
+  /**
+   * ฟังก์ชันลงเกมใหม่สำหรับ Developer (หัก 50 Tokens)
    */
   const submitNewGame = (gameData) => {
-    const cost = TOKEN_COST_PER_GAME; // 50 Tokens
+    const cost = TOKEN_COST_PER_GAME;
 
     if (devTokenBalance < cost) {
       return {
@@ -100,10 +166,8 @@ export const GameProvider = ({ children }) => {
       };
     }
 
-    // หัก 50 Tokens จาก Developer
     updateTokenBalance(-cost, 'developer');
 
-    // สร้างข้อมูลเกมใหม่
     const newGame = {
       id: `game-${Date.now()}`,
       title: gameData.title || 'Untitled Thai Indie Game',
@@ -130,11 +194,10 @@ export const GameProvider = ({ children }) => {
         'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80',
       screenshots: [
         gameData.thumbnail ||
-          'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200&auto=format&fit=crop&q=80'
+          'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80'
       ],
       promptPayNumber: gameData.promptPayNumber || currentUser.promptPayNumber || '089-765-4321',
-      status: 'pending', // ส่งเข้าคิวรอตรวจทันที
+      status: 'pending',
       createdAt: new Date().toISOString().split('T')[0],
       tags: gameData.tags || ['Thai Indie', 'WebGL', 'New Release'],
       featured: false,
@@ -151,13 +214,13 @@ export const GameProvider = ({ children }) => {
 
     return {
       success: true,
-      message: `ส่งเกม "${newGame.title}" เข้าคิวตรวจสอบของแอดมินเรียบร้อยแล้ว! (หักค่าธรรมเนียม ${cost} Tokens)`,
+      message: `ส่งเกม "${newGame.title}" เข้าคิวตรวจสอบเรียบร้อยแล้ว! (หักค่าธรรมเนียม ${cost} Tokens)`,
       game: newGame
     };
   };
 
   /**
-   * ฟังก์ชันสำหรับ Admin: อนุมัติเกม (Approve) ขึ้น Storefront ทันที
+   * ฟังก์ชันสำหรับ Admin: อนุมัติเกม
    */
   const approveGame = (gameId) => {
     setGames((prev) =>
@@ -165,12 +228,12 @@ export const GameProvider = ({ children }) => {
     );
     return {
       success: true,
-      message: 'อนุมัติเกมขึ้นสโตร์เรียบร้อยแล้ว! ผู้เล่นสามารถเข้าเล่นและดาวน์โหลดได้ทันที'
+      message: 'อนุมัติเกมขึ้นสโตร์เรียบร้อยแล้ว!'
     };
   };
 
   /**
-   * ฟังก์ชันสำหรับ Admin: ปฏิเสธเกม (Reject)
+   * ฟังก์ชันสำหรับ Admin: ปฏิเสธเกม
    */
   const rejectGame = (gameId, reason = 'ไฟล์ WebGL หรือข้อมูลเกมยังไม่สมบูรณ์') => {
     setGames((prev) =>
@@ -187,7 +250,7 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * ฟังก์ชันสำหรับ Developer: อัปเดตเวอร์ชันของเกม
+   * อัปเดตเวอร์ชันเกม
    */
   const updateGameVersion = (gameId, newVersion) => {
     setGames((prev) =>
@@ -200,7 +263,7 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * ฟังก์ชันจำลองดาวน์โหลดไฟล์ PC (.ZIP)
+   * ดาวน์โหลดไฟล์ PC
    */
   const downloadPcGame = (gameId) => {
     setGames((prev) =>
@@ -209,12 +272,12 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * เพิ่มคะแนนรีวิวจากผู้เล่น
+   * เพิ่มคะแนนรีวิว
    */
   const addReview = (gameId, { rating, comment, user }) => {
     const newReview = {
       id: `rev-${Date.now()}`,
-      user: user || currentUser.name || 'Anonymous Gamer',
+      user: user || currentUser?.name || 'Anonymous Gamer',
       rating: Number(rating),
       comment,
       date: new Date().toISOString().split('T')[0]
@@ -245,15 +308,15 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * ส่งรายงานบั๊ก (Bug Report) ไปยังผู้พัฒนา
+   * แจ้งบั๊ก
    */
   const addBugReport = (gameId, { title, description, user }) => {
     const newBug = {
       id: `bug-${Date.now()}`,
-      user: user || currentUser.name,
+      user: user || currentUser?.name || 'Anonymous',
       title,
       description,
-      status: 'pending',
+      status: 'pending', // 'pending' | 'investigating' | 'fixed'
       date: new Date().toISOString().split('T')[0]
     };
 
@@ -283,11 +346,10 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * เปิด WebGL Sandbox Modal
+   * เล่นเกม WebGL
    */
   const openGamePlayer = (game) => {
     setActivePlayingGame(game);
-    // เพิ่มยอด PlayCount
     setGames((prev) =>
       prev.map((g) => (g.id === game.id ? { ...g, playCount: (g.playCount || 0) + 1 } : g))
     );
@@ -298,7 +360,7 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * คืนค่าข้อมูลเกมเริ่มต้น
+   * รีเซ็ตเกมกลับสู่ค่าเริ่มต้น
    */
   const resetToDefaultGames = () => {
     setGames(INITIAL_GAMES);
@@ -311,12 +373,16 @@ export const GameProvider = ({ children }) => {
     pendingGames,
     myDeveloperGames,
     filteredApprovedGames,
+    wishlist,
+    toggleWishlist,
     searchQuery,
     setSearchQuery,
     selectedEngine,
     setSelectedEngine,
     selectedCategory,
     setSelectedCategory,
+    sortBy,
+    setSortBy,
     selectedGameForDetail,
     setSelectedGameForDetail,
     activePlayingGame,
@@ -326,6 +392,7 @@ export const GameProvider = ({ children }) => {
     approveGame,
     rejectGame,
     updateGameVersion,
+    updateBugStatus,
     downloadPcGame,
     addReview,
     addBugReport,

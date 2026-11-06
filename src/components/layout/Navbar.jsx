@@ -1,3 +1,12 @@
+/**
+ * Navbar.jsx
+ * แถบนำทางด้านบนสไตล์ Cyberpunk
+ * - โลโก้ IndieThai Hub
+ * - ช่องค้นหาเกมและตัวกรอง Engine
+ * - แสดงยอดเหรียญ Token สำหรับ Developer พร้อมปุ่มเติม
+ * - ปุ่มเข้าสู่ระบบ / สมัครสมาชิก หรือโปรไฟล์ผู้ใช้พร้อมปุ่มออกจากระบบ (Logout)
+ */
+
 import React, { useState } from 'react';
 import { 
   Gamepad2, 
@@ -7,23 +16,35 @@ import {
   ShieldCheck, 
   Code2, 
   User, 
-  Sparkles,
   ChevronDown,
-  RefreshCw,
-  Layers
+  LogOut,
+  LogIn,
+  Heart,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { GAME_ENGINES } from '../../data/mockData';
 
 export const Navbar = () => {
-  const { currentUser, currentRole, switchRole, devTokenBalance, topUpTokens } = useAuth();
+  const { 
+    currentUser, 
+    currentRole, 
+    switchRole, 
+    devTokenBalance, 
+    topUpTokens,
+    openAuthModal,
+    logout,
+    isAuthenticated 
+  } = useAuth();
+
   const { 
     searchQuery, 
     setSearchQuery, 
     selectedEngine, 
     setSelectedEngine,
-    pendingGames 
+    pendingGames,
+    wishlist 
   } = useGame();
 
   const [topUpSuccessNotice, setTopUpSuccessNotice] = useState(false);
@@ -156,7 +177,7 @@ export const Navbar = () => {
                 <button
                   onClick={handleQuickTopUp}
                   title="เติมเหรียญจำลองสำหรับ Dev (+100 Tokens)"
-                  className="flex items-center gap-1 ml-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-500 hover:bg-amber-400 text-gray-950 transition-all shadow-md active:scale-95"
+                  className="flex items-center gap-1 ml-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-500 hover:bg-amber-400 text-gray-950 transition-all shadow-md active:scale-95 cursor-pointer"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
                   <span>เติม</span>
@@ -169,35 +190,45 @@ export const Navbar = () => {
               <div className="flex items-center gap-2 bg-rose-950/40 border border-rose-500/40 px-3 py-1.5 rounded-xl">
                 <ShieldCheck className="w-4 h-4 text-rose-400" />
                 <span className="text-xs font-semibold text-rose-300">
-                  รอตรวจสอบ: <strong className="text-rose-200">{pendingGames.length} เกม</strong>
+                  รอตรวจ: <strong className="text-rose-200">{pendingGames.length} เกม</strong>
                 </span>
               </div>
             )}
 
-            {/* User Profile & Role Dropdown */}
+            {/* Login / Profile Button */}
             <div className="relative">
-              <button
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl bg-[#111827] border border-gray-800 hover:border-gray-700 transition"
-              >
-                <img
-                  src={currentUser.avatar}
-                  alt={currentUser.name}
-                  className="w-8 h-8 rounded-lg object-cover ring-2 ring-indigo-500/40"
-                />
-                <div className="hidden lg:flex flex-col text-left">
-                  <span className="text-xs font-medium text-gray-200 line-clamp-1">
-                    {currentUser.name}
-                  </span>
-                  <span className="text-[10px] text-indigo-400 capitalize font-mono">
-                    {currentRole}
-                  </span>
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-              </button>
+              {currentUser ? (
+                <button
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  className="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl bg-[#111827] border border-gray-800 hover:border-gray-700 transition cursor-pointer"
+                >
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="w-8 h-8 rounded-lg object-cover ring-2 ring-indigo-500/40"
+                  />
+                  <div className="hidden lg:flex flex-col text-left">
+                    <span className="text-xs font-medium text-gray-200 line-clamp-1">
+                      {currentUser.name}
+                    </span>
+                    <span className="text-[10px] text-indigo-400 capitalize font-mono">
+                      {currentRole}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => openAuthModal('login')}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-[#6366F1] text-white text-xs font-bold shadow-lg shadow-indigo-500/20 hover:scale-105 transition cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>เข้าสู่ระบบ</span>
+                </button>
+              )}
 
               {/* Profile Dropdown Menu */}
-              {isProfileMenuOpen && (
+              {isProfileMenuOpen && currentUser && (
                 <div 
                   className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#111827] border border-gray-800 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2"
                   onClick={() => setIsProfileMenuOpen(false)}
@@ -215,11 +246,11 @@ export const Navbar = () => {
 
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 py-1">
-                      สลับบทบาท (Quick Switch)
+                      สลับบทบาท (Demo Switch)
                     </p>
                     <button
                       onClick={() => switchRole('player')}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition ${
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition cursor-pointer ${
                         currentRole === 'player' ? 'bg-emerald-500/20 text-emerald-300 font-bold' : 'text-gray-300 hover:bg-gray-800/60'
                       }`}
                     >
@@ -232,29 +263,49 @@ export const Navbar = () => {
 
                     <button
                       onClick={() => switchRole('developer')}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition ${
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition cursor-pointer ${
                         currentRole === 'developer' ? 'bg-indigo-500/20 text-indigo-300 font-bold' : 'text-gray-300 hover:bg-gray-800/60'
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <Code2 className="w-3.5 h-3.5 text-indigo-400" />
-                        <span>Developer (150 Tokens)</span>
+                        <span>Developer (สตูดิโอ)</span>
                       </div>
                       {currentRole === 'developer' && <span className="text-[10px]">● กำลังใช้งาน</span>}
                     </button>
 
                     <button
                       onClick={() => switchRole('admin')}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition ${
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition cursor-pointer ${
                         currentRole === 'admin' ? 'bg-rose-500/20 text-rose-300 font-bold' : 'text-gray-300 hover:bg-gray-800/60'
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
-                        <span>Admin (อนุมัติเกม)</span>
+                        <span>Admin (ผู้ดูแลระบบ)</span>
                       </div>
                       {currentRole === 'admin' && <span className="text-[10px]">● กำลังใช้งาน</span>}
                     </button>
+
+                    {/* Switch / Logout */}
+                    <div className="pt-2 border-t border-gray-800/80 mt-1">
+                      <button
+                        onClick={() => openAuthModal('login')}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-300 hover:bg-gray-800/60 rounded-lg cursor-pointer"
+                      >
+                        <LogIn className="w-3.5 h-3.5 text-indigo-400" />
+                        <span>เปลี่ยนบัญชี / ล็อกอินใหม่</span>
+                      </button>
+
+                      <button
+                        onClick={logout}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>ออกจากระบบ (Logout)</span>
+                      </button>
+                    </div>
+
                   </div>
                 </div>
               )}
@@ -284,10 +335,9 @@ export const Navbar = () => {
       {topUpSuccessNotice && (
         <div className="bg-amber-500 text-gray-950 text-xs font-bold py-1 px-4 text-center transition-all animate-in slide-in-from-top flex items-center justify-center gap-2">
           <Coins className="w-3.5 h-3.5" />
-          <span>เติมเหรียญจำลองสำเร็จ! ยอดเหรียญของคุณคือ {devTokenBalance} Tokens (ใช้ลงเกมได้ {Math.floor(devTokenBalance / 50)} เกม)</span>
+          <span>เติมเหรียญจำลองสำเร็จ! ยอดเหรียญของคุณคือ {devTokenBalance} Tokens</span>
         </div>
       )}
     </header>
   );
 };
-

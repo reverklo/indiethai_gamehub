@@ -11,6 +11,7 @@ import { Navbar } from './components/layout/Navbar';
 import { RoleSwitcher } from './components/layout/RoleSwitcher';
 import { Footer } from './components/layout/Footer';
 import { WebGLModal } from './components/views/WebGLModal';
+import { AuthModal } from './components/layout/AuthModal';
 
 // Features Components
 import { StorefrontView } from './features/storefront/StorefrontView';
@@ -50,6 +51,9 @@ const AppContent = () => {
 
       {/* WebGL Fullscreen / Interactive Sandbox Modal */}
       <WebGLModal />
+
+      {/* Authentication Modal (Login / Register) */}
+      <AuthModal />
 
       {/* Floating Presentation Role Switcher (Player / Developer / Admin) */}
       <RoleSwitcher />
