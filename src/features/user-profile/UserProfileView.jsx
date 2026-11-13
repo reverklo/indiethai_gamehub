@@ -236,7 +236,7 @@ export const UserProfileView = () => {
                               {item.game.title}
                             </h4>
                             <p className="text-[11px] text-gray-500 font-mono mt-0.5">
-                              {item.game.engine} • {item.game.category}
+                              {item.game.category}
                             </p>
                           </div>
                         </div>
@@ -331,7 +331,7 @@ export const UserProfileView = () => {
                               {game.title}
                             </h4>
                             <div className="flex items-center gap-2 text-[11px] text-gray-400 font-mono mt-0.5">
-                              <span>{game.engine}</span>
+                              <span>{game.category}</span>
                               <span>•</span>
                               <span className="flex items-center gap-0.5 text-amber-300">
                                 <Star className="w-3 h-3 fill-amber-300" />

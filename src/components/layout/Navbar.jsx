@@ -34,7 +34,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
-import { GAME_ENGINES } from '../../data/mockData';
 
 export const Navbar = () => {
   const { 
@@ -50,8 +49,6 @@ export const Navbar = () => {
   const { 
     searchQuery, 
     setSearchQuery, 
-    selectedEngine, 
-    setSelectedEngine,
     pendingGames,
     wishlist,
     isWishlistOnly,
@@ -167,16 +164,16 @@ export const Navbar = () => {
             </nav>
           </div>
 
-          {/* Search & Engine Filter Bar (Compact Center) */}
-          <div className="flex-1 max-w-sm hidden lg:flex items-center gap-2">
+          {/* Search Bar (Clean Center) */}
+          <div className="flex-1 max-w-md hidden lg:flex items-center">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ค้นหาชื่อเกม, ผู้พัฒนา..."
-                className="w-full bg-[#111827] border border-white/[0.08] rounded-lg pl-8 pr-3 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-white/20 transition-colors"
+                placeholder="ค้นหาชื่อเกม, ผู้พัฒนา, แท็ก..."
+                className="w-full bg-[#111827] border border-white/[0.08] rounded-lg pl-9 pr-8 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-white/20 transition-colors"
               />
               {searchQuery && (
                 <button
@@ -186,21 +183,6 @@ export const Navbar = () => {
                   ✕
                 </button>
               )}
-            </div>
-
-            {/* Quick Engine Dropdown */}
-            <div className="relative shrink-0">
-              <select
-                value={selectedEngine}
-                onChange={(e) => setSelectedEngine(e.target.value)}
-                className="bg-[#111827] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-white/20 cursor-pointer transition-colors"
-              >
-                {GAME_ENGINES.map((engine) => (
-                  <option key={engine} value={engine} className="bg-[#111827]">
-                    {engine === 'All' ? 'Engine' : engine}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 

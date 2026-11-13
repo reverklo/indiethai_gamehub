@@ -2,10 +2,10 @@
  * StorefrontView.jsx
  * หน้าร้านค้าหลักและศูนย์รวมเกมอินดี้สัญชาติไทย (สไตล์ Steam & itch.io)
  * - แบนเนอร์กิจกรรม Game Jam
- * - แท็บคัดกรองด่วน: [ทั้งหมด] | [เล่นบนเว็บได้ทันที] | [ดาวน์โหลด PC]
- * - ตัวกรอง Engine (Unity, Godot, Phaser, Three.js ฯลฯ)
- * - สลับดูเกมอินดี้ไทย vs เกมจาก FreeToGame API
- * - การ์ดเกมแสดงป้ายประเภทชัดเจน พร้อมปุ่ม "เล่น WebGL" (ถ้ามี) หรือ "โหลด PC"
+ * - แถบนำทางและคัดกรองแบบรวมศูนย์ (Unified Navigation Bar):
+ *   [ เกมอินดี้ไทยทั้งหมด ] | [ เล่นบนเว็บ ] | [ ดาวน์โหลด PC ] | [ FreeToGame API ]
+ * - ตัดตัวกรอง Engine ที่รกออกทั้งหมด จัดระเบียบใหม่ให้สบายตา
+ * - การ์ดเกมแสดงเฉพาะหมวดหมู่และรูปแบบการเล่น พร้อมปุ่ม Action ที่ตรงกับประเภทจริง
  */
 
 import React, { useState } from 'react';
@@ -18,31 +18,28 @@ import {
   Star, 
   Download, 
   ChevronRight, 
-  Flame, 
   Radio, 
   Loader2, 
-  HardDrive,
-  Heart,
-  Globe,
-  Monitor,
-  Play
+  HardDrive, 
+  Heart, 
+  Globe, 
+  Monitor, 
+  Play 
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { useFetchBrowserGames } from '../../hooks/useFetchBrowserGames';
-import { GAME_ENGINES, GAME_JAM_DATA } from '../../data/mockData';
+import { GAME_JAM_DATA } from '../../data/mockData';
 
 export const StorefrontView = () => {
   const { 
     filteredApprovedGames, 
-    selectedEngine, 
-    setSelectedEngine, 
     setSelectedGameForDetail, 
-    openGamePlayer,
-    downloadPcGame,
-    searchQuery,
-    wishlist,
-    toggleWishlist,
-    isWishlistOnly,
+    openGamePlayer, 
+    downloadPcGame, 
+    searchQuery, 
+    wishlist, 
+    toggleWishlist, 
+    isWishlistOnly, 
     setIsWishlistOnly 
   } = useGame();
 
@@ -52,7 +49,7 @@ export const StorefrontView = () => {
   // แหล่งที่มา: 'local' (เกมอินดี้ไทย) | 'api' (FreeToGame API)
   const [sourceTab, setSourceTab] = useState('local');
 
-  // แท็บคัดกรองประเภทการเล่น (สไตล์ itch.io & Steam): 'all' | 'webgl' | 'pc'
+  // ตัวกรองรูปแบบการเล่น: 'all' | 'webgl' | 'pc'
   const [playTypeFilter, setPlayTypeFilter] = useState('all');
 
   // แจ้งเตือนดาวน์โหลด
@@ -92,7 +89,7 @@ export const StorefrontView = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       
       {/* Toast Notification */}
       {downloadToast && (
@@ -103,9 +100,9 @@ export const StorefrontView = () => {
       )}
 
       {/* 1. Game Jam Banner - Quiet Chrome */}
-      <section className="relative overflow-hidden rounded-2xl bg-[#111827] border border-white/[0.08] p-6 sm:p-8">
+      <section className="relative overflow-hidden rounded-2xl bg-[#111827] border border-white/[0.08] p-5 sm:p-7">
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="space-y-2.5 max-w-2xl">
+          <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/[0.05] border border-white/[0.08] text-amber-300 text-xs font-medium">
               <Trophy className="w-3.5 h-3.5 text-amber-400" />
               <span>{GAME_JAM_DATA.badge}</span>
@@ -140,7 +137,7 @@ export const StorefrontView = () => {
                   setSelectedGameForDetail(filteredApprovedGames[0]);
                 }
               }}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold text-xs transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold text-xs transition-colors cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-gray-700" />
               <span>ร่วมทดสอบเกมในแยม</span>
@@ -149,107 +146,76 @@ export const StorefrontView = () => {
         </div>
       </section>
 
-      {/* 2. Source Selector Tabs: Thai Indie vs Live FreeToGame API */}
-      <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-1.5 rounded-xl bg-[#111827] border border-white/[0.08]">
-        <div className="flex items-center gap-1.5 w-full sm:w-auto">
+      {/* 2. Unified Navigation & Filter Bar (รวมศูนย์ คลีน ไม่ซ้ำซ้อน) */}
+      <section className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-1.5 rounded-xl bg-[#111827] border border-white/[0.08]">
+        
+        {/* Left: Filter Buttons */}
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-1 md:pb-0">
           <button
-            onClick={() => setSourceTab('local')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-              sourceTab === 'local'
-                ? 'bg-white/[0.1] text-white border border-white/[0.1]'
+            onClick={() => { setSourceTab('local'); setPlayTypeFilter('all'); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              sourceTab === 'local' && playTypeFilter === 'all'
+                ? 'bg-white text-gray-950 font-semibold'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            <Gamepad2 className="w-4 h-4 text-emerald-400" />
+            <Gamepad2 className="w-3.5 h-3.5 text-emerald-400" />
             <span>เกมอินดี้ไทย ({filteredApprovedGames.length})</span>
           </button>
 
           <button
-            onClick={() => setSourceTab('api')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-              sourceTab === 'api'
-                ? 'bg-white/[0.1] text-white border border-white/[0.1]'
+            onClick={() => { setSourceTab('local'); setPlayTypeFilter('webgl'); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              sourceTab === 'local' && playTypeFilter === 'webgl'
+                ? 'bg-white text-gray-950 font-semibold'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            <Radio className="w-4 h-4 text-sky-400" />
+            <Globe className="w-3.5 h-3.5 text-emerald-400" />
+            <span>เล่นบนเว็บ ({filteredApprovedGames.filter((g) => g.hasWebgl).length})</span>
+          </button>
+
+          <button
+            onClick={() => { setSourceTab('local'); setPlayTypeFilter('pc'); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              sourceTab === 'local' && playTypeFilter === 'pc'
+                ? 'bg-white text-gray-950 font-semibold'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Monitor className="w-3.5 h-3.5 text-sky-400" />
+            <span>ดาวน์โหลด PC ({filteredApprovedGames.filter((g) => g.hasPcDownload).length})</span>
+          </button>
+
+          <div className="h-4 w-px bg-white/[0.1] mx-1 hidden sm:block" />
+
+          <button
+            onClick={() => { setSourceTab('api'); setPlayTypeFilter('all'); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              sourceTab === 'api'
+                ? 'bg-white text-gray-950 font-semibold'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Radio className="w-3.5 h-3.5 text-sky-400" />
             <span>FreeToGame API ({apiGames.length})</span>
           </button>
         </div>
 
-        {sourceTab === 'api' && (
-          <span className="text-[11px] text-gray-400 font-mono flex items-center gap-1.5 px-3 py-1 bg-[#0B0F19] rounded-md border border-white/[0.06]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            Real-time feed
-          </span>
-        )}
-      </section>
-
-      {/* 3. Quick Play Type Filter Tabs (สไตล์ itch.io & Steam) */}
-      <section className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-[#111827] border border-white/[0.08]">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 font-medium">รูปแบบการเล่น:</span>
-          
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setPlayTypeFilter('all')}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                playTypeFilter === 'all'
-                  ? 'bg-white text-gray-950 font-semibold'
-                  : 'bg-white/[0.04] text-gray-400 hover:text-white'
-              }`}
-            >
-              ทั้งหมด ({baseGames.length})
-            </button>
-
-            <button
-              onClick={() => setPlayTypeFilter('webgl')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                playTypeFilter === 'webgl'
-                  ? 'bg-white text-gray-950 font-semibold'
-                  : 'bg-white/[0.04] text-gray-400 hover:text-white'
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5 text-emerald-400" />
-              <span>เล่นบนเว็บ ({baseGames.filter((g) => g.hasWebgl).length})</span>
-            </button>
-
-            <button
-              onClick={() => setPlayTypeFilter('pc')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                playTypeFilter === 'pc'
-                  ? 'bg-white text-gray-950 font-semibold'
-                  : 'bg-white/[0.04] text-gray-400 hover:text-white'
-              }`}
-            >
-              <Monitor className="w-3.5 h-3.5 text-sky-400" />
-              <span>ดาวน์โหลด PC ({baseGames.filter((g) => g.hasPcDownload).length})</span>
-            </button>
-          </div>
+        {/* Right: Live feed indicator or game count */}
+        <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 font-mono pr-2">
+          {sourceTab === 'api' ? (
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Real-time feed
+            </span>
+          ) : (
+            <span>แสดง {displayedGames.length} เกม</span>
+          )}
         </div>
-
-        {/* Engine Dropdown or Tags if local */}
-        {sourceTab === 'local' && (
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-            <span className="text-[11px] text-gray-500 font-mono">Engine:</span>
-            {GAME_ENGINES.map((engine) => (
-              <button
-                key={engine}
-                onClick={() => setSelectedEngine(engine)}
-                className={`px-2.5 py-1 rounded text-[11px] font-mono transition-colors cursor-pointer whitespace-nowrap ${
-                  selectedEngine === engine
-                    ? 'bg-white/[0.15] text-white font-medium border border-white/20'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {engine === 'All' ? 'All' : engine.replace(' WebGL', '').replace(' HTML5', '')}
-              </button>
-            ))}
-          </div>
-        )}
       </section>
 
-      {/* 4. Games Grid */}
+      {/* 3. Games Grid */}
       <section className="space-y-4">
         
         {/* Wishlist Only Active Banner */}
@@ -330,10 +296,10 @@ export const StorefrontView = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-transparent opacity-70"></div>
 
-                  {/* Top-Left: Engine & Play-Type Badges */}
+                  {/* Top-Left: Category & Play-Type Badges */}
                   <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
                     <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-black/80 text-gray-300 border border-white/[0.08] backdrop-blur-sm">
-                      {game.engine}
+                      {game.category}
                     </span>
 
                     {/* Clear Play Type Badge */}

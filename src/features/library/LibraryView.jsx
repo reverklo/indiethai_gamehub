@@ -136,9 +136,9 @@ export const LibraryView = () => {
                   className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
                 />
                 
-                {/* Engine Badge */}
-                <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-black/80 text-gray-300 border border-white/[0.08]">
-                  {game.engine}
+                {/* Category Badge */}
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-black/80 text-gray-300 border border-white/[0.08]">
+                  {game.category}
                 </span>
 
                 {/* Wishlist Indicator */}

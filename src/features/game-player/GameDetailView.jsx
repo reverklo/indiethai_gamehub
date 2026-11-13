@@ -257,10 +257,7 @@ export const GameDetailView = ({ game }) => {
             </span>
           )}
 
-          {/* Engine & Category Badges */}
-          <span className="px-2.5 py-1 rounded-lg bg-white/[0.06] text-gray-300 border border-white/[0.08] font-mono text-xs">
-            {game.engine}
-          </span>
+          {/* Category & Version Badges */}
           <span className="px-2.5 py-1 rounded-lg bg-white/[0.06] text-gray-300 border border-white/[0.08] text-xs">
             {game.category}
           </span>

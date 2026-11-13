@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
-import { GAME_CATEGORIES, GAME_ENGINES, TOKEN_COST_PER_GAME } from '../../data/mockData';
+import { GAME_CATEGORIES, TOKEN_COST_PER_GAME } from '../../data/mockData';
 
 export const UploadGameForm = ({ onCancel, onSuccess }) => {
   const { currentUser, devTokenBalance, topUpTokens } = useAuth();
@@ -383,9 +383,9 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-300 mb-1 font-medium">หมวดหมู่ (Category)</label>
+              <label className="block text-gray-300 mb-1 font-medium">หมวดหมู่แนวเกม (Genre / Category) *</label>
               <select
                 name="category"
                 value={formData.category}
@@ -398,23 +398,9 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
               </select>
             </div>
 
-            <div>
-              <label className="block text-gray-300 mb-1 font-medium">Game Engine *</label>
-              <select
-                name="engine"
-                value={formData.engine}
-                onChange={handleInputChange}
-                className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3.5 py-2 text-white focus:outline-none focus:border-white/20 cursor-pointer"
-              >
-                {GAME_ENGINES.filter((e) => e !== 'All').map((eng) => (
-                  <option key={eng} value={eng}>{eng}</option>
-                ))}
-              </select>
-            </div>
-
             {/* Release Status Selector (สไตล์ itch.io & Steam) */}
             <div>
-              <label className="block text-gray-300 mb-1 font-medium">สถานะการพัฒนา (Release State)</label>
+              <label className="block text-gray-300 mb-1 font-medium">สถานะการพัฒนา (Release State) *</label>
               <select
                 name="releaseStatus"
                 value={formData.releaseStatus}
