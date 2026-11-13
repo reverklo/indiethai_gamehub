@@ -67,7 +67,7 @@ export const TopUpWalletModal = () => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-lg rounded-2xl bg-[#0f172a] border border-white/[0.1] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg rounded-2xl bg-[#0f172a] border border-white/[0.1] shadow-2xl overflow-hidden apple-modal-enter"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -131,9 +131,9 @@ export const TopUpWalletModal = () => {
                           setSelectedAmount(preset.amount);
                           setCustomAmount('');
                         }}
-                        className={`relative p-3 rounded-xl border text-center transition-all cursor-pointer ${
+                        className={`apple-press relative p-3 rounded-xl border text-center transition-colors cursor-pointer ${
                           isSelected
-                            ? 'bg-amber-500/15 border-amber-500/50 text-amber-300 font-bold shadow-lg shadow-amber-500/10'
+                            ? 'bg-amber-500/15 border-amber-500/50 text-amber-300 font-bold'
                             : 'bg-[#1e293b]/70 border-white/[0.06] text-gray-300 hover:border-white/20 hover:text-white'
                         }`}
                       >
@@ -200,7 +200,7 @@ export const TopUpWalletModal = () => {
                 type="button"
                 disabled={isProcessing || currentAmountToPay <= 0}
                 onClick={handleSimulatePayment}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer disabled:opacity-50"
+                className="apple-press w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-gray-950 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
               >
                 {isProcessing ? (
                   <>

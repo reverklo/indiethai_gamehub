@@ -94,20 +94,24 @@ export const AuthModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-[#111827] border border-indigo-500/40 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-6 animate-in zoom-in-95">
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={closeAuthModal}
+    >
+      <div 
+        className="bg-[#111827] border border-white/[0.08] rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-6 apple-modal-enter"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-800 pb-4">
+        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#6366F1] to-[#10B981] p-0.5">
-              <div className="w-full h-full bg-[#0B0F19] rounded-[10px] flex items-center justify-center">
-                <Gamepad2 className="w-5 h-5 text-indigo-400" />
-              </div>
+            <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center">
+              <Gamepad2 className="w-5 h-5 text-gray-300" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white font-['Rajdhani',sans-serif]">
-                {mode === 'login' ? 'เข้าสู่ระบบ INDIETHAI.HUB' : 'สมัครสมาชิกใหม่'}
+              <h3 className="text-base font-semibold text-white">
+                {mode === 'login' ? 'เข้าสู่ระบบ IndieThai Hub' : 'สมัครสมาชิกใหม่'}
               </h3>
               <p className="text-xs text-gray-400">
                 {mode === 'login' ? 'ยินดีต้อนรับกลับสู่คอมมูนิตี้เกมไทย' : 'ร่วมสร้างและทดลองเล่นเกมอินดี้'}
@@ -198,7 +202,7 @@ export const AuthModal = () => {
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#6366F1] to-indigo-600 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold transition shadow-lg shadow-indigo-500/25 active:scale-95 cursor-pointer"
+              className="apple-press w-full py-2.5 rounded-xl bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer text-xs"
             >
               เข้าสู่ระบบ
             </button>
@@ -359,7 +363,7 @@ export const AuthModal = () => {
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-gray-950 font-bold transition shadow-lg shadow-emerald-500/25 active:scale-95 cursor-pointer"
+              className="apple-press w-full py-2.5 rounded-xl bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer text-xs"
             >
               ยืนยันการสมัครสมาชิก
             </button>

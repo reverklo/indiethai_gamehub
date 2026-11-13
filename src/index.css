@@ -35,7 +35,46 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+/* Apple-style Fluid Spring Motion & Tactile Press */
+.apple-spring {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-press {
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), opacity 120ms ease;
+  user-select: none;
+}
+
+.apple-press:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+.apple-card {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms ease, background-color 200ms ease;
+  will-change: transform;
+}
+
+.apple-card:hover {
+  transform: translateY(-2px);
+}
+
+.apple-card:active {
+  transform: scale(0.985);
+}
+
+.apple-modal-enter {
+  animation: appleModalSpring 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes appleModalSpring {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 

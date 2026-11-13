@@ -147,7 +147,7 @@ export const EditGameModal = ({ game, onClose, onSaveSuccess }) => {
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-3xl rounded-2xl bg-[#111827] border border-white/[0.08] shadow-2xl overflow-hidden flex flex-col h-[85vh] max-h-[720px] animate-in zoom-in-95"
+        className="relative w-full max-w-3xl rounded-2xl bg-[#111827] border border-white/[0.08] shadow-2xl overflow-hidden flex flex-col h-[85vh] max-h-[720px] apple-modal-enter"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Fixed Header */}
@@ -609,7 +609,7 @@ export const EditGameModal = ({ game, onClose, onSaveSuccess }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-gray-300 hover:text-white transition-colors cursor-pointer font-medium text-xs"
+                className="apple-press px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-gray-300 hover:text-white transition-colors cursor-pointer font-medium text-xs"
               >
                 ยกเลิก
               </button>
@@ -617,7 +617,7 @@ export const EditGameModal = ({ game, onClose, onSaveSuccess }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer text-xs"
+                className="apple-press flex items-center gap-1.5 px-5 py-2 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer text-xs"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}</span>

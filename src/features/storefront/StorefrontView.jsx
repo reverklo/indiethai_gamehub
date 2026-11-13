@@ -495,7 +495,7 @@ export const StorefrontView = () => {
                 <div
                   key={game.id}
                   onClick={() => openGameDetail(game)}
-                  className="group flex flex-col bg-[#111827] rounded-xl border border-white/[0.08] overflow-hidden hover:border-white/20 transition-all hover:-translate-y-0.5 cursor-pointer shadow-lg shadow-black/40"
+                  className="apple-card group flex flex-col bg-[#111827] rounded-xl border border-white/[0.08] overflow-hidden hover:border-white/20 cursor-pointer shadow-lg shadow-black/40"
                 >
                   {/* Thumbnail Banner */}
                   <div className="relative aspect-video w-full overflow-hidden bg-black">
@@ -627,7 +627,7 @@ export const StorefrontView = () => {
                             e.stopPropagation();
                             openGameDetail(game);
                           }}
-                          className="px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-gray-200 text-xs font-medium border border-white/[0.08] transition flex items-center gap-1 cursor-pointer"
+                          className="apple-press px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-gray-200 text-xs font-medium border border-white/[0.08] transition flex items-center gap-1 cursor-pointer"
                         >
                           <span>ดูเกม</span>
                           <ChevronRight className="w-3 h-3" />
@@ -641,7 +641,7 @@ export const StorefrontView = () => {
                               openGamePlayer(game);
                             }}
                             title="เล่นบนเว็บทันที"
-                            className="p-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-gray-950 transition cursor-pointer"
+                            className="apple-press p-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-gray-950 transition cursor-pointer"
                           >
                             <Play className="w-3.5 h-3.5 fill-current" />
                           </button>
