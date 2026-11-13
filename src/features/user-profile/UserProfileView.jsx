@@ -43,11 +43,15 @@ export const UserProfileView = () => {
     playedGames, 
     openGamePlayer, 
     downloadPcGame,
-    setSelectedGameForDetail 
+    setSelectedGameForDetail,
+    profileTab: contextProfileTab,
+    setProfileTab: contextSetProfileTab
   } = useGame();
 
   // ตัวสลับแท็บเนื้อหาฝั่งซ้าย: 'recent' | 'wishlist' | 'reviews' | 'bugs'
-  const [profileTab, setProfileTab] = useState('recent');
+  const [localProfileTab, setLocalProfileTab] = useState('recent');
+  const profileTab = contextProfileTab || localProfileTab;
+  const setProfileTab = contextSetProfileTab || setLocalProfileTab;
 
   // ควบคุมการเปิดปิด Edit Profile Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

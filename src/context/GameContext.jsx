@@ -45,6 +45,9 @@ export const GameProvider = ({ children }) => {
   // แท็บหน้าหลักที่เปิดอยู่: 'store' | 'library' | 'community' | 'profile' | 'studio' | 'admin'
   const [activeNavTab, setActiveNavTab] = useState('store');
 
+  // แท็บย่อยของหน้า Profile: 'recent' | 'wishlist' | 'reviews' | 'bugs'
+  const [profileTab, setProfileTab] = useState('recent');
+
   // ข้อมูลเกมที่เคยเล่น / กิจกรรมล่าสุด (Steam-style Recent Activity)
   const [playedGames, setPlayedGames] = useState(() => {
     const saved = localStorage.getItem('indiethai_played_games');
@@ -509,10 +512,13 @@ export const GameProvider = ({ children }) => {
   /**
    * นำทางไปยังแท็บหลัก (Steam Tabs: store, library, community, profile, studio, admin)
    */
-  const navigateToTab = (tab) => {
+  const navigateToTab = (tab, subTab = null) => {
     setSelectedGameForDetail(null);
     setIsWishlistOnly(false);
     setActiveNavTab(tab);
+    if (subTab && tab === 'profile') {
+      setProfileTab(subTab);
+    }
   };
 
   /**
@@ -577,6 +583,8 @@ export const GameProvider = ({ children }) => {
     activeNavTab,
     setActiveNavTab,
     navigateToTab,
+    profileTab,
+    setProfileTab,
     playedGames,
     notifications: roleNotifications,
     unreadNotificationCount,
