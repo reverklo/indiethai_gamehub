@@ -155,7 +155,9 @@ export const GameProvider = ({ children }) => {
     } catch (e) {
       console.error('PushState error:', e);
     }
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   };
 
   /**
@@ -171,7 +173,9 @@ export const GameProvider = ({ children }) => {
     } catch (e) {
       console.error('PushState clean error:', e);
     }
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   };
 
   // เกมที่ได้รับอนุมัติแล้ว
@@ -290,6 +294,61 @@ export const GameProvider = ({ children }) => {
     return {
       success: true,
       message: `อัปเดตแพตช์โน้ตเวอร์ชัน ${newVersion} สำเร็จเรียบร้อย!`
+    };
+  };
+
+  /**
+   * ฟังก์ชันสำหรับ Developer: แก้ไขข้อมูลเกมแบบครบวงจรและปล่อยแพตช์ใหม่
+   * รองรับการแก้ไขชื่อ, คำอธิบาย, ลิงก์ WebGL, ไฟล์ PC, ราคา, สเปกเครื่อง และ Patch Notes
+   */
+  const editGameDetails = (gameId, updatedPayload) => {
+    let targetTitle = '';
+    const isNewVersion = updatedPayload.version && updatedPayload.oldVersion && updatedPayload.version !== updatedPayload.oldVersion;
+    const hasPatchNotes = updatedPayload.newPatchTitle || updatedPayload.newPatchDetails;
+
+    setGames((prev) =>
+      prev.map((g) => {
+        if (g.id === gameId) {
+          targetTitle = updatedPayload.title || g.title;
+          const currentPatches = g.patchNotes || [];
+          let updatedPatches = currentPatches;
+
+          if (isNewVersion || hasPatchNotes) {
+            const newPatch = {
+              version: updatedPayload.version || g.version,
+              date: new Date().toISOString().split('T')[0],
+              title: updatedPayload.newPatchTitle || `อัปเดตเวอร์ชัน ${updatedPayload.version}`,
+              details: updatedPayload.newPatchDetails || 'ปรับปรุงประสิทธิภาพและความเสถียรของเกม'
+            };
+            updatedPatches = [newPatch, ...currentPatches];
+          }
+
+          return {
+            ...g,
+            ...updatedPayload,
+            patchNotes: updatedPatches
+          };
+        }
+        return g;
+      })
+    );
+
+    // หากมีการปล่อยเวอร์ชันใหม่หรือมีแพตช์โน้ต ให้แจ้งเตือนผู้เล่นอัตโนมัติ
+    if (isNewVersion || hasPatchNotes) {
+      const newNotif = {
+        id: `notif-${Date.now()}`,
+        role: 'player',
+        title: `🎮 ${targetTitle || 'เกม'} อัปเดตแพตช์ใหม่ (${updatedPayload.version})`,
+        message: `${updatedPayload.newPatchTitle || 'มีการอัปเดตใหม่'} เข้าไปทดลองเล่นเวอร์ชันล่าสุดได้แล้ว`,
+        time: 'เพิ่งอัปเดต',
+        isRead: false
+      };
+      setNotifications((prev) => [newNotif, ...prev]);
+    }
+
+    return {
+      success: true,
+      message: `บันทึกข้อมูลและอัปเดตเกม "${targetTitle}" เรียบร้อยแล้ว!`
     };
   };
 
@@ -662,6 +721,7 @@ export const GameProvider = ({ children }) => {
     openGamePlayer,
     closeGamePlayer,
     submitNewGame,
+    editGameDetails,
     approveGame,
     rejectGame,
     updateGameVersionWithPatchNotes,

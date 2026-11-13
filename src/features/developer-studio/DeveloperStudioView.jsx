@@ -27,11 +27,13 @@ import {
   X,
   ExternalLink,
   ChevronRight,
-  History
+  History,
+  FileEdit
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { UploadGameForm } from './UploadGameForm';
+import { EditGameModal } from './EditGameModal';
 import { TOKEN_COST_PER_GAME } from '../../data/mockData';
 
 export const DeveloperStudioView = () => {
@@ -41,11 +43,14 @@ export const DeveloperStudioView = () => {
     updateGameVersionWithPatchNotes, 
     updateBugStatus, 
     openGamePlayer,
-    setSelectedGameForDetail 
+    openGameDetail 
   } = useGame();
 
   // ตัวควบคุมการแสดงหน้าฟอร์มอัปโหลดเกม
   const [isUploading, setIsUploading] = useState(false);
+
+  // ควบคุมการเปิด EditGameModal เพื่อแก้ไขข้อมูลเกม & ปล่อยแพตช์
+  const [editingGame, setEditingGame] = useState(null);
 
   // แจ้งเตือน Toast
   const [toastMessage, setToastMessage] = useState(null);
@@ -362,44 +367,40 @@ export const DeveloperStudioView = () => {
                       </td>
 
                       {/* Action Buttons */}
-                      <td className="px-5 py-4 text-right space-x-2">
-                        {/* ปุ่มดูรายงาน & บั๊ก & รีวิว */}
-                        <button
-                          onClick={() => {
-                            setSelectedGameForFeedback(game);
-                            setFeedbackTab('bugs');
-                          }}
-                          className="px-2.5 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-600 hover:text-white text-indigo-300 text-xs font-semibold transition cursor-pointer"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5 inline mr-1" />
-                          <span>ดูรายงาน & บั๊ก</span>
-                        </button>
+                      <td className="px-5 py-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2">
+                          {/* ปุ่มแก้ไขข้อมูล & ปล่อยแพตช์ใหม่ */}
+                          <button
+                            onClick={() => setEditingGame(game)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-600 hover:text-white text-indigo-300 text-xs font-semibold border border-indigo-500/30 transition cursor-pointer"
+                            title="แก้ไขข้อมูลหน้าร้าน ราคา ลิงก์ WebGL/PC หรือปล่อยแพตช์ใหม่"
+                          >
+                            <FileEdit className="w-3.5 h-3.5" />
+                            <span>แก้ไข & แพตช์</span>
+                          </button>
 
-                        {/* ปุ่มอัปเดตเวอร์ชันพร้อม Patch Notes */}
-                        <button
-                          onClick={() => handleOpenVersionModal(game)}
-                          className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-600 hover:text-white text-emerald-400 text-xs font-semibold transition cursor-pointer"
-                        >
-                          <History className="w-3.5 h-3.5 inline mr-1" />
-                          <span>อัปเดตแพตช์</span>
-                        </button>
+                          {/* ปุ่มดูหน้าร้านค้าสไตล์ Steam */}
+                          <button
+                            onClick={() => openGameDetail(game)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-gray-300 hover:text-white text-xs font-semibold border border-white/[0.08] transition cursor-pointer"
+                            title="เปิดดูหน้าร้านค้าสไตล์ Steam"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>หน้าร้านค้า</span>
+                          </button>
 
-                        {/* ปุ่มดูหน้าร้านค้า */}
-                        <button
-                          onClick={() => setSelectedGameForDetail(game)}
-                          className="px-2.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold transition cursor-pointer"
-                          title="เปิดดูหน้าร้านค้า"
-                        >
-                          <Eye className="w-3.5 h-3.5 inline mr-1" />
-                          <span>หน้าร้าน</span>
-                        </button>
-
-                        <button
-                          onClick={() => openGamePlayer(game)}
-                          className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-gray-950 text-xs font-bold transition cursor-pointer"
-                        >
-                          เล่น
-                        </button>
+                          {/* ปุ่มเล่น WebGL ทันที */}
+                          {game.hasWebgl && (
+                            <button
+                              onClick={() => openGamePlayer(game)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 hover:text-gray-950 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition cursor-pointer"
+                              title="ทดสอบเล่นเกมบนเบราว์เซอร์"
+                            >
+                              <Play className="w-3 h-3 fill-current" />
+                              <span>เล่น</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
 
                     </tr>
@@ -656,6 +657,18 @@ export const DeveloperStudioView = () => {
 
               </div>
             </div>
+          )}
+
+          {/* Edit Game & Comprehensive Patch Modal */}
+          {editingGame && (
+            <EditGameModal
+              game={editingGame}
+              onClose={() => setEditingGame(null)}
+              onSaveSuccess={(msg) => {
+                setToastMessage(msg);
+                setTimeout(() => setToastMessage(null), 3500);
+              }}
+            />
           )}
 
           {/* Update Version & Patch Notes Modal */}

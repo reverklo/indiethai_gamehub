@@ -11,7 +11,7 @@
  * - หน้ารายละเอียดเกม (GameDetailView)
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider, useGame } from './context/GameContext';
 import { Navbar } from './components/layout/Navbar';
@@ -36,6 +36,13 @@ import { CommunityView } from './features/community/CommunityView';
 const AppContent = () => {
   const { currentRole } = useAuth();
   const { selectedGameForDetail, activeNavTab } = useGame();
+
+  // ป้องกันปัญหาหน้าจอเลื่อนค้างหรือตำแหน่งไม่ตรง: เลื่อนขึ้นบนสุดทันทีเมื่อสลับหน้าหรือเปิดดูเกม
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [selectedGameForDetail, activeNavTab]);
 
   // จัดการการแสดงผลหน้าต่างๆ ตามแท็บที่เลือกหรือเกมที่เปิดดูอยู่
   const renderCurrentView = () => {

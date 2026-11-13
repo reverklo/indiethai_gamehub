@@ -43,7 +43,7 @@ export const UserProfileView = () => {
     playedGames, 
     openGamePlayer, 
     downloadPcGame,
-    setSelectedGameForDetail,
+    openGameDetail,
     profileTab: contextProfileTab,
     setProfileTab: contextSetProfileTab
   } = useGame();
@@ -234,7 +234,7 @@ export const UserProfileView = () => {
                           />
                           <div>
                             <h4 
-                              onClick={() => setSelectedGameForDetail(item.game)}
+                              onClick={() => openGameDetail(item.game)}
                               className="text-sm font-semibold text-white hover:text-indigo-300 transition-colors cursor-pointer"
                             >
                               {item.game.title}
@@ -329,7 +329,7 @@ export const UserProfileView = () => {
                           />
                           <div>
                             <h4 
-                              onClick={() => setSelectedGameForDetail(game)}
+                              onClick={() => openGameDetail(game)}
                               className="text-sm font-semibold text-white hover:text-indigo-300 transition-colors cursor-pointer"
                             >
                               {game.title}

@@ -135,7 +135,7 @@ const COMMUNITY_SCREENSHOTS = [
 
 export const CommunityView = () => {
   const { currentUser } = useAuth();
-  const { games, setSelectedGameForDetail, openGamePlayer } = useGame();
+  const { games, openGameDetail, openGamePlayer } = useGame();
 
   // ตัวกรองหมวดหมู่คอมมูนิตี้: 'all' | 'discussions' | 'gamejam' | 'reviews' | 'guides' | 'screenshots'
   const [activeFilter, setActiveFilter] = useState('all');
@@ -496,7 +496,7 @@ export const CommunityView = () => {
                           <h4 
                             onClick={() => {
                               const targetGame = games.find((g) => g.id === rev.gameId);
-                              if (targetGame) setSelectedGameForDetail(targetGame);
+                              if (targetGame) openGameDetail(targetGame);
                             }}
                             className="text-xs font-bold text-white hover:text-indigo-300 transition-colors cursor-pointer"
                           >

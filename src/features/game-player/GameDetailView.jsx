@@ -9,7 +9,7 @@
  * - รองรับระบบ Steam Wallet & Token ซื้อเกมได้จริง
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ArrowLeft, 
   Play, 
@@ -70,6 +70,20 @@ export const GameDetailView = ({ game }) => {
 
   const isWishlisted = wishlist?.includes(game.id);
   const isOwned = isGameOwned(game.id);
+
+  // เลื่อนหน้าจอขึ้นบนสุดทันทีเมื่อเข้าสู่หน้ารายละเอียดเกม ป้องกันปัญหาหน้าจอเลื่อนค้างหรือตำแหน่งไม่ตรง
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
+    const raf = requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [game?.id]);
 
   // รวบรวม Media Gallery สำหรับ Media Player ซ้ายบน
   const mediaItems = useMemo(() => {
