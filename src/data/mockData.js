@@ -277,13 +277,13 @@ export const MOCK_NOTIFICATIONS = [
 export const MOCK_USERS = {
   player: {
     id: 'usr-player-1',
-    username: 'NeonPlayer_TH',
-    name: 'กิตติศักดิ์ นักเล่น',
-    email: 'player@indiethai.hub',
+    username: 'tsukiko_83',
+    name: 'Tsukiko_83',
+    email: 'tsukiko@indiethai.hub',
     role: 'player',
-    avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
+    avatar: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&auto=format&fit=crop&q=80',
     tokenBalance: 0,
-    bio: 'ผู้เล่นเกมสายทดสอบ ชื่นชอบเกมอินดี้ฝีมือคนไทยและพร้อมซัพพอร์ต!',
+    bio: 'คุณสามารถนำเสนอหนึ่งในเหรียญตราของคุณได้ที่นี่ เลือกเหรียญตราได้จากหน้าแก้ไขโปรไฟล์ของคุณ',
     level: 12,
     badge: 'Beta Tester',
     isBanned: false
@@ -320,11 +320,11 @@ export const MOCK_USERS = {
 export const MOCK_USERS_LIST = [
   {
     id: 'usr-player-1',
-    username: 'NeonPlayer_TH',
-    name: 'กิตติศักดิ์ นักเล่น',
-    email: 'player@indiethai.hub',
+    username: 'tsukiko_83',
+    name: 'Tsukiko_83',
+    email: 'tsukiko@indiethai.hub',
     role: 'player',
-    avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
+    avatar: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&auto=format&fit=crop&q=80',
     tokenBalance: 0,
     gamesPlayed: 42,
     isBanned: false,

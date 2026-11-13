@@ -42,6 +42,40 @@ export const GameProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : MOCK_NOTIFICATIONS;
   });
 
+  // แท็บหน้าหลักที่เปิดอยู่: 'store' | 'library' | 'community' | 'profile' | 'studio' | 'admin'
+  const [activeNavTab, setActiveNavTab] = useState('store');
+
+  // ข้อมูลเกมที่เคยเล่น / กิจกรรมล่าสุด (Steam-style Recent Activity)
+  const [playedGames, setPlayedGames] = useState(() => {
+    const saved = localStorage.getItem('indiethai_played_games');
+    return saved ? JSON.parse(saved) : [
+      { 
+        gameId: 'game-1', 
+        hoursPlayed: 42.5, 
+        lastPlayed: 'วันนี้', 
+        achievementsCount: 4, 
+        totalAchievements: 8,
+        achievementIcons: ['🏆', '⚡', '🔥', '🧩']
+      },
+      { 
+        gameId: 'game-3', 
+        hoursPlayed: 18.2, 
+        lastPlayed: 'เมื่อวาน', 
+        achievementsCount: 3, 
+        totalAchievements: 6,
+        achievementIcons: ['✈️', '🌤️', '🎖️']
+      },
+      { 
+        gameId: 'game-2', 
+        hoursPlayed: 7.0, 
+        lastPlayed: '3 วันที่แล้ว', 
+        achievementsCount: 2, 
+        totalAchievements: 5,
+        achievementIcons: ['🔷', '⏱️']
+      }
+    ];
+  });
+
   // ตัวกรอง (Search, Engine, Category, Sort, WishlistOnly)
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEngine, setSelectedEngine] = useState('All');
@@ -66,6 +100,10 @@ export const GameProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('indiethai_notifications', JSON.stringify(notifications));
   }, [notifications]);
+
+  useEffect(() => {
+    localStorage.setItem('indiethai_played_games', JSON.stringify(playedGames));
+  }, [playedGames]);
 
   // ซิงค์ selectedGameForDetail หากข้อมูลใน games มีการอัปเดต
   useEffect(() => {
@@ -469,6 +507,15 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
+   * นำทางไปยังแท็บหลัก (Steam Tabs: store, library, community, profile, studio, admin)
+   */
+  const navigateToTab = (tab) => {
+    setSelectedGameForDetail(null);
+    setIsWishlistOnly(false);
+    setActiveNavTab(tab);
+  };
+
+  /**
    * เล่นเกม WebGL
    */
   const openGamePlayer = (game) => {
@@ -476,6 +523,33 @@ export const GameProvider = ({ children }) => {
     setGames((prev) =>
       prev.map((g) => (g.id === game.id ? { ...g, playCount: (g.playCount || 0) + 1 } : g))
     );
+
+    // บันทึก/อัปเดตลงใน playedGames สำหรับกิจกรรมล่าสุด (Steam Recent Activity)
+    setPlayedGames((prev) => {
+      const existing = prev.find((p) => p.gameId === game.id);
+      if (existing) {
+        return [
+          { 
+            ...existing, 
+            hoursPlayed: Number(((existing.hoursPlayed || 0) + 0.2).toFixed(1)), 
+            lastPlayed: 'วันนี้' 
+          },
+          ...prev.filter((p) => p.gameId !== game.id)
+        ];
+      } else {
+        return [
+          {
+            gameId: game.id,
+            hoursPlayed: 0.5,
+            lastPlayed: 'วันนี้',
+            achievementsCount: 1,
+            totalAchievements: 5,
+            achievementIcons: ['🎮', '⚡']
+          },
+          ...prev
+        ];
+      }
+    });
   };
 
   const closeGamePlayer = () => {
@@ -500,6 +574,10 @@ export const GameProvider = ({ children }) => {
     filteredApprovedGames,
     wishlist,
     toggleWishlist,
+    activeNavTab,
+    setActiveNavTab,
+    navigateToTab,
+    playedGames,
     notifications: roleNotifications,
     unreadNotificationCount,
     markNotificationAsRead,

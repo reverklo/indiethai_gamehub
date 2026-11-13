@@ -218,6 +218,22 @@ export const AuthProvider = ({ children }) => {
     };
   };
 
+  /**
+   * แก้ไขข้อมูลโปรไฟล์ส่วนตัว (Edit Profile)
+   */
+  const updateUserProfile = (updatedFields) => {
+    setCurrentUser((prev) => {
+      const updated = { ...prev, ...updatedFields };
+      return updated;
+    });
+
+    setUsersList((prev) =>
+      prev.map((u) => (u.id === currentUser?.id ? { ...u, ...updatedFields } : u))
+    );
+
+    return { success: true, message: 'บันทึกการแก้ไขโปรไฟล์เรียบร้อยแล้ว' };
+  };
+
   const openAuthModal = (mode = 'login') => {
     setAuthModalMode(mode);
     setIsAuthModalOpen(true);
@@ -245,7 +261,8 @@ export const AuthProvider = ({ children }) => {
     updateTokenBalance,
     topUpTokens,
     adminAdjustUserToken,
-    adminToggleBanUser
+    adminToggleBanUser,
+    updateUserProfile
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
