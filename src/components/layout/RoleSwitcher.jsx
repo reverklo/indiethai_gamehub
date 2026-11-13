@@ -13,17 +13,17 @@ export const RoleSwitcher = () => {
       label: 'Player View',
       sublabel: 'ทดลองเล่นเกมอินดี้',
       icon: User,
-      activeClass: 'bg-emerald-500 text-gray-950 font-bold shadow-lg shadow-emerald-500/30 scale-105',
-      badge: 'เล่น WebGL ฟรี',
+      activeClass: 'bg-white text-gray-950 font-semibold border-white',
+      badge: 'เล่นฟรี',
       targetTab: 'store'
     },
     {
       id: 'developer',
       label: 'Developer View',
-      sublabel: 'ลงเกมใหม่ & เหรียญ',
+      sublabel: 'สตูดิโอ & จัดการเกม',
       icon: Code2,
-      activeClass: 'bg-[#6366F1] text-white font-bold shadow-lg shadow-indigo-500/30 scale-105',
-      badge: `${devTokenBalance} Tokens`,
+      activeClass: 'bg-white text-gray-950 font-semibold border-white',
+      badge: `${devTokenBalance} โควตา`,
       targetTab: 'studio'
     },
     {
@@ -31,7 +31,7 @@ export const RoleSwitcher = () => {
       label: 'Admin View',
       sublabel: 'ระบบตรวจสอบเกม',
       icon: ShieldAlert,
-      activeClass: 'bg-rose-500 text-white font-bold shadow-lg shadow-rose-500/30 scale-105',
+      activeClass: 'bg-white text-gray-950 font-semibold border-white',
       badge: pendingGames.length > 0 ? `รอตรวจ ${pendingGames.length}` : 'เรียบร้อย',
       targetTab: 'admin'
     }
@@ -40,16 +40,16 @@ export const RoleSwitcher = () => {
   return (
     <aside 
       aria-label="Demo Presentation Role Switcher"
-      className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-2 rounded-2xl bg-[#111827]/95 border border-white/[0.1] shadow-2xl backdrop-blur-xl transition-all hover:border-white/20"
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 p-1.5 rounded-xl bg-[#111827]/95 border border-white/[0.1] shadow-xl backdrop-blur-md transition-colors"
     >
-      <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 border-r border-white/[0.08] text-gray-400">
-        <ArrowRightLeft className="w-4 h-4 text-indigo-400 animate-pulse" />
-        <span className="text-xs font-semibold uppercase tracking-wider text-gray-300 font-mono">
-          Demo Switcher
+      <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 border-r border-white/[0.08] text-gray-400">
+        <ArrowRightLeft className="w-3.5 h-3.5 text-gray-400" />
+        <span className="text-[11px] font-medium text-gray-400 font-mono">
+          โหมดสาธิต
         </span>
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         {roles.map((role) => {
           const Icon = role.icon;
           const isActive = currentRole === role.id;
@@ -63,26 +63,26 @@ export const RoleSwitcher = () => {
                   navigateToTab(role.targetTab);
                 }
               }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all duration-200 cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer border ${
                 isActive
                   ? role.activeClass
-                  : 'bg-[#0B0F19]/80 text-gray-400 hover:text-gray-200 hover:bg-white/[0.06] border border-transparent hover:border-white/[0.08]'
+                  : 'bg-transparent text-gray-400 hover:text-white hover:bg-white/[0.06] border-transparent'
               }`}
             >
-              <Icon className="w-4 h-4 shrink-0" />
+              <Icon className="w-3.5 h-3.5 shrink-0" />
               <div className="text-left flex flex-col">
-                <span className="font-semibold leading-tight">{role.label}</span>
-                <span className={`text-[10px] hidden md:inline leading-none mt-0.5 ${isActive ? 'opacity-90' : 'text-gray-500'}`}>
+                <span className="font-medium leading-tight">{role.label}</span>
+                <span className={`text-[10px] hidden md:inline leading-none mt-0.5 ${isActive ? 'text-gray-700' : 'text-gray-500'}`}>
                   {role.sublabel}
                 </span>
               </div>
 
               {/* Mini badge */}
               <span
-                className={`text-[9px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
+                className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-medium ${
                   isActive
-                    ? 'bg-black/25 text-inherit'
-                    : 'bg-white/[0.06] text-gray-300 border border-white/[0.08]'
+                    ? 'bg-black/10 text-gray-900'
+                    : 'bg-white/[0.06] text-gray-400 border border-white/[0.06]'
                 }`}
               >
                 {role.badge}

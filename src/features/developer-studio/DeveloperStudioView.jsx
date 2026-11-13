@@ -187,19 +187,19 @@ export const DeveloperStudioView = () => {
             {/* 1. Wallet Box */}
             <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400 font-medium">เหรียญคงเหลือ</span>
-                <Coins className="w-4 h-4 text-amber-400" />
+                <span className="text-xs text-gray-400 font-medium">โควตาสตูดิโอ (สำหรับส่งเกม)</span>
+                <Code2 className="w-4 h-4 text-gray-400" />
               </div>
 
               <div className="my-2">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-semibold text-amber-300 font-mono">
+                  <span className="text-2xl font-semibold text-white font-mono">
                     {devTokenBalance}
                   </span>
-                  <span className="text-xs text-gray-400">Tokens</span>
+                  <span className="text-xs text-gray-400">เครดิต</span>
                 </div>
                 <p className="text-[10px] text-gray-500">
-                  (ลงเกมได้อีก {Math.floor(devTokenBalance / TOKEN_COST_PER_GAME)} เกม)
+                  (ส่งเกมใหม่ได้อีก {Math.floor(devTokenBalance / TOKEN_COST_PER_GAME)} เกม — 50 เครดิต/เกม)
                 </p>
               </div>
 
@@ -208,7 +208,7 @@ export const DeveloperStudioView = () => {
                 className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-gray-200 font-medium text-xs border border-white/[0.08] transition-colors cursor-pointer"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-gray-400" />
-                <span>เติม Token จำลอง (+100)</span>
+                <span>+ ขอรับโควตาจำลอง (+100)</span>
               </button>
             </div>
 
@@ -265,9 +265,9 @@ export const DeveloperStudioView = () => {
           <section className="space-y-4 pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2 font-['Rajdhani',sans-serif]">
-                  <FileText className="w-5 h-5 text-indigo-400" />
-                  <span>ตารางรายการเกมของสตูดิโอ (My Games Portfolio)</span>
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-gray-400" />
+                  <span>ตารางรายการเกมของสตูดิโอ</span>
                 </h2>
                 <p className="text-xs text-gray-400">
                   ตรวจสอบสถิติ, กดดูรายงานบั๊กของผู้เล่น และอัปเดตเวอร์ชันเกมได้จากที่นี่
@@ -330,7 +330,7 @@ export const DeveloperStudioView = () => {
                           </span>
                         )}
                         {game.status === 'pending' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30">
                             <Clock className="w-3 h-3" />
                             รอตรวจ
                           </span>
@@ -410,26 +410,26 @@ export const DeveloperStudioView = () => {
             </div>
           </section>
 
-          {/* 🌟 Dedicated Game Reports & Bug Tracking Modal สำหรับ Dev */}
+          {/* Dedicated Game Reports & Bug Tracking Modal สำหรับ Dev */}
           {selectedGameForFeedback && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-              <div className="bg-[#111827] border border-indigo-500/40 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl space-y-6 animate-in zoom-in-95 max-h-[90vh] flex flex-col">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+              <div className="bg-[#111827] border border-white/[0.08] rounded-2xl max-w-3xl w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[85vh] flex flex-col">
                 
                 {/* Modal Header */}
-                <div className="flex items-center justify-between border-b border-gray-800 pb-4 shrink-0">
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 shrink-0">
                   <div className="flex items-center gap-3">
                     <img
                       src={selectedGameForFeedback.thumbnail}
                       alt={selectedGameForFeedback.title}
-                      className="w-12 h-12 rounded-xl object-cover ring-2 ring-indigo-500/40"
+                      className="w-12 h-12 rounded-xl object-cover border border-white/[0.08]"
                     />
                     <div>
-                      <h3 className="text-xl font-bold text-white font-['Rajdhani',sans-serif]">
+                      <h3 className="text-base font-semibold text-white">
                         ศูนย์รายงานและฟีดแบ็ก: {selectedGameForFeedback.title}
                       </h3>
                       <p className="text-xs text-gray-400">
-                        เวอร์ชัน: <span className="font-mono text-indigo-400">{selectedGameForFeedback.version}</span> | 
-                        คะแนนรีวิวเฉลี่ย: <span className="text-amber-400 font-bold">★ {selectedGameForFeedback.rating || 'N/A'}</span>
+                        เวอร์ชัน: <span className="font-mono text-gray-300">{selectedGameForFeedback.version}</span> | 
+                        คะแนนรีวิวเฉลี่ย: <span className="text-amber-400 font-medium">★ {selectedGameForFeedback.rating || 'N/A'}</span>
                       </p>
                     </div>
                   </div>

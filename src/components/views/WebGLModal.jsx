@@ -8,7 +8,7 @@ export const WebGLModal = () => {
   if (!activePlayingGame) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-5xl h-[88vh] bg-[#111827] border border-indigo-500/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
         
         {/* Modal Header */}

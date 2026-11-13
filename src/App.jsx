@@ -76,7 +76,7 @@ const AppContent = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0B0F19] text-gray-100 cyber-grid-bg relative selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#0B0F19] text-gray-100 relative selection:bg-white/[0.15] selection:text-white">
       {/* Top Steam Navigation Header */}
       <Navbar />
 

@@ -56,7 +56,7 @@ export const AdminDashboardView = () => {
                 </span>
                 <span className="text-xs text-gray-400">ระบบหลังบ้าน IndieThai Hub</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-white mt-1 font-['Rajdhani',sans-serif]">
+              <h1 className="text-xl sm:text-2xl font-semibold text-white mt-1">
                 ระบบควบคุมและดูแลความปลอดภัยแพลตฟอร์ม
               </h1>
               <p className="text-xs text-gray-400 mt-0.5">
@@ -82,23 +82,23 @@ export const AdminDashboardView = () => {
         </div>
       )}
 
-      {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-3 border-b border-gray-800 pb-3 overflow-x-auto">
+      {/* Navigation Sub-Tabs (Quiet Chrome & Clean Unslop) */}
+      <div className="flex items-center gap-2 border-b border-white/[0.08] pb-3 overflow-x-auto scrollbar-none">
         
         {/* Tab 1: Moderation Queue */}
         <button
           onClick={() => setActiveTab('queue')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap border ${
             activeTab === 'queue'
-              ? 'bg-amber-500 text-gray-950 shadow-md shadow-amber-500/20'
-              : 'bg-[#111827] text-gray-400 hover:text-white border border-gray-800'
+              ? 'bg-white text-gray-950 border-white font-semibold'
+              : 'bg-white/[0.04] text-gray-400 hover:text-white border-white/[0.08] hover:border-white/20'
           }`}
         >
-          <Clock className="w-4 h-4" />
-          <span>คิวตรวจสอบเกม (Moderation Queue)</span>
+          <Clock className="w-3.5 h-3.5" />
+          <span>คิวตรวจสอบเกม</span>
           {pendingGames.length > 0 && (
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-              activeTab === 'queue' ? 'bg-black/30 text-inherit' : 'bg-amber-500 text-gray-950'
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
+              activeTab === 'queue' ? 'bg-black/15 text-gray-950' : 'bg-white/[0.1] text-gray-300'
             }`}>
               {pendingGames.length}
             </span>
@@ -108,27 +108,27 @@ export const AdminDashboardView = () => {
         {/* Tab 2: User Management */}
         <button
           onClick={() => setActiveTab('users')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap border ${
             activeTab === 'users'
-              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-              : 'bg-[#111827] text-gray-400 hover:text-white border border-gray-800'
+              ? 'bg-white text-gray-950 border-white font-semibold'
+              : 'bg-white/[0.04] text-gray-400 hover:text-white border-white/[0.08] hover:border-white/20'
           }`}
         >
-          <Users className="w-4 h-4" />
-          <span>จัดการผู้ใช้งาน (User Management)</span>
+          <Users className="w-3.5 h-3.5" />
+          <span>จัดการผู้ใช้งาน</span>
         </button>
 
         {/* Tab 3: Platform Analytics */}
         <button
           onClick={() => setActiveTab('analytics')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap border ${
             activeTab === 'analytics'
-              ? 'bg-emerald-500 text-gray-950 shadow-md shadow-emerald-500/20'
-              : 'bg-[#111827] text-gray-400 hover:text-white border border-gray-800'
+              ? 'bg-white text-gray-950 border-white font-semibold'
+              : 'bg-white/[0.04] text-gray-400 hover:text-white border-white/[0.08] hover:border-white/20'
           }`}
         >
-          <BarChart3 className="w-4 h-4" />
-          <span>วิเคราะห์ข้อมูล & รายได้ Token (Platform Analytics)</span>
+          <BarChart3 className="w-3.5 h-3.5" />
+          <span>วิเคราะห์ข้อมูล & รายได้</span>
         </button>
 
       </div>

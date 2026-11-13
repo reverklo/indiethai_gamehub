@@ -309,35 +309,35 @@ export const Navbar = () => {
               )}
             </div>
 
-            {/* Steam Wallet Token Pill (All Users) */}
+            {/* Steam Wallet Balance Pill (All Users) */}
             <div 
               onClick={openTopUpModal}
-              title="กระเป๋าเงิน Steam Wallet (คลิกเพื่อเติมเงิน)"
-              className="flex items-center gap-1.5 bg-[#161F30] hover:bg-[#1f2b42] border border-amber-500/25 hover:border-amber-500/40 px-2 py-1 rounded-lg shrink-0 cursor-pointer transition-all shadow-sm"
+              title="วอลเล็ตสำหรับซื้อเกม (คลิกเพื่อเติมเงิน)"
+              className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/20 px-2.5 py-1.5 rounded-lg shrink-0 cursor-pointer transition-colors"
             >
               <Coins className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span className="text-xs font-bold text-amber-300 font-mono">
-                {walletBalance} <span className="text-[10px] font-normal text-amber-400/80 font-sans">T</span>
+              <span className="text-xs font-medium text-white font-mono">
+                ฿{walletBalance}
               </span>
-              <span className="px-1.5 py-0.2 text-[10px] font-bold rounded bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-gray-950 transition-colors">
-                +เติม
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-white/[0.08] text-gray-300 hover:text-white transition-colors">
+                + เติมเงิน
               </span>
             </div>
 
-            {/* Developer Studio Tokens (Dev Role Only) */}
+            {/* Developer Studio Upload Quota (Dev Role Only) */}
             {currentRole === 'developer' && (
               <div 
-                title="เหรียญสตูดิโอสำหรับลงเกม (Dev Token)"
-                className="hidden sm:flex items-center gap-1.5 bg-indigo-950/40 border border-indigo-500/30 px-2 py-1 rounded-lg shrink-0"
+                title="โควตาสตูดิโอสำหรับส่งเกมใหม่ขึ้นตรวจ (1 เกม = 50 เครดิต)"
+                className="hidden sm:flex items-center gap-1.5 bg-white/[0.04] border border-white/[0.08] px-2.5 py-1.5 rounded-lg shrink-0"
               >
-                <Code2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                <span className="text-xs font-bold text-indigo-300 font-mono">
-                  {devTokenBalance} <span className="text-[10px] font-normal text-indigo-300/80 font-sans">Dev</span>
+                <Code2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                <span className="text-xs text-gray-300">
+                  โควตา: <strong className="font-mono font-medium text-white">{devTokenBalance}</strong>
                 </span>
                 <button
                   onClick={handleQuickTopUp}
-                  title="เติมเหรียญสตูดิโอ (+100 Tokens)"
-                  className="px-1 py-0.2 text-[10px] font-bold rounded bg-indigo-500/20 hover:bg-indigo-500 text-indigo-200 hover:text-white transition-colors cursor-pointer"
+                  title="ขอรับโควตาเพิ่มจำลอง (+100 เครดิต)"
+                  className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-white/[0.08] text-gray-300 hover:text-white transition-colors cursor-pointer"
                 >
                   +
                 </button>

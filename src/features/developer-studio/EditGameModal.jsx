@@ -1,12 +1,13 @@
 /**
  * EditGameModal.jsx
  * หน้าต่างสำหรับผู้พัฒนา: แก้ไขข้อมูลเกมแบบครบวงจรและปล่อยแพตช์อัปเดตเวอร์ชันใหม่
- * - ปรับปรุงข้อมูลหน้าร้าน: ชื่อเกม, คำโปรย, รายละเอียด, แนวเกม, ราคา Tokens/ฟรี
- * - ปล่อยแพตช์ใหม่: อัปเดตเลขเวอร์ชัน, ใส่ Changelog, เปลี่ยน URL ไฟล์ WebGL หรือไฟล์ PC .ZIP
- * - อัปเดตสเปกความต้องการระบบ (System Requirements) และลิงก์โซเชียล
+ * - Unslop & Quiet Chrome: เรียบหรู ไม่รกสายตา จัดสรรพื้นที่อย่างแม่นยำบน 4px grid
+ * - Fixed Header & Fixed Footer: ปุ่มบันทึกและปุ่มยกเลิกอยู่ติดด้านล่างเสมอ ไม่โดนอะไรบัง
+ * - Controlled Scroll: เฉพาะส่วนเนื้อหาฟอร์มเท่านั้นที่เลื่อนได้ และล็อก Scroll พื้นหลัง
+ * - z-[100]: อยู่เหนือทุกเลเยอร์ รวมถึง Demo Switcher
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   History, 
@@ -15,13 +16,10 @@ import {
   Coins, 
   Globe, 
   Monitor, 
-  CheckCircle2, 
-  Sparkles, 
-  ArrowRight,
-  ShieldCheck,
   Tag,
   Save,
-  Layers
+  Layers,
+  ArrowRight
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { GAME_CATEGORIES } from '../../data/mockData';
@@ -30,6 +28,15 @@ export const EditGameModal = ({ game, onClose, onSaveSuccess }) => {
   const { editGameDetails } = useGame();
 
   const [activeTab, setActiveTab] = useState('patch'); // 'patch' | 'store' | 'specs'
+
+  // ล็อก scroll ของ body ขณะที่ modal เปิดอยู่
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   // ข้อมูลที่แก้ไขได้
   const [formData, setFormData] = useState({
@@ -135,488 +142,474 @@ export const EditGameModal = ({ game, onClose, onSaveSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-sm animate-in fade-in"
+      onClick={onClose}
+    >
       <div 
-        className="relative w-full max-w-2xl rounded-2xl bg-[#0f172a] border border-white/[0.1] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95"
+        className="relative w-full max-w-3xl rounded-2xl bg-[#111827] border border-white/[0.08] shadow-2xl overflow-hidden flex flex-col h-[85vh] max-h-[720px] animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/[0.08] bg-[#111827]">
+        {/* Fixed Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#0f172a] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
-              <FileEdit className="w-5 h-5 text-indigo-400" />
+            <div className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0">
+              <FileEdit className="w-4 h-4 text-gray-300" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-                <span>แก้ไขข้อมูลและอัปเดตเกม</span>
-                <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 font-mono">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-white">แก้ไขข้อมูลและอัปเดตเกม</h3>
+                <span className="px-2 py-0.5 rounded text-[10px] bg-white/[0.08] text-gray-300 font-mono">
                   {game.version}
                 </span>
-              </h3>
-              <p className="text-xs text-gray-400 truncate max-w-sm">
-                เกม: <strong className="text-gray-200">{game.title}</strong>
+              </div>
+              <p className="text-xs text-gray-400">
+                {game.title}
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.06] transition"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation Tabs (3 หมวดหลัก) */}
-        <div className="flex items-center border-b border-white/[0.06] bg-[#0B0F19] px-4 pt-2 gap-2 text-xs font-semibold overflow-x-auto scrollbar-none">
+        {/* Fixed Navigation Tabs (3 หมวดหลัก กระชับ ไม่ตกบรรทัด) */}
+        <div className="flex items-center border-b border-white/[0.08] bg-[#0B0F19] px-6 gap-2 text-xs font-medium shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('patch')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg transition border-b-2 whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 py-3 px-3 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === 'patch'
-                ? 'border-indigo-400 text-white bg-white/[0.04]'
+                ? 'border-white text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200'
             }`}
           >
-            <History className="w-3.5 h-3.5 text-indigo-400" />
-            <span>1. ปล่อยแพตช์ & ไฟล์เกม (Build & Patch)</span>
+            <History className="w-3.5 h-3.5" />
+            <span>1. บิลด์ & แพตช์โน้ต</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('store')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg transition border-b-2 whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 py-3 px-3 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === 'store'
-                ? 'border-indigo-400 text-white bg-white/[0.04]'
+                ? 'border-white text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200'
             }`}
           >
-            <Tag className="w-3.5 h-3.5 text-emerald-400" />
-            <span>2. ข้อมูลหน้าร้าน & ราคา (Store & Price)</span>
+            <Tag className="w-3.5 h-3.5" />
+            <span>2. ข้อมูลร้านค้า & ราคา</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('specs')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg transition border-b-2 whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 py-3 px-3 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === 'specs'
-                ? 'border-indigo-400 text-white bg-white/[0.04]'
+                ? 'border-white text-white'
                 : 'border-transparent text-gray-400 hover:text-gray-200'
             }`}
           >
-            <Cpu className="w-3.5 h-3.5 text-sky-400" />
-            <span>3. สเปกเครื่อง & โซเชียล (Specs & Links)</span>
+            <Cpu className="w-3.5 h-3.5" />
+            <span>3. สเปกเครื่อง & โซเชียล</span>
           </button>
         </div>
 
-        {/* Modal Form Body (Scrollable) */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 text-xs">
+        {/* Form Container with Separated Scrollable Body and Fixed Footer */}
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
           
-          {/* TAB 1: Patch Notes & Game Builds */}
-          {activeTab === 'patch' && (
-            <div className="space-y-4 animate-in fade-in">
-              <div className="p-3.5 rounded-xl bg-indigo-950/30 border border-indigo-500/20 text-indigo-200 space-y-1">
-                <span className="font-bold flex items-center gap-1.5 text-xs text-indigo-300">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>บันทึกประวัติการอัปเดต (Patch Notes / Changelog)</span>
-                </span>
-                <p className="text-[11px] text-gray-400">
-                  เมื่อคุณระบุเลขเวอร์ชันใหม่หรือ Changelog ระบบจะบันทึกลงในหน้า Steam Store และแจ้งเตือนผู้เล่นโดยอัตโนมัติ
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-300 mb-1 font-medium">เลขเวอร์ชัน (Version) *</label>
-                  <input
-                    type="text"
-                    name="version"
-                    required
-                    value={formData.version}
-                    onChange={handleInputChange}
-                    placeholder="เช่น v1.5.0"
-                    className="w-full bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-400"
-                  />
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-5 text-xs">
+            
+            {/* TAB 1: Patch Notes & Game Builds */}
+            {activeTab === 'patch' && (
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-gray-300 space-y-1">
+                  <span className="font-medium text-white flex items-center gap-1.5">
+                    <History className="w-3.5 h-3.5 text-gray-400" />
+                    <span>บันทึกประวัติการอัปเดต (Patch Notes / Changelog)</span>
+                  </span>
+                  <p className="text-[11px] text-gray-400">
+                    เมื่อคุณระบุเลขเวอร์ชันใหม่หรือ Changelog ระบบจะบันทึกลงในหน้า Steam Store และแจ้งเตือนผู้เล่นโดยอัตโนมัติ
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-gray-300 mb-1 font-medium">หัวข้อแพตช์ (Patch Title)</label>
-                  <input
-                    type="text"
-                    name="newPatchTitle"
-                    value={formData.newPatchTitle}
-                    onChange={handleInputChange}
-                    placeholder="เช่น เพิ่มแผนที่ใหม่และปรับสมดุลเกม"
-                    className="w-full bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-400"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-gray-300 mb-1 font-medium">รายละเอียดสิ่งที่อัปเดต (Changelog)</label>
-                <textarea
-                  name="newPatchDetails"
-                  rows={3}
-                  value={formData.newPatchDetails}
-                  onChange={handleInputChange}
-                  placeholder="เช่น - แก้ไขปัญหาเสียงกระตุกในโหมด WebGL&#10;- ปรับปรุงความเร็วในการดาวน์โหลดไฟล์ PC&#10;- เพิ่มซาวด์แทร็กใหม่ 2 เพลง"
-                  className="w-full bg-[#111827] border border-white/[0.08] rounded-lg p-3 text-white focus:outline-none focus:border-indigo-400 leading-relaxed resize-none"
-                />
-              </div>
-
-              {/* Build URLs */}
-              <div className="pt-3 border-t border-white/[0.06] space-y-3">
-                <span className="font-bold text-white block">ลิงก์บิลด์เกมสำหรับผู้เล่น (Game Build URLs)</span>
-                
-                {formData.hasWebgl && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-300 mb-1 font-medium flex items-center gap-1.5">
-                      <Globe className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>URL บิลด์เกม WebGL</span>
-                    </label>
+                    <label className="block text-gray-300 mb-1.5 font-medium">เลขเวอร์ชัน (Version) *</label>
                     <input
-                      type="url"
-                      name="webglUrl"
-                      value={formData.webglUrl}
+                      type="text"
+                      name="version"
+                      required
+                      value={formData.version}
                       onChange={handleInputChange}
-                      placeholder="https://..."
-                      className="w-full bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono text-[11px] focus:outline-none focus:border-indigo-400"
+                      placeholder="เช่น v1.5.0"
+                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-white/20 transition-colors"
                     />
                   </div>
-                )}
 
-                {formData.hasPcDownload && (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="sm:col-span-2">
-                      <label className="block text-gray-300 mb-1 font-medium flex items-center gap-1.5">
-                        <Monitor className="w-3.5 h-3.5 text-sky-400" />
-                        <span>URL ดาวน์โหลดไฟล์เกม PC (.ZIP / Installer)</span>
+                  <div>
+                    <label className="block text-gray-300 mb-1.5 font-medium">หัวข้อแพตช์ (Patch Title)</label>
+                    <input
+                      type="text"
+                      name="newPatchTitle"
+                      value={formData.newPatchTitle}
+                      onChange={handleInputChange}
+                      placeholder="เช่น เพิ่มแผนที่ใหม่และปรับสมดุลเกม"
+                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-white/20 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-gray-300 mb-1.5 font-medium">รายละเอียดสิ่งที่อัปเดต (Changelog)</label>
+                  <textarea
+                    name="newPatchDetails"
+                    rows={3}
+                    value={formData.newPatchDetails}
+                    onChange={handleInputChange}
+                    placeholder="เช่น - แก้ไขปัญหาเสียงกระตุกในโหมด WebGL&#10;- ปรับปรุงความเร็วในการดาวน์โหลดไฟล์ PC&#10;- เพิ่มซาวด์แทร็กใหม่ 2 เพลง"
+                    className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg p-3 text-white focus:outline-none focus:border-white/20 leading-relaxed resize-none transition-colors"
+                  />
+                </div>
+
+                {/* Build URLs */}
+                <div className="pt-3 border-t border-white/[0.06] space-y-3">
+                  <span className="font-semibold text-white block">ลิงก์บิลด์เกมสำหรับผู้เล่น (Game Build URLs)</span>
+                  
+                  {formData.hasWebgl && (
+                    <div>
+                      <label className="block text-gray-300 mb-1.5 font-medium flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-gray-400" />
+                        <span>URL บิลด์เกม WebGL</span>
                       </label>
                       <input
                         type="url"
-                        name="downloadUrl"
-                        value={formData.downloadUrl}
+                        name="webglUrl"
+                        value={formData.webglUrl}
                         onChange={handleInputChange}
                         placeholder="https://..."
-                        className="w-full bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono text-[11px] focus:outline-none focus:border-indigo-400"
+                        className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono text-[11px] focus:outline-none focus:border-white/20 transition-colors"
                       />
                     </div>
-                    <div>
-                      <label className="block text-gray-300 mb-1 font-medium">ขนาดไฟล์โดยประมาณ</label>
-                      <input
-                        type="text"
-                        name="downloadSize"
-                        value={formData.downloadSize}
-                        onChange={handleInputChange}
-                        placeholder="เช่น 150 MB"
-                        className="w-full bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-indigo-400"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+                  )}
 
-          {/* TAB 2: Storefront Details & Pricing */}
-          {activeTab === 'store' && (
-            <div className="space-y-4 animate-in fade-in">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {formData.hasPcDownload && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2">
+                        <label className="block text-gray-300 mb-1.5 font-medium flex items-center gap-1.5">
+                          <Monitor className="w-3.5 h-3.5 text-gray-400" />
+                          <span>URL ดาวน์โหลดไฟล์เกม PC (.ZIP / Installer)</span>
+                        </label>
+                        <input
+                          type="url"
+                          name="downloadUrl"
+                          value={formData.downloadUrl}
+                          onChange={handleInputChange}
+                          placeholder="https://..."
+                          className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono text-[11px] focus:outline-none focus:border-white/20 transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 mb-1.5 font-medium">ขนาดไฟล์โดยประมาณ</label>
+                        <input
+                          type="text"
+                          name="downloadSize"
+                          value={formData.downloadSize}
+                          onChange={handleInputChange}
+                          placeholder="เช่น 150 MB"
+                          className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-white/20 transition-colors"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: Storefront Details & Pricing */}
+            {activeTab === 'store' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-300 mb-1.5 font-medium">ชื่อเกม (Game Title) *</label>
+                    <input
+                      type="text"
+                      name="title"
+                      required
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-white/20 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-300 mb-1.5 font-medium">หมวดหมู่แนวเกม (Category) *</label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-white/20 transition-colors"
+                    >
+                      {GAME_CATEGORIES.filter((c) => c !== 'All').map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-gray-300 mb-1 font-medium">ชื่อเกม (Game Title) *</label>
+                  <label className="block text-gray-300 mb-1.5 font-medium">คำโปรยสั้น (Tagline) *</label>
                   <input
                     type="text"
-                    name="title"
+                    name="tagline"
                     required
-                    value={formData.title}
+                    value={formData.tagline}
                     onChange={handleInputChange}
-                    className="w-full bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-400"
+                    className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 mb-1 font-medium">หมวดหมู่แนวเกม (Category) *</label>
-                  <select
-                    name="category"
-                    value={formData.category}
+                  <label className="block text-gray-300 mb-1.5 font-medium">รายละเอียดเกมแบบยาว (Description)</label>
+                  <textarea
+                    name="description"
+                    rows={3}
+                    value={formData.description}
                     onChange={handleInputChange}
-                    className="w-full bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-400"
-                  >
-                    {GAME_CATEGORIES.filter((c) => c !== 'All').map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-gray-300 mb-1 font-medium">คำโปรยสั้น (Tagline) *</label>
-                <input
-                  type="text"
-                  name="tagline"
-                  required
-                  value={formData.tagline}
-                  onChange={handleInputChange}
-                  className="w-full bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-300 mb-1 font-medium">รายละเอียดเกมแบบยาว (Description)</label>
-                <textarea
-                  name="description"
-                  rows={3}
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  className="w-full bg-[#111827] border border-white/[0.08] rounded-lg p-3 text-white focus:outline-none focus:border-indigo-400 leading-relaxed resize-none"
-                />
-              </div>
-
-              {/* Pricing Selector */}
-              <div className="pt-3 border-t border-white/[0.06] space-y-3">
-                <span className="font-bold text-white block">การตั้งราคาและการจัดจำหน่าย (Monetization)</span>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div
-                    onClick={() => setFormData((p) => ({ ...p, pricingType: 'free' }))}
-                    className={`p-3 rounded-xl border transition cursor-pointer ${
-                      formData.pricingType === 'free'
-                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 font-bold'
-                        : 'bg-[#111827] border-white/[0.06] text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <div className="text-xs">🟢 เล่นฟรี (Free)</div>
-                    <div className="text-[10px] text-gray-400 font-normal">ทุกคนกดเล่นได้ทันที</div>
-                  </div>
-
-                  <div
-                    onClick={() => setFormData((p) => ({ ...p, pricingType: 'paid' }))}
-                    className={`p-3 rounded-xl border transition cursor-pointer ${
-                      formData.pricingType === 'paid'
-                        ? 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300 font-bold'
-                        : 'bg-[#111827] border-white/[0.06] text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <div className="text-xs">🏷️ จำหน่าย (Tokens)</div>
-                    <div className="text-[10px] text-gray-400 font-normal">ซื้อผ่าน Steam Wallet</div>
-                  </div>
+                    className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg p-3 text-white focus:outline-none focus:border-white/20 leading-relaxed resize-none transition-colors"
+                  />
                 </div>
 
-                {formData.pricingType === 'paid' && (
-                  <div className="p-3 rounded-xl bg-[#0B0F19] border border-indigo-500/30 flex items-center justify-between">
-                    <div>
-                      <label className="block text-gray-300 text-xs mb-0.5">ราคาเกม (Tokens / ฿):</label>
-                      <input
-                        type="number"
-                        name="price"
-                        value={formData.price}
-                        onChange={handleInputChange}
-                        className="bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-1.5 text-white font-mono font-bold text-sm w-32 focus:outline-none focus:border-indigo-400"
-                      />
+                {/* Pricing Selector */}
+                <div className="pt-3 border-t border-white/[0.06] space-y-3">
+                  <span className="font-semibold text-white block">การตั้งราคาและการจัดจำหน่าย (Monetization)</span>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div
+                      onClick={() => setFormData((p) => ({ ...p, pricingType: 'free' }))}
+                      className={`p-3 rounded-xl border transition-colors cursor-pointer ${
+                        formData.pricingType === 'free'
+                          ? 'bg-white/[0.08] border-white/40 text-white font-medium'
+                          : 'bg-[#0B0F19] border-white/[0.06] text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <div className="text-xs font-semibold">เล่นฟรี (Free to Play)</div>
+                      <div className="text-[10px] text-gray-400 mt-0.5">ทุกคนสามารถกดเล่นและดาวน์โหลดได้ทันที</div>
                     </div>
-                    <div className="text-right text-[11px] text-gray-400">
-                      <span>ส่วนแบ่งของคุณ (85%):</span>
-                      <strong className="text-emerald-400 font-mono text-xs block">
-                        +{Math.floor((Number(formData.price) || 0) * 0.85)} Tokens / การซื้อ
-                      </strong>
+
+                    <div
+                      onClick={() => setFormData((p) => ({ ...p, pricingType: 'paid' }))}
+                      className={`p-3 rounded-xl border transition-colors cursor-pointer ${
+                        formData.pricingType === 'paid'
+                          ? 'bg-white/[0.08] border-white/40 text-white font-medium'
+                          : 'bg-[#0B0F19] border-white/[0.06] text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <div className="text-xs font-semibold">จำหน่ายผ่าน Steam Wallet</div>
+                      <div className="text-[10px] text-gray-400 mt-0.5">ผู้เล่นสั่งซื้อด้วยยอดเงินในวอลเล็ต</div>
                     </div>
                   </div>
-                )}
-              </div>
 
-              {/* PromptPay */}
-              <div className="pt-2">
-                <label className="block text-gray-300 mb-1 font-medium">เบอร์พร้อมเพย์รับการสนับสนุน (PromptPay)</label>
-                <input
-                  type="text"
-                  name="promptPayNumber"
-                  value={formData.promptPayNumber}
-                  onChange={handleInputChange}
-                  placeholder="089-xxx-xxxx"
-                  className="w-full bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono text-xs"
-                />
-              </div>
-            </div>
-          )}
+                  {formData.pricingType === 'paid' && (
+                    <div className="p-3.5 rounded-xl bg-[#0B0F19] border border-white/[0.08] space-y-2">
+                      <label className="block text-gray-300 font-medium">กำหนดราคาเกม (บาท / Tokens)</label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-base text-gray-400 font-mono">฿</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          name="price"
+                          value={formData.price}
+                          onChange={handleInputChange}
+                          className="w-36 bg-[#111827] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono text-base focus:outline-none focus:border-white/20 transition-colors"
+                        />
+                        <span className="text-xs text-gray-500">(1 Token = 1 บาท)</span>
+                      </div>
+                    </div>
+                  )}
 
-          {/* TAB 3: System Requirements & Social Links */}
-          {activeTab === 'specs' && (
-            <div className="space-y-4 animate-in fade-in">
-              <span className="font-bold text-white block">ความต้องการของระบบ (System Requirements)</span>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Minimum */}
-                <div className="p-3.5 rounded-xl bg-[#111827] border border-white/[0.06] space-y-2">
-                  <span className="font-bold text-gray-200 block border-b border-white/[0.06] pb-1">
-                    ขั้นต่ำ (Minimum)
-                  </span>
-                  <div>
-                    <label className="block text-[10px] text-gray-400">ระบบปฏิบัติการ (OS)</label>
+                  {/* PromptPay Donate setting */}
+                  <div className="pt-2">
+                    <label className="block text-gray-300 mb-1.5 font-medium">เบอร์พร้อมเพย์รับการสนับสนุน (PromptPay Donation)</label>
                     <input
                       type="text"
-                      name="minOs"
-                      value={formData.minOs}
+                      name="promptPayNumber"
+                      value={formData.promptPayNumber}
                       onChange={handleInputChange}
-                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2 py-1 text-white text-[11px]"
+                      placeholder="เช่น 089-765-4321"
+                      className="w-full max-w-xs bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-white/20 transition-colors"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[10px] text-gray-400">โปรเซสเซอร์ (CPU)</label>
-                    <input
-                      type="text"
-                      name="minCpu"
-                      value={formData.minCpu}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2 py-1 text-white text-[11px]"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: System Requirements & Social Links */}
+            {activeTab === 'specs' && (
+              <div className="space-y-4">
+                <span className="font-semibold text-white block">ความต้องการของระบบ (System Requirements)</span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Minimum */}
+                  <div className="p-3.5 rounded-xl bg-[#0B0F19] border border-white/[0.08] space-y-2.5">
+                    <span className="font-semibold text-white block border-b border-white/[0.06] pb-1">
+                      สเปกขั้นต่ำ (Minimum)
+                    </span>
                     <div>
-                      <label className="block text-[10px] text-gray-400">แรม (RAM)</label>
+                      <label className="block text-[10px] text-gray-400 mb-0.5">ระบบปฏิบัติการ (OS)</label>
                       <input
                         type="text"
-                        name="minRam"
-                        value={formData.minRam}
+                        name="minOs"
+                        value={formData.minOs}
                         onChange={handleInputChange}
-                        className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2 py-1 text-white text-[11px]"
+                        className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
                       />
                     </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-gray-400 mb-0.5">โปรเซสเซอร์ (CPU)</label>
+                        <input
+                          type="text"
+                          name="minCpu"
+                          value={formData.minCpu}
+                          onChange={handleInputChange}
+                          className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 mb-0.5">หน่วยความจำ (RAM)</label>
+                        <input
+                          type="text"
+                          name="minRam"
+                          value={formData.minRam}
+                          onChange={handleInputChange}
+                          className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
+                        />
+                      </div>
+                    </div>
                     <div>
-                      <label className="block text-[10px] text-gray-400">พื้นที่ว่าง (Storage)</label>
+                      <label className="block text-[10px] text-gray-400 mb-0.5">การ์ดจอ (GPU)</label>
                       <input
                         type="text"
-                        name="minStorage"
-                        value={formData.minStorage}
+                        name="minGpu"
+                        value={formData.minGpu}
                         onChange={handleInputChange}
-                        className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2 py-1 text-white text-[11px]"
+                        className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-[10px] text-gray-400">การ์ดจอ (GPU)</label>
-                    <input
-                      type="text"
-                      name="minGpu"
-                      value={formData.minGpu}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2 py-1 text-white text-[11px]"
-                    />
+
+                  {/* Recommended */}
+                  <div className="p-3.5 rounded-xl bg-[#0B0F19] border border-white/[0.08] space-y-2.5">
+                    <span className="font-semibold text-white block border-b border-white/[0.06] pb-1">
+                      สเปกแนะนำ (Recommended)
+                    </span>
+                    <div>
+                      <label className="block text-[10px] text-gray-400 mb-0.5">ระบบปฏิบัติการ (OS)</label>
+                      <input
+                        type="text"
+                        name="recOs"
+                        value={formData.recOs}
+                        onChange={handleInputChange}
+                        className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-gray-400 mb-0.5">โปรเซสเซอร์ (CPU)</label>
+                        <input
+                          type="text"
+                          name="recCpu"
+                          value={formData.recCpu}
+                          onChange={handleInputChange}
+                          className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-400 mb-0.5">หน่วยความจำ (RAM)</label>
+                        <input
+                          type="text"
+                          name="recRam"
+                          value={formData.recRam}
+                          onChange={handleInputChange}
+                          className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-gray-400 mb-0.5">การ์ดจอ (GPU)</label>
+                      <input
+                        type="text"
+                        name="recGpu"
+                        value={formData.recGpu}
+                        onChange={handleInputChange}
+                        className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Recommended */}
-                <div className="p-3.5 rounded-xl bg-[#111827] border border-white/[0.06] space-y-2">
-                  <span className="font-bold text-gray-200 block border-b border-white/[0.06] pb-1">
-                    แนะนำ (Recommended)
-                  </span>
-                  <div>
-                    <label className="block text-[10px] text-gray-400">ระบบปฏิบัติการ (OS)</label>
-                    <input
-                      type="text"
-                      name="recOs"
-                      value={formData.recOs}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2 py-1 text-white text-[11px]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-gray-400">โปรเซสเซอร์ (CPU)</label>
-                    <input
-                      type="text"
-                      name="recCpu"
-                      value={formData.recCpu}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2 py-1 text-white text-[11px]"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
+                {/* Social Links */}
+                <div className="pt-3 border-t border-white/[0.06] space-y-3">
+                  <span className="font-semibold text-white block">ช่องทางคอมมูนิตี้ (Community Links)</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-[10px] text-gray-400">แรม (RAM)</label>
+                      <label className="block text-[10px] text-gray-400 mb-1">Discord Invite</label>
                       <input
                         type="text"
-                        name="recRam"
-                        value={formData.recRam}
+                        name="discordUrl"
+                        value={formData.discordUrl}
                         onChange={handleInputChange}
-                        className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2 py-1 text-white text-[11px]"
+                        placeholder="https://discord.gg/..."
+                        className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-gray-400">พื้นที่ว่าง (Storage)</label>
+                      <label className="block text-[10px] text-gray-400 mb-1">X (Twitter) / เพจ</label>
                       <input
                         type="text"
-                        name="recStorage"
-                        value={formData.recStorage}
+                        name="twitterUrl"
+                        value={formData.twitterUrl}
                         onChange={handleInputChange}
-                        className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2 py-1 text-white text-[11px]"
+                        placeholder="https://x.com/..."
+                        className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-gray-400">การ์ดจอ (GPU)</label>
-                    <input
-                      type="text"
-                      name="recGpu"
-                      value={formData.recGpu}
-                      onChange={handleInputChange}
-                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2 py-1 text-white text-[11px]"
-                    />
+                    <div>
+                      <label className="block text-[10px] text-gray-400 mb-1">Official Website</label>
+                      <input
+                        type="text"
+                        name="websiteUrl"
+                        value={formData.websiteUrl}
+                        onChange={handleInputChange}
+                        placeholder="https://..."
+                        className="w-full bg-[#0B0F19] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px] focus:outline-none focus:border-white/20"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
+            )}
 
-              {/* Social Links */}
-              <div className="pt-3 border-t border-white/[0.06] space-y-3">
-                <span className="font-bold text-white block">ช่องทางคอมมูนิตี้ (Community Links)</span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[10px] text-gray-400 mb-1">Discord Invite</label>
-                    <input
-                      type="text"
-                      name="discordUrl"
-                      value={formData.discordUrl}
-                      onChange={handleInputChange}
-                      placeholder="https://discord.gg/..."
-                      className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-gray-400 mb-1">X (Twitter) / เพจ</label>
-                    <input
-                      type="text"
-                      name="twitterUrl"
-                      value={formData.twitterUrl}
-                      onChange={handleInputChange}
-                      placeholder="https://x.com/..."
-                      className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-gray-400 mb-1">Official Website</label>
-                    <input
-                      type="text"
-                      name="websiteUrl"
-                      value={formData.websiteUrl}
-                      onChange={handleInputChange}
-                      placeholder="https://..."
-                      className="w-full bg-[#111827] border border-white/[0.08] rounded px-2.5 py-1.5 text-white text-[11px]"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
 
-          {/* Modal Footer Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-white/[0.08]">
-            <p className="text-[11px] text-gray-400">
+          {/* Fixed Modal Footer Actions (Always visible at the bottom of the modal, never blocked) */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.08] bg-[#0f172a] shrink-0">
+            <p className="text-[11px] text-gray-400 hidden sm:block">
               การเปลี่ยนแปลงจะมีผลต่อหน้า Steam Store ทันที
             </p>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5 ml-auto">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-gray-300 hover:text-white transition cursor-pointer"
+                className="px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-gray-300 hover:text-white transition-colors cursor-pointer font-medium text-xs"
               >
                 ยกเลิก
               </button>
@@ -624,9 +617,9 @@ export const EditGameModal = ({ game, onClose, onSaveSuccess }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/30 transition cursor-pointer"
+                className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer text-xs"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-3.5 h-3.5" />
                 <span>{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}</span>
               </button>
             </div>

@@ -391,11 +391,11 @@ export const StorefrontView = () => {
           <div className="flex items-center gap-1 shrink-0">
             {[
               { id: 'all', label: `เกมทั้งหมด (${filteredApprovedGames.length})`, icon: Gamepad2 },
-              { id: 'top_sellers', label: '🔥 ยอดนิยม (Top Sellers)', icon: Zap },
-              { id: 'new_releases', label: '✨ มาใหม่ล่าสุด', icon: Sparkles },
-              { id: 'webgl', label: '🌐 เล่นบนเว็บ WebGL', icon: Globe },
-              { id: 'pc', label: '💻 เกม PC ดาวน์โหลด', icon: Monitor },
-              { id: 'discounted', label: '🏷️ ลดราคาพิเศษ', icon: Tag }
+              { id: 'top_sellers', label: 'ยอดนิยม (Top Sellers)', icon: Zap },
+              { id: 'new_releases', label: 'มาใหม่ล่าสุด', icon: Sparkles },
+              { id: 'webgl', label: 'เล่นบนเว็บ WebGL', icon: Globe },
+              { id: 'pc', label: 'เกม PC ดาวน์โหลด', icon: Monitor },
+              { id: 'discounted', label: 'ลดราคาพิเศษ', icon: Tag }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeSteamTab === tab.id;
