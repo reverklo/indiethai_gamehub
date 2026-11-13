@@ -19,6 +19,7 @@ import { RoleSwitcher } from './components/layout/RoleSwitcher';
 import { Footer } from './components/layout/Footer';
 import { WebGLModal } from './components/views/WebGLModal';
 import { AuthModal } from './components/layout/AuthModal';
+import { TopUpWalletModal } from './components/layout/TopUpWalletModal';
 
 // Features Components
 import { StorefrontView } from './features/storefront/StorefrontView';
@@ -82,6 +83,9 @@ const AppContent = () => {
 
       {/* Authentication Modal (Login / Register) */}
       <AuthModal />
+
+      {/* Steam Wallet Top-Up Modal */}
+      <TopUpWalletModal />
 
       {/* Floating Presentation Role Switcher (Player / Developer / Admin) */}
       <RoleSwitcher />

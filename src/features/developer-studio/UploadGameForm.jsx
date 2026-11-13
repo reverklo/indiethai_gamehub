@@ -49,13 +49,25 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
     engine: 'Unity WebGL',
     version: 'v1.0.0',
     releaseStatus: 'released', // 'released' | 'early_access' | 'prototype'
+    pricingType: 'free', // 'free' | 'paid'
+    price: 99,
     webglUrl: 'https://play2048.co/',
     webglResolution: '16:9 (1280x720)',
     downloadUrl: 'https://github.com/gabrielecirulli/2048/archive/refs/heads/master.zip',
     downloadSize: '45 MB',
-    supportedOs: 'Windows 10 / 11',
+    supportedOs: 'Windows 10 / 11 64-bit',
+    minCpu: 'Intel Core i3 / AMD Ryzen 3',
     minRam: '4 GB',
     minGpu: 'GTX 1050 หรือเทียบเท่า',
+    minStorage: '500 MB',
+    recOs: 'Windows 11 64-bit',
+    recCpu: 'Intel Core i5 / AMD Ryzen 5',
+    recRam: '8 GB',
+    recGpu: 'NVIDIA GTX 1060 / AMD RX 580',
+    recStorage: '1 GB SSD',
+    discordUrl: 'https://discord.gg/indiethai',
+    twitterUrl: 'https://twitter.com',
+    websiteUrl: '',
     promptPayNumber: currentUser?.promptPayNumber || '089-765-4321',
     thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80'
   });
@@ -177,12 +189,39 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
 
     const hasWebgl = kindOfProject === 'webgl' || kindOfProject === 'both';
     const hasPcDownload = kindOfProject === 'pc' || kindOfProject === 'both';
+    const price = formData.pricingType === 'paid' ? (Number(formData.price) || 99) : 0;
 
     const result = submitNewGame({
       ...formData,
+      price,
+      originalPrice: price,
+      discountPercent: 0,
       kindOfProject,
       hasWebgl,
       hasPcDownload,
+      systemRequirements: {
+        minimum: {
+          os: formData.supportedOs || 'Windows 10 64-bit',
+          processor: formData.minCpu || 'Intel Core i3 / AMD Ryzen 3',
+          memory: `${formData.minRam} RAM`,
+          graphics: formData.minGpu || 'NVIDIA GTX 750 / AMD Radeon',
+          directx: 'เวอร์ชัน 11',
+          storage: `${formData.minStorage} พื้นที่ว่าง`
+        },
+        recommended: {
+          os: formData.recOs || 'Windows 11 64-bit',
+          processor: formData.recCpu || 'Intel Core i5 / AMD Ryzen 5',
+          memory: `${formData.recRam} RAM`,
+          graphics: formData.recGpu || 'NVIDIA GTX 1060 / AMD RX 580',
+          directx: 'เวอร์ชัน 12',
+          storage: `${formData.recStorage}`
+        }
+      },
+      socialLinks: {
+        discord: formData.discordUrl,
+        twitter: formData.twitterUrl,
+        website: formData.websiteUrl || 'https://indiethai.hub'
+      },
       requirements: hasPcDownload ? {
         os: formData.supportedOs,
         browser: hasWebgl ? 'Chrome, Edge, Firefox, Safari (รองรับ WebGL 2.0)' : 'ไม่ต้องใช้เบราว์เซอร์ (รันบนเครื่อง PC)',
@@ -438,6 +477,86 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
               className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg p-3 text-white focus:outline-none focus:border-white/20 leading-relaxed resize-none"
             />
           </div>
+        </div>
+
+        {/* Section 2.5: การตั้งราคาและการจัดจำหน่าย (Steam Pricing & Monetization) */}
+        <div className="space-y-4 pt-6 border-t border-white/[0.06]">
+          <div>
+            <h3 className="text-xs font-semibold text-white uppercase tracking-wider font-mono">
+              3. การตั้งราคาและการจัดจำหน่าย (Steam Pricing & Monetization) *
+            </h3>
+            <p className="text-[11px] text-gray-400 mt-0.5">
+              เลือกว่าต้องการเปิดให้เล่นฟรี หรือจำหน่ายเป็นเหรียญ Tokens (1 Token = 1 บาท)
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div
+              onClick={() => setFormData((p) => ({ ...p, pricingType: 'free' }))}
+              className={`p-4 rounded-xl border transition cursor-pointer space-y-1.5 ${
+                formData.pricingType === 'free'
+                  ? 'bg-emerald-500/10 border-emerald-500/40 text-white'
+                  : 'bg-[#0B0F19] border-white/[0.06] text-gray-400 hover:border-white/20'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-emerald-400">🟢 เปิดให้เล่นฟรี (Free to Play)</span>
+                <span className={`w-2.5 h-2.5 rounded-full ${formData.pricingType === 'free' ? 'bg-emerald-400 ring-4 ring-emerald-400/20' : 'border border-gray-600'}`} />
+              </div>
+              <p className="text-[11px] text-gray-400">
+                ผู้เล่นทุกคนสามารถกดเล่นผ่านเว็บ WebGL หรือดาวน์โหลด PC ได้ทันทีโดยไม่เสียค่าใช้จ่าย
+              </p>
+            </div>
+
+            <div
+              onClick={() => setFormData((p) => ({ ...p, pricingType: 'paid' }))}
+              className={`p-4 rounded-xl border transition cursor-pointer space-y-1.5 ${
+                formData.pricingType === 'paid'
+                  ? 'bg-indigo-500/10 border-indigo-500/40 text-white'
+                  : 'bg-[#0B0F19] border-white/[0.06] text-gray-400 hover:border-white/20'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-indigo-400">🏷️ จำหน่ายแบบคิดเงิน (Paid Game)</span>
+                <span className={`w-2.5 h-2.5 rounded-full ${formData.pricingType === 'paid' ? 'bg-indigo-400 ring-4 ring-indigo-400/20' : 'border border-gray-600'}`} />
+              </div>
+              <p className="text-[11px] text-gray-400">
+                ผู้เล่นต้องชำระเหรียญ Tokens จาก Steam Wallet เพื่อปลดล็อกและเพิ่มเข้าสู่คลังเกม
+              </p>
+            </div>
+          </div>
+
+          {formData.pricingType === 'paid' && (
+            <div className="p-4 rounded-xl bg-[#0B0F19] border border-indigo-500/30 space-y-3 animate-in fade-in">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-300 mb-1 font-medium">ราคาเกม (Tokens / บาท) *</label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    placeholder="เช่น 99, 149, 199"
+                    className="w-full bg-[#111827] border border-white/[0.08] rounded-lg px-3.5 py-2 text-white font-mono font-bold text-sm focus:outline-none focus:border-indigo-400"
+                  />
+                </div>
+                <div className="flex flex-col justify-center text-xs space-y-1 p-2.5 rounded-lg bg-[#161F30] border border-white/[0.06]">
+                  <div className="flex justify-between text-gray-300">
+                    <span>ส่วนแบ่งผู้พัฒนา (85%):</span>
+                    <strong className="text-emerald-400 font-mono text-sm">
+                      +{Math.floor((Number(formData.price) || 0) * 0.85)} Tokens / ขาย
+                    </strong>
+                  </div>
+                  <div className="flex justify-between text-gray-500 text-[10px]">
+                    <span>ค่าธรรมเนียมแพลตฟอร์ม (15%):</span>
+                    <span className="font-mono">
+                      {Math.ceil((Number(formData.price) || 0) * 0.15)} Tokens
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Section 3: สื่อภาพและวิดีโอ (Media Showcase Manager) */}
@@ -707,6 +826,56 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
             </div>
           </div>
         )}
+
+        {/* Section: ช่องทางคอมมูนิตี้และโซเชียลมีเดีย */}
+        <div className="space-y-4 pt-6 border-t border-white/[0.06]">
+          <div>
+            <h3 className="text-xs font-semibold text-white uppercase tracking-wider font-mono">
+              ช่องทางคอมมูนิตี้และโซเชียล (Community Links)
+            </h3>
+            <p className="text-[11px] text-gray-400 mt-0.5">
+              ลิงก์ให้ผู้เล่นกดติดตามข่าวสารหรือเข้าร่วม Discord สตูดิโอของคุณ
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-[11px] text-gray-300 mb-1 font-medium">Discord Server Link</label>
+              <input
+                type="text"
+                name="discordUrl"
+                value={formData.discordUrl}
+                onChange={handleInputChange}
+                placeholder="https://discord.gg/your-studio"
+                className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-1.5 text-white text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-gray-300 mb-1 font-medium">X (Twitter) หรือ Facebook</label>
+              <input
+                type="text"
+                name="twitterUrl"
+                value={formData.twitterUrl}
+                onChange={handleInputChange}
+                placeholder="https://x.com/your-studio"
+                className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-1.5 text-white text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-gray-300 mb-1 font-medium">Official Website</label>
+              <input
+                type="text"
+                name="websiteUrl"
+                value={formData.websiteUrl}
+                onChange={handleInputChange}
+                placeholder="https://your-studio.com"
+                className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3 py-1.5 text-white text-xs"
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Section 5: การสนับสนุน (Monetization PromptPay) */}
         <div className="space-y-3 pt-6 border-t border-white/[0.06]">

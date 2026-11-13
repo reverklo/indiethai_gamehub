@@ -34,6 +34,8 @@ export const Navbar = () => {
     currentUser, 
     currentRole, 
     switchRole, 
+    walletBalance,
+    openTopUpModal,
     devTokenBalance, 
     topUpTokens,
     openAuthModal,
@@ -307,17 +309,35 @@ export const Navbar = () => {
               )}
             </div>
 
-            {/* Developer Token Balance Widget (Compact & Clean) */}
+            {/* Steam Wallet Token Pill (All Users) */}
+            <div 
+              onClick={openTopUpModal}
+              title="กระเป๋าเงิน Steam Wallet (คลิกเพื่อเติมเงิน)"
+              className="flex items-center gap-1.5 bg-[#161F30] hover:bg-[#1f2b42] border border-amber-500/25 hover:border-amber-500/40 px-2 py-1 rounded-lg shrink-0 cursor-pointer transition-all shadow-sm"
+            >
+              <Coins className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="text-xs font-bold text-amber-300 font-mono">
+                {walletBalance} <span className="text-[10px] font-normal text-amber-400/80 font-sans">T</span>
+              </span>
+              <span className="px-1.5 py-0.2 text-[10px] font-bold rounded bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-gray-950 transition-colors">
+                +เติม
+              </span>
+            </div>
+
+            {/* Developer Studio Tokens (Dev Role Only) */}
             {currentRole === 'developer' && (
-              <div className="flex items-center gap-1.5 bg-[#161F30] border border-amber-500/25 px-2 py-1 rounded-lg shrink-0">
-                <Coins className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span className="text-xs font-bold text-amber-300 font-mono">
-                  {devTokenBalance} <span className="text-[10px] font-normal text-amber-400/80 font-sans">T</span>
+              <div 
+                title="เหรียญสตูดิโอสำหรับลงเกม (Dev Token)"
+                className="hidden sm:flex items-center gap-1.5 bg-indigo-950/40 border border-indigo-500/30 px-2 py-1 rounded-lg shrink-0"
+              >
+                <Code2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                <span className="text-xs font-bold text-indigo-300 font-mono">
+                  {devTokenBalance} <span className="text-[10px] font-normal text-indigo-300/80 font-sans">Dev</span>
                 </span>
                 <button
                   onClick={handleQuickTopUp}
-                  title="เติมเหรียญจำลองสำหรับ Dev (+100 Tokens)"
-                  className="px-1.5 py-0.2 text-[10px] font-bold rounded bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-gray-950 transition-colors cursor-pointer"
+                  title="เติมเหรียญสตูดิโอ (+100 Tokens)"
+                  className="px-1 py-0.2 text-[10px] font-bold rounded bg-indigo-500/20 hover:bg-indigo-500 text-indigo-200 hover:text-white transition-colors cursor-pointer"
                 >
                   +
                 </button>
@@ -386,6 +406,25 @@ export const Navbar = () => {
                     <p className="text-sm font-bold text-white mt-0.5 truncate">{currentUser.name}</p>
                     <p className="text-xs text-gray-400 truncate font-mono">@{currentUser.username || 'tsukiko_83'}</p>
                     
+                    {/* Quick Wallet Summary in Dropdown */}
+                    <div className="mt-2.5 flex items-center justify-between p-2 rounded-lg bg-black/40 border border-white/[0.06]">
+                      <div className="flex items-center gap-1.5">
+                        <Coins className="w-3.5 h-3.5 text-amber-400" />
+                        <span className="text-[11px] text-gray-300">วอลเล็ต:</span>
+                        <span className="text-xs font-bold text-amber-300 font-mono">{walletBalance} T</span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsProfileMenuOpen(false);
+                          openTopUpModal();
+                        }}
+                        className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500 hover:bg-amber-400 text-gray-950 transition cursor-pointer"
+                      >
+                        เติมเงิน
+                      </button>
+                    </div>
+
                     <div className={`mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium border ${roleBadgeInfo.bg}`}>
                       <RoleIcon className="w-3 h-3" />
                       {roleBadgeInfo.label}

@@ -46,6 +46,9 @@ export const AuthProvider = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState('login'); // 'login' | 'register'
 
+  // ควบคุมการเปิดปิด Steam Wallet Top-Up Modal
+  const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
+
   // บันทึกลง LocalStorage
   useEffect(() => {
     localStorage.setItem('indiethai_users_list', JSON.stringify(usersList));
@@ -168,6 +171,111 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
+   * เติมเงินเข้า Steam Wallet จำลอง (Tokens)
+   */
+  const topUpWallet = (amount) => {
+    const added = Number(amount) || 0;
+    if (added <= 0) return { success: false, message: 'จำนวนเงินไม่ถูกต้อง' };
+
+    setCurrentUser((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        walletBalance: (prev.walletBalance || 0) + added
+      };
+    });
+
+    setUsersList((prev) =>
+      prev.map((u) => {
+        if (u.id === currentUser?.id) {
+          return {
+            ...u,
+            walletBalance: (u.walletBalance || 0) + added
+          };
+        }
+        return u;
+      })
+    );
+
+    return {
+      success: true,
+      amount: added,
+      message: `เติมเงินเข้าวอลเล็ตสำเร็จ +${added} Tokens!`
+    };
+  };
+
+  /**
+   * ตรวจสอบว่าผู้ใช้เป็นเจ้าของเกมนี้หรือไม่
+   */
+  const isGameOwned = (gameId) => {
+    if (!currentUser) return false;
+    if (currentUser.role === 'admin') return true;
+    const owned = currentUser.ownedGames || ['game-1'];
+    return owned.includes(gameId);
+  };
+
+  /**
+   * สั่งซื้อเกม (Steam Purchase System)
+   */
+  const purchaseGame = (game) => {
+    if (!currentUser) {
+      openAuthModal('login');
+      return { success: false, reason: 'unauthenticated', message: 'กรุณาเข้าสู่ระบบก่อนทำการสั่งซื้อ' };
+    }
+
+    if (isGameOwned(game.id)) {
+      return { success: false, reason: 'already_owned', message: 'คุณมีเกมนี้อยู่ในคลังเกมแล้ว' };
+    }
+
+    const price = Number(game.price) || 0;
+    const currentWallet = currentUser.walletBalance ?? 350;
+
+    if (price > 0 && currentWallet < price) {
+      const needed = price - currentWallet;
+      return {
+        success: false,
+        reason: 'insufficient_funds',
+        needed,
+        message: `ยอดเงินในวอลเล็ตไม่เพียงพอ ขาดอีก ${needed} Tokens`
+      };
+    }
+
+    // หักเงิน (ถ้ามีราคา) และเพิ่มเกมลง ownedGames
+    setCurrentUser((prev) => {
+      if (!prev) return prev;
+      const currentOwned = prev.ownedGames || ['game-1'];
+      const newOwned = currentOwned.includes(game.id) ? currentOwned : [...currentOwned, game.id];
+      return {
+        ...prev,
+        walletBalance: Math.max(0, (prev.walletBalance ?? 350) - price),
+        ownedGames: newOwned
+      };
+    });
+
+    setUsersList((prev) =>
+      prev.map((u) => {
+        if (u.id === currentUser?.id) {
+          const currentOwned = u.ownedGames || ['game-1'];
+          const newOwned = currentOwned.includes(game.id) ? currentOwned : [...currentOwned, game.id];
+          return {
+            ...u,
+            walletBalance: Math.max(0, (u.walletBalance ?? 350) - price),
+            ownedGames: newOwned
+          };
+        }
+        return u;
+      })
+    );
+
+    return {
+      success: true,
+      message: price === 0 
+        ? `เพิ่มเกม "${game.title}" เข้าสู่คลังเกมของคุณเรียบร้อยแล้ว!` 
+        : `สั่งซื้อเกม "${game.title}" สำเร็จ! ยอดเงินคงเหลือ ${(currentWallet - price)} Tokens`
+    };
+  };
+
+  /**
    * เติมเหรียญจำลอง (+100 Tokens)
    */
   const topUpTokens = (amount = 100) => {
@@ -248,18 +356,27 @@ export const AuthProvider = ({ children }) => {
     currentRole,
     isAuthenticated,
     usersList,
+    walletBalance: currentUser?.walletBalance ?? 350,
+    ownedGames: currentUser?.ownedGames || ['game-1'],
     tokenBalance: currentUser?.tokenBalance || 0,
     devTokenBalance: currentUser?.role === 'developer' ? currentUser?.tokenBalance : 150,
     isAuthModalOpen,
     authModalMode,
     openAuthModal,
     closeAuthModal,
+    isTopUpModalOpen,
+    setIsTopUpModalOpen,
+    openTopUpModal: () => setIsTopUpModalOpen(true),
+    closeTopUpModal: () => setIsTopUpModalOpen(false),
     login,
     register,
     logout,
     switchRole,
     updateTokenBalance,
     topUpTokens,
+    topUpWallet,
+    purchaseGame,
+    isGameOwned,
     adminAdjustUserToken,
     adminToggleBanUser,
     updateUserProfile

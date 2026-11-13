@@ -118,6 +118,62 @@ export const GameProvider = ({ children }) => {
     }
   }, [games]);
 
+  // ซิงค์ URL Param (?game=id) และจัดการปุ่มย้อนกลับ (Browser Back/Forward PopState)
+  useEffect(() => {
+    const handleUrlSync = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const gameId = params.get('game');
+        if (gameId) {
+          const found = games.find((g) => g.id === gameId || g.slug === gameId);
+          if (found) {
+            setSelectedGameForDetail(found);
+            return;
+          }
+        }
+        setSelectedGameForDetail(null);
+      } catch (err) {
+        console.error('URL sync error:', err);
+      }
+    };
+
+    handleUrlSync();
+    window.addEventListener('popstate', handleUrlSync);
+    return () => window.removeEventListener('popstate', handleUrlSync);
+  }, [games]);
+
+  /**
+   * เปิดหน้ารายละเอียดเกม พร้อมเปลี่ยน URL และเลื่อนหน้าไปบนสุดทันที
+   */
+  const openGameDetail = (game) => {
+    if (!game) return;
+    setSelectedGameForDetail(game);
+    try {
+      const url = new URL(window.location);
+      url.searchParams.set('game', game.id);
+      window.history.pushState({ gameId: game.id }, '', url);
+    } catch (e) {
+      console.error('PushState error:', e);
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  /**
+   * ปิดหน้ารายละเอียดเกมและลบ URL Param กลับสู่หน้าร้านค้า
+   */
+  const closeGameDetail = () => {
+    setSelectedGameForDetail(null);
+    try {
+      const url = new URL(window.location);
+      url.searchParams.delete('game');
+      const cleanPath = url.pathname + (url.search ? url.search : '');
+      window.history.pushState({}, '', cleanPath);
+    } catch (e) {
+      console.error('PushState clean error:', e);
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
   // เกมที่ได้รับอนุมัติแล้ว
   const approvedGames = useMemo(() => {
     return games.filter((g) => g.status === 'approved');
@@ -513,7 +569,7 @@ export const GameProvider = ({ children }) => {
    * นำทางไปยังแท็บหลัก (Steam Tabs: store, library, community, profile, studio, admin)
    */
   const navigateToTab = (tab, subTab = null) => {
-    setSelectedGameForDetail(null);
+    closeGameDetail();
     setIsWishlistOnly(false);
     setActiveNavTab(tab);
     if (subTab && tab === 'profile') {
@@ -600,6 +656,8 @@ export const GameProvider = ({ children }) => {
     setIsWishlistOnly,
     selectedGameForDetail,
     setSelectedGameForDetail,
+    openGameDetail,
+    closeGameDetail,
     activePlayingGame,
     openGamePlayer,
     closeGamePlayer,
