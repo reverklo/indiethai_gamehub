@@ -724,3 +724,4 @@ export const CommunityView = () => {
     </div>
   );
 };
+

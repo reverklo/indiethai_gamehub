@@ -178,3 +178,4 @@ export const EditProfileModal = ({ isOpen, onClose }) => {
     </div>
   );
 };
+

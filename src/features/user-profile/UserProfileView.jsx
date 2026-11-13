@@ -28,8 +28,7 @@ import {
   Sparkles,
   Trophy,
   CheckCircle2,
-  HardDrive,
-  Camera
+  HardDrive
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
@@ -44,11 +43,10 @@ export const UserProfileView = () => {
     playedGames, 
     openGamePlayer, 
     downloadPcGame,
-    setSelectedGameForDetail,
-    navigateToTab
+    setSelectedGameForDetail 
   } = useGame();
 
-  // ตัวสลับแท็บเนื้อหาฝั่งซ้าย: 'recent' | 'wishlist' | 'reviews' | 'bugs' | 'screenshots'
+  // ตัวสลับแท็บเนื้อหาฝั่งซ้าย: 'recent' | 'wishlist' | 'reviews' | 'bugs'
   const [profileTab, setProfileTab] = useState('recent');
 
   // ควบคุมการเปิดปิด Edit Profile Modal
@@ -85,26 +83,6 @@ export const UserProfileView = () => {
       .filter((b) => b.user === currentUser?.name || b.user === currentUser?.username)
       .map((b) => ({ ...b, gameTitle: g.title, gameId: g.id }))
   );
-
-  // ภาพหน้าจอของผู้ใช้ (Steam Screenshots)
-  const myScreenshots = [
-    {
-      id: 'shot-1',
-      title: 'Neon Cyber Bangkok Skyway (2048)',
-      gameTitle: '2048 Cyber Siam',
-      imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-      date: '2 วันที่แล้ว',
-      likes: 42
-    },
-    {
-      id: 'shot-2',
-      title: 'Sunset Flight over Rama VIII Bridge',
-      gameTitle: 'Swoop 3D Siam Flight',
-      imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80',
-      date: 'สัปดาห์ที่แล้ว',
-      likes: 38
-    }
-  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -225,17 +203,6 @@ export const UserProfileView = () => {
                 }`}
               >
                 รายงานปัญหา ({myBugsList.length})
-              </button>
-
-              <button
-                onClick={() => setProfileTab('screenshots')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                  profileTab === 'screenshots'
-                    ? 'bg-white/[0.1] text-white border border-white/20'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                ภาพหน้าจอ ({myScreenshots.length})
               </button>
             </div>
 
@@ -481,47 +448,6 @@ export const UserProfileView = () => {
               </div>
             )}
 
-            {/* Sub-View 5: ภาพหน้าจอ (Screenshots) */}
-            {profileTab === 'screenshots' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span className="font-semibold text-gray-300">ภาพหน้าจอของคุณ ({myScreenshots.length})</span>
-                  <span>บันทึกโมเมนต์การเล่นเกม</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {myScreenshots.map((shot) => (
-                    <div
-                      key={shot.id}
-                      className="group rounded-xl bg-[#0B0F19] border border-white/[0.06] overflow-hidden p-3 space-y-2.5 hover:border-white/20 transition-colors"
-                    >
-                      <div className="aspect-video w-full rounded-lg overflow-hidden bg-black relative">
-                        <img
-                          src={shot.imageUrl}
-                          alt={shot.title}
-                          className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
-                        />
-                        <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[10px] font-mono bg-black/80 text-gray-300 border border-white/[0.08]">
-                          {shot.gameTitle}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs">
-                        <div>
-                          <h4 className="font-medium text-white text-xs">{shot.title}</h4>
-                          <span className="text-[10px] text-gray-500 font-mono">{shot.date}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-rose-400 font-mono">
-                          <Heart className="w-3 h-3 fill-rose-500" />
-                          <span>{shot.likes}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
           </div>
 
           {/* Right Column (1 Col): Steam Profile Sidebar (เหมือนในรูปเป๊ะๆ) */}
@@ -595,13 +521,10 @@ export const UserProfileView = () => {
                 <span className="font-mono text-gray-500">2</span>
               </div>
 
-              <button
-                onClick={() => setProfileTab('screenshots')}
-                className="w-full flex items-center justify-between py-2.5 text-gray-300 hover:text-white transition-colors cursor-pointer"
-              >
+              <div className="flex items-center justify-between py-2.5 text-gray-400">
                 <span>ภาพหน้าจอ</span>
-                <span className="font-mono text-gray-500">{myScreenshots.length}</span>
-              </button>
+                <span className="font-mono text-gray-500">8</span>
+              </div>
 
               <button
                 onClick={() => setProfileTab('reviews')}
@@ -636,3 +559,4 @@ export const UserProfileView = () => {
     </div>
   );
 };
+

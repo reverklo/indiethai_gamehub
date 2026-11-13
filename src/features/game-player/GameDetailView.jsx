@@ -240,11 +240,28 @@ export const GameDetailView = ({ game }) => {
             <span>แชร์เกม</span>
           </button>
 
+          {/* Play Type Badge */}
+          {game.hasWebgl && !game.hasPcDownload && (
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-medium">
+              เล่นบนเว็บ WebGL
+            </span>
+          )}
+          {!game.hasWebgl && game.hasPcDownload && (
+            <span className="px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 text-xs font-medium">
+              ดาวน์โหลด PC ({game.downloadSize || 'ZIP'})
+            </span>
+          )}
+          {game.hasWebgl && game.hasPcDownload && (
+            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs font-medium">
+              เว็บ + ดาวน์โหลด PC
+            </span>
+          )}
+
           {/* Engine & Category Badges */}
-          <span className="px-2.5 py-1 rounded-lg bg-indigo-950/60 text-indigo-400 border border-indigo-700/40 font-mono text-xs">
+          <span className="px-2.5 py-1 rounded-lg bg-white/[0.06] text-gray-300 border border-white/[0.08] font-mono text-xs">
             {game.engine}
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-gray-800 text-gray-300 text-xs">
+          <span className="px-2.5 py-1 rounded-lg bg-white/[0.06] text-gray-300 border border-white/[0.08] text-xs">
             {game.category}
           </span>
           <span className="text-gray-500 font-mono text-xs">{game.version}</span>
@@ -358,53 +375,47 @@ export const GameDetailView = ({ game }) => {
               ตัวเลือกการเล่นเกม
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className={`grid gap-3 ${game.hasWebgl && game.hasPcDownload ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
               
               {/* Green Action: เล่นบนเว็บทันที (WebGL) */}
-              <button
-                disabled={!game.hasWebgl}
-                onClick={() => openGamePlayer(game)}
-                className={`flex items-center justify-between p-3.5 rounded-lg font-semibold transition-colors cursor-pointer ${
-                  game.hasWebgl
-                    ? 'bg-emerald-500 hover:bg-emerald-400 text-gray-950'
-                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                <div className="flex items-center gap-2.5 text-left">
-                  <div className="p-1.5 rounded bg-black/15 text-inherit">
-                    <Globe className="w-5 h-5" />
+              {game.hasWebgl && (
+                <button
+                  onClick={() => openGamePlayer(game)}
+                  className="flex items-center justify-between p-3.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-semibold transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5 text-left">
+                    <div className="p-1.5 rounded bg-black/15 text-inherit">
+                      <Globe className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold block">เล่นบนเว็บทันที (WebGL)</span>
+                      <span className="text-[10px] opacity-80 block font-normal">ไม่ต้องติดตั้ง รันบนเบราว์เซอร์ 60FPS</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs font-bold block">เล่นบนเว็บทันที (WebGL)</span>
-                    <span className="text-[10px] opacity-80 block font-normal">ไม่ต้องติดตั้ง รันบนเบราว์เซอร์ 60FPS</span>
-                  </div>
-                </div>
-                <Play className="w-4 h-4 fill-current" />
-              </button>
+                  <Play className="w-4 h-4 fill-current" />
+                </button>
+              )}
 
               {/* White Action: ดาวน์โหลดไฟล์ PC (.ZIP) */}
-              <button
-                disabled={!game.hasPcDownload}
-                onClick={handleDownloadPc}
-                className={`flex items-center justify-between p-3.5 rounded-lg font-semibold transition-colors cursor-pointer ${
-                  game.hasPcDownload
-                    ? 'bg-white hover:bg-gray-200 text-gray-950'
-                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                <div className="flex items-center gap-2.5 text-left">
-                  <div className="p-1.5 rounded bg-black/10 text-inherit">
-                    <Laptop className="w-5 h-5" />
+              {game.hasPcDownload && (
+                <button
+                  onClick={handleDownloadPc}
+                  className="flex items-center justify-between p-3.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5 text-left">
+                    <div className="p-1.5 rounded bg-black/10 text-inherit">
+                      <Laptop className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold block">ดาวน์โหลดไฟล์ PC (.ZIP)</span>
+                      <span className="text-[10px] opacity-75 block font-normal">
+                        ขนาด {game.downloadSize || '120 MB'} (Windows / PC)
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs font-bold block">ดาวน์โหลดไฟล์ PC (.ZIP)</span>
-                    <span className="text-[10px] opacity-75 block font-normal">
-                      ขนาด {game.downloadSize || '120 MB'} (Windows 64-bit)
-                    </span>
-                  </div>
-                </div>
-                <Download className="w-4 h-4" />
-              </button>
+                  <Download className="w-4 h-4" />
+                </button>
+              )}
 
             </div>
 
