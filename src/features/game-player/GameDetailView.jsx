@@ -260,8 +260,8 @@ export const GameDetailView = ({ game }) => {
       )}
 
       {/* Header Info */}
-      <div className="space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-black text-white tracking-wide font-['Rajdhani',sans-serif]">
+      <div className="space-y-1.5">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">
           {game.title}
         </h1>
         <p className="text-sm text-gray-400 max-w-3xl leading-relaxed">
@@ -274,7 +274,7 @@ export const GameDetailView = ({ game }) => {
             {game.tags.map((tag, idx) => (
               <span
                 key={idx}
-                className="px-2 py-0.5 rounded-md bg-[#161F30] text-indigo-300 text-[11px] font-medium border border-indigo-500/20"
+                className="px-2 py-0.5 rounded bg-white/[0.06] text-gray-300 text-[11px] font-mono border border-white/[0.06]"
               >
                 #{tag}
               </span>
@@ -284,14 +284,14 @@ export const GameDetailView = ({ game }) => {
       </div>
 
       {/* Main Steam-style Media & Sidebar Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left 2 Cols: Media Showcase & Launch Options */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-5">
           
           {/* Main Display Viewer (16:9) */}
-          <div className="space-y-3">
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-indigo-500/30 shadow-2xl">
+          <div className="space-y-2.5">
+            <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-black border border-white/[0.08]">
               {activeMedia?.type === 'video' ? (
                 <iframe
                   src={activeMedia.url}
@@ -303,36 +303,36 @@ export const GameDetailView = ({ game }) => {
                 <img
                   src={activeMedia?.url || game.thumbnail}
                   alt={activeMedia?.title || game.title}
-                  className="w-full h-full object-cover animate-in fade-in duration-300"
+                  className="w-full h-full object-cover animate-in fade-in duration-200"
                 />
               )}
 
               {/* Media Title Label overlay */}
-              <div className="absolute top-3 left-3 px-3 py-1 rounded-lg bg-black/75 backdrop-blur-md text-[11px] font-semibold text-gray-200 border border-white/10 flex items-center gap-1.5">
+              <div className="absolute top-3 left-3 px-2.5 py-1 rounded bg-black/80 backdrop-blur-sm text-[11px] font-medium text-gray-300 border border-white/[0.08] flex items-center gap-1.5">
                 {activeMedia?.type === 'video' ? (
                   <>
-                    <Video className="w-3.5 h-3.5 text-rose-400" />
+                    <Video className="w-3.5 h-3.5 text-gray-400" />
                     <span>{activeMedia.title || 'วิดีโอตัวอย่าง'}</span>
                   </>
                 ) : (
                   <>
-                    <Layers className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>{activeMedia?.title || 'ภาพสกรีนช็อต'}</span>
+                    <Layers className="w-3.5 h-3.5 text-gray-400" />
+                    <span>{activeMedia?.title || 'ภาพตัวอย่าง'}</span>
                   </>
                 )}
               </div>
             </div>
 
-            {/* Unified Thumbnail Carousel (รวมรูปและวิดีโอไว้ที่เดียวกัน) */}
-            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+            {/* Unified Thumbnail Carousel */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
               {mediaItems.map((item, idx) => (
                 <button
                   key={item.id || idx}
                   onClick={() => setSelectedMediaIndex(idx)}
-                  className={`relative aspect-video w-28 shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                  className={`relative aspect-video w-24 shrink-0 rounded-lg overflow-hidden border transition-all cursor-pointer ${
                     selectedMediaIndex === idx
-                      ? 'border-indigo-500 ring-2 ring-indigo-500/40 scale-105'
-                      : 'border-gray-800 opacity-60 hover:opacity-100 hover:border-gray-600'
+                      ? 'border-white/80 ring-1 ring-white/30'
+                      : 'border-white/[0.08] opacity-50 hover:opacity-100'
                   }`}
                 >
                   <img
@@ -342,8 +342,8 @@ export const GameDetailView = ({ game }) => {
                   />
                   {item.type === 'video' && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <div className="p-1 rounded-full bg-rose-600 text-white">
-                        <Play className="w-3.5 h-3.5 fill-white" />
+                      <div className="p-1 rounded-full bg-white/20 text-white">
+                        <Play className="w-3 h-3 fill-white" />
                       </div>
                     </div>
                   )}
@@ -352,126 +352,126 @@ export const GameDetailView = ({ game }) => {
             </div>
           </div>
 
-          {/* Dedicated Action Bar (เด็ดขาด: ปุ่มสีเขียว WebGL และปุ่มสีฟ้า PC) */}
-          <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-4 shadow-xl">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 font-mono">
-              เลือกวิธีการเล่นเกม (Launch Options)
+          {/* Dedicated Action Bar */}
+          <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] space-y-3">
+            <h3 className="text-xs font-semibold text-gray-400">
+              ตัวเลือกการเล่นเกม
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               
               {/* Green Action: เล่นบนเว็บทันที (WebGL) */}
               <button
                 disabled={!game.hasWebgl}
                 onClick={() => openGamePlayer(game)}
-                className={`flex items-center justify-between p-4 rounded-xl font-bold transition-all shadow-lg cursor-pointer ${
+                className={`flex items-center justify-between p-3.5 rounded-lg font-semibold transition-colors cursor-pointer ${
                   game.hasWebgl
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-gray-950 shadow-emerald-500/20 active:scale-95'
+                    ? 'bg-emerald-500 hover:bg-emerald-400 text-gray-950'
                     : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                <div className="flex items-center gap-3 text-left">
-                  <div className="p-2 rounded-lg bg-black/20 text-inherit">
-                    <Globe className="w-6 h-6" />
+                <div className="flex items-center gap-2.5 text-left">
+                  <div className="p-1.5 rounded bg-black/15 text-inherit">
+                    <Globe className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-sm font-extrabold block">เล่นบนเว็บทันที (WebGL)</span>
-                    <span className="text-[11px] opacity-80 block font-normal">ไม่ต้องโหลด รันได้ใน 1 วินาที 60FPS</span>
+                    <span className="text-xs font-bold block">เล่นบนเว็บทันที (WebGL)</span>
+                    <span className="text-[10px] opacity-80 block font-normal">ไม่ต้องติดตั้ง รันบนเบราว์เซอร์ 60FPS</span>
                   </div>
                 </div>
-                <Play className="w-5 h-5 fill-current" />
+                <Play className="w-4 h-4 fill-current" />
               </button>
 
-              {/* Blue Action: ดาวน์โหลดไฟล์ PC (.ZIP) */}
+              {/* White Action: ดาวน์โหลดไฟล์ PC (.ZIP) */}
               <button
                 disabled={!game.hasPcDownload}
                 onClick={handleDownloadPc}
-                className={`flex items-center justify-between p-4 rounded-xl font-bold transition-all shadow-lg cursor-pointer ${
+                className={`flex items-center justify-between p-3.5 rounded-lg font-semibold transition-colors cursor-pointer ${
                   game.hasPcDownload
-                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-gray-950 shadow-sky-500/20 active:scale-95'
+                    ? 'bg-white hover:bg-gray-200 text-gray-950'
                     : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                <div className="flex items-center gap-3 text-left">
-                  <div className="p-2 rounded-lg bg-black/20 text-inherit">
-                    <Laptop className="w-6 h-6" />
+                <div className="flex items-center gap-2.5 text-left">
+                  <div className="p-1.5 rounded bg-black/10 text-inherit">
+                    <Laptop className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-sm font-extrabold block">ดาวน์โหลดไฟล์ PC (.ZIP)</span>
-                    <span className="text-[11px] opacity-80 block font-normal">
+                    <span className="text-xs font-bold block">ดาวน์โหลดไฟล์ PC (.ZIP)</span>
+                    <span className="text-[10px] opacity-75 block font-normal">
                       ขนาด {game.downloadSize || '120 MB'} (Windows 64-bit)
                     </span>
                   </div>
                 </div>
-                <Download className="w-5 h-5" />
+                <Download className="w-4 h-4" />
               </button>
 
             </div>
 
             {/* Download Toast Notification */}
             {downloadSuccessNotice && (
-              <div className="p-3 rounded-xl bg-sky-950/60 border border-sky-500/40 text-sky-300 text-xs flex items-center justify-between animate-in fade-in">
+              <div className="p-2.5 rounded-lg bg-[#0B0F19] border border-white/[0.08] text-gray-300 text-xs flex items-center justify-between animate-in fade-in">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-sky-400" />
-                  <span>เริ่มการดาวน์โหลดไฟล์ {game.title} .zip สำเร็จ!</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>เริ่มการดาวน์โหลดไฟล์ {game.title} .zip สำเร็จ</span>
                 </div>
-                <span className="font-mono text-[11px] text-sky-400">100% Ready</span>
+                <span className="font-mono text-[10px] text-gray-500">Ready</span>
               </div>
             )}
           </div>
 
-          {/* itch.io / CrazyGames style: Controls Guide (คู่มือปุ่มควบคุม) */}
-          <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-3">
+          {/* Controls Guide */}
+          <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] space-y-2.5">
             <div className="flex items-center gap-2">
-              <Keyboard className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-bold text-white font-['Rajdhani',sans-serif]">
-                คู่มือการควบคุมเกม (Controls & Keybindings)
+              <Keyboard className="w-4 h-4 text-gray-400" />
+              <h3 className="text-xs font-semibold text-gray-200">
+                คู่มือการควบคุมเกม (Keybindings)
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
               {controlsList.map((ctrl, i) => (
                 <div 
                   key={i}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#0B0F19] border border-gray-800/80 text-xs"
+                  className="flex items-center justify-between p-2 rounded-lg bg-[#0B0F19] border border-white/[0.06] text-xs"
                 >
-                  <span className="font-mono font-semibold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/30">
+                  <span className="font-mono text-gray-200 bg-white/[0.08] px-2 py-0.5 rounded border border-white/[0.1] text-[11px]">
                     {ctrl.key}
                   </span>
-                  <span className="text-gray-300 text-right">{ctrl.action}</span>
+                  <span className="text-gray-400 text-right">{ctrl.action}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Steam style: System Requirements (ความต้องการของระบบ) */}
-          <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-3">
+          {/* System Requirements */}
+          <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] space-y-2.5">
             <div className="flex items-center gap-2">
-              <Monitor className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-bold text-white font-['Rajdhani',sans-serif]">
+              <Monitor className="w-4 h-4 text-gray-400" />
+              <h3 className="text-xs font-semibold text-gray-200">
                 ความต้องการของระบบ (System Requirements)
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-              <div className="p-3 rounded-xl bg-[#0B0F19] border border-gray-800/80 space-y-1">
-                <span className="text-gray-400 block text-[11px]">ระบบปฏิบัติการ (OS):</span>
-                <span className="text-gray-200 font-medium">{requirements.os}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-0.5">
+              <div className="p-2.5 rounded-lg bg-[#0B0F19] border border-white/[0.06] space-y-0.5">
+                <span className="text-gray-500 block text-[11px]">ระบบปฏิบัติการ (OS):</span>
+                <span className="text-gray-300 font-medium">{requirements.os}</span>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#0B0F19] border border-gray-800/80 space-y-1">
-                <span className="text-gray-400 block text-[11px]">เบราว์เซอร์ที่แนะนำ:</span>
-                <span className="text-gray-200 font-medium">{requirements.browser}</span>
+              <div className="p-2.5 rounded-lg bg-[#0B0F19] border border-white/[0.06] space-y-0.5">
+                <span className="text-gray-500 block text-[11px]">เบราว์เซอร์:</span>
+                <span className="text-gray-300 font-medium">{requirements.browser}</span>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#0B0F19] border border-gray-800/80 space-y-1">
-                <span className="text-gray-400 block text-[11px]">หน่วยความจำ (RAM):</span>
-                <span className="text-gray-200 font-medium">{requirements.memory}</span>
+              <div className="p-2.5 rounded-lg bg-[#0B0F19] border border-white/[0.06] space-y-0.5">
+                <span className="text-gray-500 block text-[11px]">หน่วยความจำ (RAM):</span>
+                <span className="text-gray-300 font-medium">{requirements.memory}</span>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#0B0F19] border border-gray-800/80 space-y-1">
-                <span className="text-gray-400 block text-[11px]">กราฟิก / การ์ดจอ:</span>
-                <span className="text-gray-200 font-medium">{requirements.graphics}</span>
+              <div className="p-2.5 rounded-lg bg-[#0B0F19] border border-white/[0.06] space-y-0.5">
+                <span className="text-gray-500 block text-[11px]">การ์ดจอ:</span>
+                <span className="text-gray-300 font-medium">{requirements.graphics}</span>
               </div>
             </div>
           </div>
@@ -479,14 +479,14 @@ export const GameDetailView = ({ game }) => {
         </div>
 
         {/* Right Col: Game Info Sidebar & PromptPay Coffee Box */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           
           {/* Main Info Card */}
-          <div className="p-6 rounded-2xl bg-[#111827] border border-gray-800 space-y-5">
+          <div className="p-5 rounded-xl bg-[#111827] border border-white/[0.08] space-y-4">
             <img
               src={game.thumbnail}
               alt={game.title}
-              className="w-full aspect-video rounded-xl object-cover ring-1 ring-gray-700"
+              className="w-full aspect-video rounded-lg object-cover border border-white/[0.08]"
             />
 
             <div>
@@ -495,57 +495,57 @@ export const GameDetailView = ({ game }) => {
               </p>
             </div>
 
-            <div className="space-y-2.5 pt-3 border-t border-gray-800 text-xs">
+            <div className="space-y-2 pt-3 border-t border-white/[0.06] text-xs">
               <div className="flex justify-between">
-                <span className="text-gray-400">ผู้พัฒนา:</span>
-                <span className="text-indigo-400 font-bold">{game.developer}</span>
+                <span className="text-gray-500">ผู้พัฒนา:</span>
+                <span className="text-gray-200 font-medium">{game.developer}</span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-400">วันที่เผยแพร่:</span>
-                <span className="text-gray-300 font-mono">{game.createdAt}</span>
+                <span className="text-gray-500">วันที่เผยแพร่:</span>
+                <span className="text-gray-400 font-mono">{game.createdAt}</span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-400">เวอร์ชัน:</span>
-                <span className="text-emerald-400 font-mono font-bold">{game.version}</span>
+                <span className="text-gray-500">เวอร์ชัน:</span>
+                <span className="text-emerald-400 font-mono">{game.version}</span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-400">คะแนนรีวิว:</span>
-                <span className="text-amber-400 font-bold flex items-center gap-1">
-                  <Star className="w-3.5 h-3.5 fill-amber-400" />
+                <span className="text-gray-500">คะแนนรีวิว:</span>
+                <span className="text-amber-300 font-medium flex items-center gap-1 font-mono">
+                  <Star className="w-3.5 h-3.5 fill-amber-300" />
                   {game.rating > 0 ? `${game.rating} (${game.ratingCount || 0} รีวิว)` : 'ยังไม่มีรีวิว'}
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-400">ยอดการเล่นออนไลน์:</span>
-                <span className="text-gray-200 font-mono">{(game.playCount || 0).toLocaleString()} ครั้ง</span>
+                <span className="text-gray-500">ยอดเล่นออนไลน์:</span>
+                <span className="text-gray-300 font-mono">{(game.playCount || 0).toLocaleString()} ครั้ง</span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-400">ยอดดาวน์โหลด PC:</span>
-                <span className="text-sky-300 font-mono">{(game.downloadCount || 0).toLocaleString()} ครั้ง</span>
+                <span className="text-gray-500">ยอดดาวน์โหลด PC:</span>
+                <span className="text-gray-300 font-mono">{(game.downloadCount || 0).toLocaleString()} ครั้ง</span>
               </div>
             </div>
 
             {/* Security Scan Result */}
-            <div className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2.5">
-              <ShieldCheck className="w-5 h-5 shrink-0" />
+            <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
               <div>
-                <p className="font-bold">ระบบความปลอดภัย: ผ่านการรับรอง</p>
-                <p className="text-[10px] text-gray-400">{game.securityScan?.details}</p>
+                <p className="font-medium text-[11px]">ผ่านการรับรองความปลอดภัย WebGL</p>
+                <p className="text-[10px] text-gray-500">{game.securityScan?.details}</p>
               </div>
             </div>
 
-            {/* PromptPay Donate Coffee Button */}
+            {/* PromptPay Donate Button */}
             <button
               onClick={() => setIsDonateModalOpen(true)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-gray-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition active:scale-95 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-amber-300 border border-amber-500/30 text-xs font-medium transition-colors cursor-pointer"
             >
               <Coffee className="w-4 h-4" />
-              <span>☕ โดเนทสนับสนุนค่ากาแฟนักพัฒนา</span>
+              <span>สนับสนุนนักพัฒนาผ่านพร้อมเพย์</span>
             </button>
           </div>
 
@@ -553,70 +553,69 @@ export const GameDetailView = ({ game }) => {
 
       </div>
 
-      {/* Community & DevLog Section: Reviews, Bug Reports, and Patch Notes */}
-      <section className="space-y-6 pt-6 border-t border-gray-800">
+      {/* Community & DevLog Section */}
+      <section className="space-y-4 pt-4 border-t border-white/[0.08]">
         
         {/* Tab Headers */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveCommunityTab('reviews')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               activeCommunityTab === 'reviews'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                : 'bg-[#111827] text-gray-400 hover:text-white border border-gray-800'
+                ? 'bg-white/[0.1] text-white border border-white/20'
+                : 'bg-[#111827] text-gray-400 hover:text-white border border-white/[0.08]'
             }`}
           >
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span>รีวิวและคะแนนจากผู้เล่น ({game.reviews?.length || 0})</span>
+            <Star className="w-3.5 h-3.5 text-amber-300" />
+            <span>รีวิว ({game.reviews?.length || 0})</span>
           </button>
 
           <button
             onClick={() => setActiveCommunityTab('bugs')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               activeCommunityTab === 'bugs'
-                ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20'
-                : 'bg-[#111827] text-gray-400 hover:text-white border border-gray-800'
+                ? 'bg-white/[0.1] text-white border border-white/20'
+                : 'bg-[#111827] text-gray-400 hover:text-white border border-white/[0.08]'
             }`}
           >
-            <Bug className="w-4 h-4" />
-            <span>แจ้งบั๊ก (Bug Report) ถึงผู้พัฒนา ({game.bugReports?.length || 0})</span>
+            <Bug className="w-3.5 h-3.5 text-gray-400" />
+            <span>รายงานบั๊ก ({game.bugReports?.length || 0})</span>
           </button>
 
-          {/* Steam & itch.io Patch Notes Tab */}
           <button
             onClick={() => setActiveCommunityTab('patchNotes')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               activeCommunityTab === 'patchNotes'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                : 'bg-[#111827] text-gray-400 hover:text-white border border-gray-800'
+                ? 'bg-white/[0.1] text-white border border-white/20'
+                : 'bg-[#111827] text-gray-400 hover:text-white border border-white/[0.08]'
             }`}
           >
-            <History className="w-4 h-4 text-emerald-400" />
-            <span>ประวัติอัปเดต / Patch Notes ({patchNotesList.length})</span>
+            <History className="w-3.5 h-3.5 text-gray-400" />
+            <span>บันทึกการอัปเดต ({patchNotesList.length})</span>
           </button>
         </div>
 
         {/* Tab 1: Reviews */}
         {activeCommunityTab === 'reviews' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             
             {/* Add Review Form */}
-            <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-indigo-400" />
-                <span>เขียนรีวิวให้คะแนนเกมนี้</span>
+            <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] space-y-3.5">
+              <h3 className="text-xs font-semibold text-white flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-gray-400" />
+                <span>เขียนรีวิวให้คะแนน</span>
               </h3>
 
               {reviewNotice && (
-                <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs">
+                <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs">
                   {reviewNotice}
                 </div>
               )}
 
               <form onSubmit={handleReviewSubmit} className="space-y-3 text-xs">
                 <div>
-                  <label className="block text-gray-400 mb-1.5 font-medium">คะแนนความพึงพอใจ:</label>
-                  <div className="flex items-center gap-2">
+                  <label className="block text-gray-400 mb-1 font-medium">คะแนนความพึงพอใจ:</label>
+                  <div className="flex items-center gap-1.5">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         type="button"
@@ -625,31 +624,31 @@ export const GameDetailView = ({ game }) => {
                         className="p-1 text-gray-600 hover:text-amber-400 transition cursor-pointer"
                       >
                         <Star
-                          className={`w-5 h-5 ${
+                          className={`w-4 h-4 ${
                             star <= newRating ? 'text-amber-400 fill-amber-400' : 'text-gray-700'
                           }`}
                         />
                       </button>
                     ))}
-                    <span className="text-amber-400 font-bold ml-1">{newRating} ดาว</span>
+                    <span className="text-amber-400 font-medium ml-1 font-mono">{newRating} ดาว</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-gray-400 mb-1 font-medium">ความคิดเห็นของคุณ:</label>
+                  <label className="block text-gray-400 mb-1 font-medium">ความคิดเห็น:</label>
                   <textarea
                     rows={3}
                     required
                     value={reviewComment}
                     onChange={(e) => setReviewComment(e.target.value)}
-                    placeholder="ความรู้สึกหลังได้ทดลองเล่น แนะนำสิ่งที่ชอบหรืออยากให้เพิ่มเติม..."
-                    className="w-full bg-[#0B0F19] border border-gray-800 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500"
+                    placeholder="ความรู้สึกหลังทดลองเล่น..."
+                    className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg p-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-white/20"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-md shadow-indigo-500/20 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>ส่งรีวิว</span>
@@ -658,17 +657,17 @@ export const GameDetailView = ({ game }) => {
             </div>
 
             {/* Reviews List */}
-            <div className="lg:col-span-2 space-y-3">
+            <div className="lg:col-span-2 space-y-2.5">
               {(!game.reviews || game.reviews.length === 0) ? (
-                <div className="p-8 text-center bg-[#111827]/40 rounded-2xl border border-gray-800 text-gray-400 text-xs">
-                  ยังไม่มีรีวิวสำหรับเกมนี้ มาร่วมเป็นคนแรกที่รีวิวกันเถอะ!
+                <div className="p-8 text-center bg-[#111827]/40 rounded-xl border border-white/[0.06] text-gray-500 text-xs">
+                  ยังไม่มีรีวิวสำหรับเกมนี้ มาร่วมเป็นคนแรกที่รีวิว
                 </div>
               ) : (
                 game.reviews.map((rev) => (
-                  <div key={rev.id} className="p-4 rounded-xl bg-[#111827] border border-gray-800/80 space-y-2">
+                  <div key={rev.id} className="p-3.5 rounded-lg bg-[#111827] border border-white/[0.06] space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <strong className="text-white">{rev.user}</strong>
+                        <strong className="text-white font-medium">{rev.user}</strong>
                         <div className="flex items-center text-amber-400">
                           {Array.from({ length: rev.rating }).map((_, i) => (
                             <Star key={i} className="w-3 h-3 fill-amber-400" />
@@ -688,80 +687,80 @@ export const GameDetailView = ({ game }) => {
 
         {/* Tab 2: Bug Reports */}
         {activeCommunityTab === 'bugs' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             
             {/* Bug Report Form */}
-            <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Bug className="w-4 h-4 text-rose-400" />
-                <span>แจ้งปัญหาหรือบั๊กที่พบในเกม</span>
+            <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] space-y-3.5">
+              <h3 className="text-xs font-semibold text-white flex items-center gap-2">
+                <Bug className="w-4 h-4 text-gray-400" />
+                <span>แจ้งปัญหาที่พบในเกม</span>
               </h3>
 
               {bugNotice && (
-                <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs">
+                <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs">
                   {bugNotice}
                 </div>
               )}
 
               <form onSubmit={handleBugSubmit} className="space-y-3 text-xs">
                 <div>
-                  <label className="block text-gray-400 mb-1 font-medium">หัวข้อบั๊ก (Bug Summary) *</label>
+                  <label className="block text-gray-400 mb-1 font-medium">หัวข้อปัญหา *</label>
                   <input
                     type="text"
                     required
                     value={bugTitle}
                     onChange={(e) => setBugTitle(e.target.value)}
-                    placeholder="เช่น เฟรมเรตตกในด่าน 2, เสียงค้าง..."
-                    className="w-full bg-[#0B0F19] border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-rose-500"
+                    placeholder="เช่น เฟรมเรตตกในด่าน 2"
+                    className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-white placeholder-gray-500 focus:outline-none focus:border-white/20"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-400 mb-1 font-medium">รายละเอียดขั้นตอนที่เกิดบั๊ก *</label>
+                  <label className="block text-gray-400 mb-1 font-medium">รายละเอียด *</label>
                   <textarea
                     rows={3}
                     required
                     value={bugDescription}
                     onChange={(e) => setBugDescription(e.target.value)}
-                    placeholder="อธิบายว่าทำอะไรอยู่ แล้วเกิดอะไรขึ้น เบราว์เซอร์ที่ใช้..."
-                    className="w-full bg-[#0B0F19] border border-gray-800 rounded-xl p-3 text-white focus:outline-none focus:border-rose-500"
+                    placeholder="อธิบายขั้นตอนที่เกิดปัญหา เบราว์เซอร์ที่ใช้..."
+                    className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg p-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-white/20"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold transition shadow-md shadow-rose-500/20 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>ส่งรายงานบั๊กถึง Dev</span>
+                  <span>ส่งรายงาน</span>
                 </button>
               </form>
             </div>
 
             {/* Bug Reports List */}
-            <div className="lg:col-span-2 space-y-3">
+            <div className="lg:col-span-2 space-y-2.5">
               {(!game.bugReports || game.bugReports.length === 0) ? (
-                <div className="p-8 text-center bg-[#111827]/40 rounded-2xl border border-gray-800 text-gray-400 text-xs">
-                  ไม่พบการแจ้งบั๊กสำหรับเวอร์ชันนี้ ระบบทำงานได้อย่างเสถียร
+                <div className="p-8 text-center bg-[#111827]/40 rounded-xl border border-white/[0.06] text-gray-500 text-xs">
+                  ไม่พบการแจ้งปัญหาสำหรับเวอร์ชันนี้
                 </div>
               ) : (
                 game.bugReports.map((bug) => (
-                  <div key={bug.id} className="p-4 rounded-xl bg-[#111827] border border-gray-800/80 space-y-2">
+                  <div key={bug.id} className="p-3.5 rounded-lg bg-[#111827] border border-white/[0.06] space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <strong className="text-white">{bug.title}</strong>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        <strong className="text-white font-medium">{bug.title}</strong>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono ${
                           bug.status === 'fixed'
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                             : bug.status === 'investigating'
-                            ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
-                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                            ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                         }`}>
                           {bug.status === 'fixed'
-                            ? '✅ แก้ไขแล้ว'
+                            ? 'แก้ไขแล้ว'
                             : bug.status === 'investigating'
-                            ? '🔍 กำลังตรวจสอบ'
-                            : '⏳ รอตรวจสอบ'}
+                            ? 'กำลังตรวจสอบ'
+                            : 'รอดำเนินการ'}
                         </span>
                       </div>
                       <span className="text-gray-500 font-mono text-[10px]">{bug.date}</span>
@@ -769,7 +768,7 @@ export const GameDetailView = ({ game }) => {
                     {bug.description && (
                       <p className="text-xs text-gray-400 leading-relaxed">{bug.description}</p>
                     )}
-                    <span className="text-[10px] text-gray-500">รายงานโดย: {bug.user}</span>
+                    <span className="text-[10px] text-gray-500">แจ้งโดย: {bug.user}</span>
                   </div>
                 ))
               )}
@@ -778,44 +777,43 @@ export const GameDetailView = ({ game }) => {
           </div>
         )}
 
-        {/* Tab 3: Steam & itch.io Patch Notes / DevLog Timeline */}
+        {/* Tab 3: Patch Notes Timeline */}
         {activeCommunityTab === 'patchNotes' && (
-          <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-[#111827] to-[#0B0F19] border border-emerald-500/30 flex items-center justify-between">
+          <div className="space-y-3.5">
+            <div className="p-3.5 rounded-xl bg-[#111827] border border-white/[0.08] flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <History className="w-4 h-4 text-emerald-400" />
-                  <span>ประวัติแพตช์และบันทึกการเปลี่ยนแปลง (Changelog & DevLog)</span>
+                <h4 className="text-xs font-semibold text-white flex items-center gap-2">
+                  <History className="w-4 h-4 text-gray-400" />
+                  <span>ประวัติแพตช์และบันทึกการเปลี่ยนแปลง</span>
                 </h4>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  ติดตามการอัปเดตฟีเจอร์ใหม่, การแก้บั๊ก และบันทึกจากผู้พัฒนาเกม {game.title}
+                <p className="text-[11px] text-gray-400 mt-0.5">
+                  ติดตามการอัปเดตและการแก้ปัญหาในเกม {game.title}
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold">
-                เวอร์ชันปัจจุบัน {game.version}
+              <span className="px-2.5 py-0.5 rounded bg-white/[0.06] text-gray-300 border border-white/[0.08] text-xs font-mono">
+                {game.version}
               </span>
             </div>
 
-            <div className="relative border-l-2 border-gray-800 ml-4 space-y-6 pt-2">
+            <div className="relative border-l border-white/[0.08] ml-3.5 space-y-4 pt-1">
               {patchNotesList.map((patch, idx) => (
-                <div key={idx} className="relative pl-6">
-                  {/* Timeline node dot */}
-                  <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-[#111827] ${
-                    idx === 0 ? 'bg-emerald-400 ring-4 ring-emerald-500/20' : 'bg-gray-600'
+                <div key={idx} className="relative pl-5">
+                  <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full border border-black ${
+                    idx === 0 ? 'bg-emerald-400' : 'bg-gray-600'
                   }`} />
 
-                  <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 space-y-2">
+                  <div className="p-3.5 rounded-xl bg-[#111827] border border-white/[0.06] space-y-1.5">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-950/60 text-emerald-400 border border-emerald-700/40 font-mono text-xs font-bold">
+                        <span className="px-1.5 py-0.5 rounded bg-white/[0.06] text-gray-300 font-mono text-[11px]">
                           {patch.version}
                         </span>
-                        <h5 className="text-sm font-bold text-white">{patch.title}</h5>
+                        <h5 className="text-xs font-semibold text-white">{patch.title}</h5>
                       </div>
-                      <span className="text-gray-500 text-[11px] font-mono">{patch.date}</span>
+                      <span className="text-gray-500 text-[10px] font-mono">{patch.date}</span>
                     </div>
 
-                    <p className="text-xs text-gray-300 leading-relaxed whitespace-pre-line">
+                    <p className="text-xs text-gray-400 leading-relaxed whitespace-pre-line">
                       {patch.details}
                     </p>
                   </div>
@@ -827,23 +825,23 @@ export const GameDetailView = ({ game }) => {
 
       </section>
 
-      {/* PromptPay Coffee Donation Modal (20, 50, 100 THB) */}
+      {/* PromptPay Coffee Donation Modal */}
       {isDonateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-[#111827] border border-amber-500/40 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+          <div className="bg-[#111827] border border-white/[0.08] rounded-xl max-w-sm w-full p-5 shadow-2xl space-y-4 animate-in zoom-in-95">
             
-            <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
               <div className="flex items-center gap-2">
-                <Coffee className="w-5 h-5 text-amber-400" />
-                <h3 className="text-base font-bold text-white font-['Rajdhani',sans-serif]">
-                  สนับสนุนค่ากาแฟนักพัฒนาไทย
+                <Coffee className="w-4 h-4 text-amber-300" />
+                <h3 className="text-sm font-semibold text-white">
+                  สนับสนุนนักพัฒนาไทย
                 </h3>
               </div>
               <button
                 onClick={() => setIsDonateModalOpen(false)}
                 className="text-gray-400 hover:text-white"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -855,10 +853,10 @@ export const GameDetailView = ({ game }) => {
                   <button
                     key={amt}
                     onClick={() => setDonateAmount(amt)}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    className={`py-2 px-3 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                       donateAmount === amt
-                        ? 'bg-amber-500 text-gray-950 shadow-md shadow-amber-500/20'
-                        : 'bg-[#0B0F19] text-gray-300 hover:bg-gray-800 border border-gray-800'
+                        ? 'bg-white text-gray-950 font-semibold'
+                        : 'bg-[#0B0F19] text-gray-300 hover:bg-gray-800 border border-white/[0.08]'
                     }`}
                   >
                     ฿{amt} บาท
@@ -867,13 +865,13 @@ export const GameDetailView = ({ game }) => {
               </div>
             </div>
 
-            {/* Simulated PromptPay QR Box */}
-            <div className="p-4 rounded-2xl bg-white text-gray-900 flex flex-col items-center justify-center space-y-2 text-center shadow-inner">
+            {/* PromptPay QR Box */}
+            <div className="p-4 rounded-xl bg-white text-gray-900 flex flex-col items-center justify-center space-y-2 text-center">
               <div className="w-10 h-6 bg-[#003B64] text-white text-[9px] font-bold rounded flex items-center justify-center">
                 PromptPay
               </div>
-              <QrCode className="w-40 h-40 text-gray-900" />
-              <p className="text-[11px] font-mono font-bold text-gray-700">
+              <QrCode className="w-36 h-36 text-gray-900" />
+              <p className="text-[11px] font-mono font-medium text-gray-700">
                 พร้อมเพย์: {game.promptPayNumber || '089-765-4321'}
               </p>
               <p className="text-[10px] text-gray-500">
@@ -883,16 +881,16 @@ export const GameDetailView = ({ game }) => {
 
             {/* Feedback / Confirm */}
             {donateSuccess ? (
-              <div className="p-3 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 text-xs font-bold text-center flex items-center justify-center gap-2">
+              <div className="p-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-medium text-center flex items-center justify-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>จำลองส่งกำลังใจสำเร็จ ฿{donateAmount} บาท! ขอบคุณครับ</span>
+                <span>จำลองส่งกำลังใจสำเร็จ ฿{donateAmount} บาท</span>
               </div>
             ) : (
               <button
                 onClick={handleConfirmDonate}
-                className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs shadow-md transition active:scale-95 cursor-pointer"
+                className="w-full py-2 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold text-xs transition-colors cursor-pointer"
               >
-                จำลองการสแกนจ่ายสำเร็จ (฿{donateAmount} บาท)
+                จำลองการสแกนจ่าย (฿{donateAmount} บาท)
               </button>
             )}
 

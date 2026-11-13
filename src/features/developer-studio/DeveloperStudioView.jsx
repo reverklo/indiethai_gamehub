@@ -139,27 +139,27 @@ export const DeveloperStudioView = () => {
       ) : (
         <>
           {/* Studio Profile & Overview Header */}
-          <section className="relative overflow-hidden rounded-3xl bg-[#111827] border border-indigo-500/30 p-6 sm:p-8 shadow-2xl">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <section className="relative overflow-hidden rounded-2xl bg-[#111827] border border-white/[0.08] p-5 sm:p-6">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
               
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3.5">
                 <img
                   src={currentUser?.avatar}
                   alt={currentUser?.name}
-                  className="w-16 h-16 rounded-2xl object-cover ring-2 ring-indigo-500/40"
+                  className="w-14 h-14 rounded-xl object-cover border border-white/[0.08]"
                 />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                      OFFICIAL STUDIO
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-white/[0.06] text-gray-300 border border-white/[0.08]">
+                      Verified Studio
                     </span>
                     <span className="text-xs text-gray-400">{currentUser?.studioName || 'SiamPixel Studio'}</span>
                   </div>
-                  <h1 className="text-2xl sm:text-3xl font-black text-white mt-1 font-['Rajdhani',sans-serif]">
+                  <h1 className="text-xl sm:text-2xl font-semibold text-white mt-1">
                     {currentUser?.name} (ศูนย์ควบคุมสตูดิโอ)
                   </h1>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    พร้อมเพย์รับการสนับสนุน: <strong className="text-gray-200 font-mono">{currentUser?.promptPayNumber || '089-765-4321'}</strong>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    พร้อมเพย์รับการสนับสนุน: <strong className="text-gray-300 font-mono font-normal">{currentUser?.promptPayNumber || '089-765-4321'}</strong>
                   </p>
                 </div>
               </div>
@@ -167,90 +167,90 @@ export const DeveloperStudioView = () => {
               {/* Action: Open Upload Form */}
               <button
                 onClick={() => setIsUploading(true)}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#6366F1] to-indigo-600 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/30 transition hover:scale-105 active:scale-95 cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold text-xs transition-colors cursor-pointer"
               >
-                <UploadCloud className="w-4 h-4" />
-                <span>+ ลงเกมใหม่ (ใช้ {TOKEN_COST_PER_GAME} Tokens)</span>
+                <UploadCloud className="w-4 h-4 text-gray-700" />
+                <span>ลงเกมใหม่ (ใช้ {TOKEN_COST_PER_GAME} Tokens)</span>
               </button>
 
             </div>
           </section>
 
           {/* Metric Cards & Token Wallet Box */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             
-            {/* 1. Wallet Box: เหรียญสตูดิโอของคุณ */}
-            <div className="p-5 rounded-2xl bg-[#161F30] border border-amber-500/40 flex flex-col justify-between shadow-lg shadow-amber-500/5">
+            {/* 1. Wallet Box */}
+            <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-300 font-medium">🪙 เหรียญสตูดิโอของคุณ</span>
-                <Coins className="w-5 h-5 text-amber-400 animate-pulse" />
+                <span className="text-xs text-gray-400 font-medium">เหรียญคงเหลือ</span>
+                <Coins className="w-4 h-4 text-amber-400" />
               </div>
 
               <div className="my-2">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-3xl font-black text-amber-400 font-['Rajdhani',sans-serif]">
+                  <span className="text-2xl font-semibold text-amber-300 font-mono">
                     {devTokenBalance}
                   </span>
-                  <span className="text-xs text-amber-300 font-semibold">Tokens</span>
+                  <span className="text-xs text-gray-400">Tokens</span>
                 </div>
-                <p className="text-[10px] text-gray-400">
+                <p className="text-[10px] text-gray-500">
                   (ลงเกมได้อีก {Math.floor(devTokenBalance / TOKEN_COST_PER_GAME)} เกม)
                 </p>
               </div>
 
               <button
                 onClick={handleTopUp}
-                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold text-xs shadow-md transition active:scale-95 cursor-pointer"
+                className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-gray-200 font-medium text-xs border border-white/[0.08] transition-colors cursor-pointer"
               >
-                <PlusCircle className="w-3.5 h-3.5" />
+                <PlusCircle className="w-3.5 h-3.5 text-gray-400" />
                 <span>เติม Token จำลอง (+100)</span>
               </button>
             </div>
 
             {/* 2. Total Plays */}
-            <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 flex flex-col justify-between">
+            <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400 font-medium">ยอดคนเล่นรวมทั้งหมด</span>
-                <Eye className="w-5 h-5 text-emerald-400" />
+                <span className="text-xs text-gray-400 font-medium">ยอดคนเล่นรวม</span>
+                <Eye className="w-4 h-4 text-gray-400" />
               </div>
               <div className="my-2">
-                <span className="text-3xl font-black text-white font-['Rajdhani',sans-serif]">
+                <span className="text-2xl font-semibold text-white font-mono">
                   {totalPlays.toLocaleString()}
                 </span>
-                <span className="text-xs text-emerald-400 ml-1.5 font-semibold">ครั้ง</span>
+                <span className="text-xs text-gray-500 ml-1.5">ครั้ง</span>
               </div>
               <p className="text-[10px] text-gray-500">ผ่าน WebGL 60FPS Sandbox</p>
             </div>
 
             {/* 3. Total Downloads */}
-            <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 flex flex-col justify-between">
+            <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400 font-medium">ยอดดาวน์โหลด PC (.ZIP)</span>
-                <Download className="w-5 h-5 text-sky-400" />
+                <span className="text-xs text-gray-400 font-medium">ยอดดาวน์โหลด PC</span>
+                <Download className="w-4 h-4 text-gray-400" />
               </div>
               <div className="my-2">
-                <span className="text-3xl font-black text-white font-['Rajdhani',sans-serif]">
+                <span className="text-2xl font-semibold text-white font-mono">
                   {totalDownloads.toLocaleString()}
                 </span>
-                <span className="text-xs text-sky-400 ml-1.5 font-semibold">ครั้ง</span>
+                <span className="text-xs text-gray-500 ml-1.5">ครั้ง</span>
               </div>
-              <p className="text-[10px] text-gray-500">เวอร์ชันสำหรับ PC ออฟไลน์</p>
+              <p className="text-[10px] text-gray-500">ไฟล์แพ็กเกจสำหรับ PC</p>
             </div>
 
             {/* 4. Bug Reports Summary */}
-            <div className="p-5 rounded-2xl bg-[#111827] border border-gray-800 flex flex-col justify-between">
+            <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400 font-medium">รายงานบั๊กจากผู้เล่น</span>
-                <Bug className="w-5 h-5 text-rose-400" />
+                <span className="text-xs text-gray-400 font-medium">รายงานปัญหาจากผู้เล่น</span>
+                <Bug className="w-4 h-4 text-gray-400" />
               </div>
               <div className="my-2">
-                <span className="text-3xl font-black text-rose-400 font-['Rajdhani',sans-serif]">
+                <span className="text-2xl font-semibold text-gray-200 font-mono">
                   {totalBugsReported}
                 </span>
-                <span className="text-xs text-gray-400 ml-1.5">รายการ</span>
+                <span className="text-xs text-gray-500 ml-1.5">รายการ</span>
               </div>
               <p className="text-[10px] text-gray-500">
-                คลิก "ดูรายงาน & บั๊ก" ที่ตารางเกมเพื่อตรวจสอบ
+                คลิก "ดูรายงาน & บั๊ก" เพื่อจัดการ
               </p>
             </div>
 
@@ -658,14 +658,14 @@ export const DeveloperStudioView = () => {
             </div>
           )}
 
-          {/* Update Version & Patch Notes Modal (Steam / itch.io style) */}
+          {/* Update Version & Patch Notes Modal */}
           {updateVersionGame && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-              <div className="bg-[#111827] border border-emerald-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
-                <div className="flex items-center justify-between border-b border-gray-800 pb-3">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2 font-['Rajdhani',sans-serif]">
-                    <History className="w-4 h-4 text-emerald-400" />
-                    <span>ปล่อยแพตช์และบันทึก Patch Notes ใหม่</span>
+              <div className="bg-[#111827] border border-white/[0.08] rounded-xl max-w-md w-full p-5 shadow-2xl space-y-3.5 animate-in zoom-in-95">
+                <div className="flex items-center justify-between border-b border-white/[0.06] pb-2.5">
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <History className="w-4 h-4 text-gray-400" />
+                    <span>ปล่อยแพตช์และบันทึกประวัติการอัปเดต</span>
                   </h3>
                   <button
                     onClick={() => setUpdateVersionGame(null)}
@@ -676,59 +676,59 @@ export const DeveloperStudioView = () => {
                 </div>
 
                 <p className="text-xs text-gray-400">
-                  เกม: <strong className="text-white">{updateVersionGame.title}</strong> (เวอร์ชันเดิม: <span className="font-mono text-indigo-400">{updateVersionGame.version}</span>)
+                  เกม: <strong className="text-white">{updateVersionGame.title}</strong> (เวอร์ชันปัจจุบัน: <span className="font-mono text-gray-300">{updateVersionGame.version}</span>)
                 </p>
 
-                <form onSubmit={handleVersionSubmit} className="space-y-3.5 text-xs">
+                <form onSubmit={handleVersionSubmit} className="space-y-3 text-xs">
                   <div>
-                    <label className="block text-gray-300 mb-1 font-medium">เลขเวอร์ชันใหม่ (Version Number) *</label>
+                    <label className="block text-gray-400 mb-1 font-medium">เลขเวอร์ชันใหม่ (เช่น v1.5.0) *</label>
                     <input
                       type="text"
                       required
                       value={newVersionInput}
                       onChange={(e) => setNewVersionInput(e.target.value)}
-                      placeholder="เช่น v1.5.0 หรือ v2.0-beta"
-                      className="w-full bg-[#0B0F19] border border-gray-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
+                      placeholder="เช่น v1.5.0"
+                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-white font-mono placeholder-gray-500 focus:outline-none focus:border-white/20"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-gray-300 mb-1 font-medium">หัวข้อการอัปเดต (Patch Title) *</label>
+                    <label className="block text-gray-400 mb-1 font-medium">หัวข้อการอัปเดต (Patch Title) *</label>
                     <input
                       type="text"
                       required
                       value={patchTitleInput}
                       onChange={(e) => setPatchTitleInput(e.target.value)}
-                      placeholder="เช่น อัปเดตปรับปรุงเฟรมเรตและเพิ่มเพลงใหม่"
-                      className="w-full bg-[#0B0F19] border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                      placeholder="เช่น ปรับปรุงประสิทธิภาพและแก้ปัญหาเฟรมตก"
+                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-white placeholder-gray-500 focus:outline-none focus:border-white/20"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-gray-300 mb-1 font-medium">รายละเอียดแพตช์ (Changelog & Notes) *</label>
+                    <label className="block text-gray-400 mb-1 font-medium">รายละเอียดแพตช์ (Changelog) *</label>
                     <textarea
-                      rows={4}
+                      rows={3}
                       required
                       value={patchDetailsInput}
                       onChange={(e) => setPatchDetailsInput(e.target.value)}
-                      placeholder="ระบุสิ่งที่เปลี่ยนแปลง แก้ไข หรือฟีเจอร์ใหม่สำหรับผู้เล่น..."
-                      className="w-full bg-[#0B0F19] border border-gray-800 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                      placeholder="ระบุสิ่งที่เปลี่ยนแปลงหรือแก้ปัญหาในเวอร์ชันนี้..."
+                      className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg p-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-white/20 leading-relaxed"
                     />
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-800">
+                  <div className="flex items-center justify-end gap-2 pt-2.5 border-t border-white/[0.06]">
                     <button
                       type="button"
                       onClick={() => setUpdateVersionGame(null)}
-                      className="px-4 py-2 rounded-xl bg-gray-800 text-gray-300 hover:text-white cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-gray-300 hover:text-white transition-colors cursor-pointer"
                     >
                       ยกเลิก
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-gray-950 font-bold shadow-lg shadow-emerald-500/20 cursor-pointer"
+                      className="px-4 py-1.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer"
                     >
-                      🚀 ปล่อยแพตช์สู่นักเล่น
+                      บันทึกและปล่อยแพตช์
                     </button>
                   </div>
                 </form>

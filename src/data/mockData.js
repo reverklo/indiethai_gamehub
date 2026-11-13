@@ -377,12 +377,12 @@ export const GAME_CATEGORIES = [
 ];
 
 export const GAME_JAM_DATA = {
-  title: 'THAI CYBER INDIE GAME JAM 2026',
-  theme: 'ธีมการแข่งขัน: "Siam Cyberpunk: ผสานอารยธรรมไทยสู่โลกไซเบอร์"',
+  title: 'Thai Cyber Indie Game Jam 2026',
+  theme: 'ธีมการแข่งขัน: Siam Cyberpunk — ผสานอารยธรรมไทยสู่โลกไซเบอร์',
   deadline: 'ปิดรับผลงาน WebGL ในอีก 5 วัน 14 ชั่วโมง',
-  prizePool: 'รางวัลรวมมูลค่า 100,000 บาท + 2,000 Hub Tokens',
+  prizePool: '100,000 บาท + 2,000 Hub Tokens',
   submissionsCount: 28,
-  badge: 'GAME JAM EVENT'
+  badge: 'Game Jam Event'
 };
 
 export const TOKEN_COST_PER_GAME = 50;

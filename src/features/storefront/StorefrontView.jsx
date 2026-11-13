@@ -87,35 +87,33 @@ export const StorefrontView = () => {
         </div>
       )}
 
-      {/* 1. Game Jam Cyberpunk Event Banner */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#111827] via-[#161F30] to-[#0B0F19] border border-indigo-500/30 p-6 sm:p-10 shadow-2xl">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-96 h-96 rounded-full bg-gradient-to-br from-indigo-500/20 to-emerald-500/20 blur-3xl pointer-events-none"></div>
-
+      {/* 1. Game Jam Banner - Quiet Chrome, Sharp Craft */}
+      <section className="relative overflow-hidden rounded-2xl bg-[#111827] border border-white/[0.08] p-6 sm:p-8">
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-rose-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold uppercase tracking-wider">
-              <Trophy className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
+          <div className="space-y-2.5 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/[0.05] border border-white/[0.08] text-amber-300 text-xs font-medium">
+              <Trophy className="w-3.5 h-3.5 text-amber-400" />
               <span>{GAME_JAM_DATA.badge}</span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-black text-white tracking-wide font-['Rajdhani',sans-serif]">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">
               {GAME_JAM_DATA.title}
             </h1>
 
-            <p className="text-sm sm:text-base text-indigo-200 font-medium">
+            <p className="text-sm text-gray-400">
               {GAME_JAM_DATA.theme}
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-300 pt-1">
-              <div className="flex items-center gap-1.5 bg-[#0B0F19]/80 px-3 py-1.5 rounded-xl border border-gray-800">
-                <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-                <span>{GAME_JAM_DATA.deadline}</span>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-300 pt-1">
+              <div className="flex items-center gap-1.5 bg-[#0B0F19] px-3 py-1.5 rounded-lg border border-white/[0.06]">
+                <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                <span className="font-mono text-gray-300">{GAME_JAM_DATA.deadline}</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-[#0B0F19]/80 px-3 py-1.5 rounded-xl border border-gray-800 text-amber-300 font-semibold">
-                <span>💰 {GAME_JAM_DATA.prizePool}</span>
+              <div className="flex items-center gap-1.5 bg-[#0B0F19] px-3 py-1.5 rounded-lg border border-white/[0.06] text-amber-300/90 font-medium">
+                <span>รางวัล: {GAME_JAM_DATA.prizePool}</span>
               </div>
               <div className="text-gray-400">
-                ส่งผลงานแล้ว <strong>{GAME_JAM_DATA.submissionsCount} เกม</strong>
+                ส่งผลงานแล้ว <strong className="text-gray-200 font-mono">{GAME_JAM_DATA.submissionsCount}</strong> เกม
               </div>
             </div>
           </div>
@@ -127,9 +125,9 @@ export const StorefrontView = () => {
                   setSelectedGameForDetail(filteredApprovedGames[0]);
                 }
               }}
-              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#6366F1] to-indigo-600 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold text-xs transition-colors cursor-pointer"
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-4 h-4 text-gray-700" />
               <span>ร่วมทดสอบเกมในแยม</span>
             </button>
           </div>
@@ -137,51 +135,51 @@ export const StorefrontView = () => {
       </section>
 
       {/* 2. Source Selector Tabs: Thai Indie vs Live FreeToGame API */}
-      <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-2 rounded-2xl bg-[#111827] border border-gray-800">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+      <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-1.5 rounded-xl bg-[#111827] border border-white/[0.08]">
+        <div className="flex items-center gap-1.5 w-full sm:w-auto">
           {/* Tab 1: Thai Indie */}
           <button
             onClick={() => setSourceTab('local')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               sourceTab === 'local'
-                ? 'bg-gradient-to-r from-[#6366F1] to-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                ? 'bg-white/[0.1] text-white border border-white/[0.1]'
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             <Gamepad2 className="w-4 h-4 text-emerald-400" />
-            <span>🇹🇭 เกมอินดี้สัญชาติไทย ({filteredApprovedGames.length})</span>
+            <span>เกมอินดี้ไทย ({filteredApprovedGames.length})</span>
           </button>
 
           {/* Tab 2: FreeToGame API */}
           <button
             onClick={() => setSourceTab('api')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               sourceTab === 'api'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-gray-950 shadow-lg shadow-emerald-500/25'
-                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                ? 'bg-white/[0.1] text-white border border-white/[0.1]'
+                : 'text-gray-400 hover:text-white'
             }`}
           >
-            <Radio className="w-4 h-4 animate-pulse text-emerald-400" />
-            <span>🌐 เกมเบราว์เซอร์สดจาก FreeToGame API ({apiGames.length})</span>
+            <Radio className="w-4 h-4 text-sky-400" />
+            <span>FreeToGame API ({apiGames.length})</span>
           </button>
         </div>
 
         {sourceTab === 'api' && (
-          <span className="text-[11px] text-emerald-400 flex items-center gap-1.5 px-3 py-1 bg-emerald-950/40 rounded-lg border border-emerald-500/30">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            ดึงข้อมูล Real-time ผ่าน useFetchBrowserGames()
+          <span className="text-[11px] text-gray-400 font-mono flex items-center gap-1.5 px-3 py-1 bg-[#0B0F19] rounded-md border border-white/[0.06]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            Real-time feed
           </span>
         )}
       </section>
 
-      {/* 3. Engine Filter Tabs (ถ้าเลือกเกมไทย) */}
+      {/* 3. Engine Filter Tabs */}
       {sourceTab === 'local' && (
-        <section className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <section className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Flame className="w-5 h-5 text-amber-400" />
-              <h2 className="text-lg font-bold text-white tracking-wide font-['Rajdhani',sans-serif]">
-                กรองเกมตาม GAME ENGINE
+              <Flame className="w-4 h-4 text-amber-400" />
+              <h2 className="text-sm font-semibold text-gray-200">
+                กรองตาม Engine
               </h2>
             </div>
             {searchQuery && (
@@ -191,152 +189,152 @@ export const StorefrontView = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
             {GAME_ENGINES.map((engine) => (
               <button
                 key={engine}
                 onClick={() => setSelectedEngine(engine)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                   selectedEngine === engine
-                    ? 'bg-gradient-to-r from-[#6366F1] to-indigo-600 text-white shadow-lg shadow-indigo-500/25 border border-indigo-400/50 scale-105'
-                    : 'bg-[#111827] text-gray-400 hover:text-white hover:bg-gray-800 border border-gray-800'
+                    ? 'bg-white text-gray-950 font-semibold'
+                    : 'bg-[#111827] text-gray-400 hover:text-white border border-white/[0.06]'
                 }`}
               >
-                {engine === 'All' ? '⚡ ทุก Engine' : engine}
+                {engine === 'All' ? 'ทุก Engine' : engine}
               </button>
             ))}
           </div>
         </section>
       )}
 
-      {/* 4. Games Grid: ปรับปุ่มเป็นการ์ดคลีนและเน้น "ดาวน์โหลด PC" */}
-      <section className="space-y-5">
+      {/* 4. Games Grid */}
+      <section className="space-y-4">
         
         {/* Wishlist Only Active Banner */}
         {isWishlistOnly && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-950/60 to-[#111827] border border-rose-500/40 flex items-center justify-between text-xs animate-in fade-in">
-            <div className="flex items-center gap-2.5 text-rose-300 font-bold">
-              <Heart className="w-4 h-4 fill-rose-500 text-rose-500 animate-pulse" />
-              <span>กำลังแสดงเฉพาะคลังเกมโปรดของคุณ (Wishlist - {displayedGames.length} เกม)</span>
+          <div className="p-3.5 rounded-xl bg-rose-950/30 border border-rose-500/20 flex items-center justify-between text-xs animate-in fade-in">
+            <div className="flex items-center gap-2 text-rose-300 font-medium">
+              <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+              <span>แสดงเฉพาะคลังเกมโปรด ({displayedGames.length} เกม)</span>
             </div>
             <button
               onClick={() => setIsWishlistOnly(false)}
-              className="px-3 py-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold cursor-pointer transition"
+              className="px-2.5 py-1 rounded-md bg-white/[0.06] hover:bg-white/[0.1] text-gray-200 text-xs transition-colors cursor-pointer"
             >
-              แสดงเกมทั้งหมด
+              แสดงทั้งหมด
             </button>
           </div>
         )}
 
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2 font-['Rajdhani',sans-serif]">
-            <Gamepad2 className="w-5 h-5 text-indigo-400" />
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Gamepad2 className="w-4 h-4 text-gray-400" />
             <span>
               {sourceTab === 'local'
-                ? `คลังเกมอินดี้สัญชาติไทย (${displayedGames.length} เกม)`
-                : `เกมเบราว์เซอร์ออนไลน์จาก FreeToGame API (${displayedGames.length} เกม)`}
+                ? `คลังเกมอินดี้สัญชาติไทย (${displayedGames.length})`
+                : `เกมเบราว์เซอร์จาก FreeToGame API (${displayedGames.length})`}
             </span>
           </h2>
-          <span className="text-xs text-gray-400">
-            {sourceTab === 'local' ? 'สนับสนุนนักพัฒนาไทยโดยตรง' : 'HTML5 / WebGL Online'}
+          <span className="text-xs text-gray-500">
+            {sourceTab === 'local' ? 'สนับสนุนนักพัฒนาไทยโดยตรง' : 'HTML5 / WebGL'}
           </span>
         </div>
 
         {/* Loading State for API */}
         {sourceTab === 'api' && apiLoading ? (
-          <div className="py-20 text-center space-y-4 bg-[#111827]/40 rounded-3xl border border-gray-800">
-            <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mx-auto" />
-            <p className="text-sm font-semibold text-gray-300">
-              กำลังเชื่อมต่อและดึงข้อมูลเกมจาก FreeToGame API...
+          <div className="py-20 text-center space-y-3 bg-[#111827]/40 rounded-2xl border border-white/[0.06]">
+            <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto" />
+            <p className="text-xs font-medium text-gray-400">
+              กำลังเชื่อมต่อและดึงข้อมูลจาก FreeToGame API...
             </p>
           </div>
         ) : displayedGames.length === 0 ? (
-          <div className="text-center py-20 bg-[#111827]/60 rounded-3xl border border-gray-800 space-y-4">
+          <div className="text-center py-16 bg-[#111827]/60 rounded-2xl border border-white/[0.06] space-y-3">
             {isWishlistOnly ? (
               <>
-                <Heart className="w-12 h-12 text-rose-500/50 mx-auto" />
-                <p className="text-white font-bold text-base">ยังไม่มีเกมในคลังเกมโปรดของคุณ</p>
+                <Heart className="w-10 h-10 text-rose-500/40 mx-auto" />
+                <p className="text-white font-medium text-sm">ยังไม่มีเกมในคลังเกมโปรด</p>
                 <p className="text-gray-400 text-xs max-w-sm mx-auto">
-                  คลิกที่ไอคอนรูปหัวใจ ❤️ ที่มุมขวาบนของการ์ดเกมเพื่อบันทึกเกมที่คุณชอบไว้เล่นภายหลัง
+                  คลิกไอคอนหัวใจที่มุมขวาบนของการ์ดเกมเพื่อบันทึกเกมที่คุณชอบ
                 </p>
                 <button
                   onClick={() => setIsWishlistOnly(false)}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition cursor-pointer shadow-lg shadow-indigo-500/20"
+                  className="px-4 py-1.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 text-xs font-medium transition-colors cursor-pointer"
                 >
                   สำรวจเกมทั้งหมด
                 </button>
               </>
             ) : (
               <>
-                <Gamepad2 className="w-12 h-12 text-gray-600 mx-auto" />
-                <p className="text-gray-300 font-semibold">ไม่พบเกมที่ตรงกับคำค้นหา</p>
+                <Gamepad2 className="w-10 h-10 text-gray-600 mx-auto" />
+                <p className="text-gray-400 text-xs">ไม่พบเกมที่ตรงกับคำค้นหา</p>
               </>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {displayedGames.map((game) => (
               <div
                 key={game.id}
                 onClick={() => setSelectedGameForDetail(game)}
-                className="group flex flex-col bg-[#111827] rounded-2xl border border-gray-800/90 overflow-hidden hover:border-indigo-500/50 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer"
+                className="group flex flex-col bg-[#111827] rounded-xl border border-white/[0.08] overflow-hidden hover:border-white/20 transition-colors cursor-pointer"
               >
                 {/* Thumbnail Container */}
-                <div className="relative aspect-video w-full overflow-hidden bg-gray-900">
+                <div className="relative aspect-video w-full overflow-hidden bg-gray-950">
                   <img
                     src={game.coverImage || game.thumbnail}
                     alt={game.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-transparent opacity-80"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-transparent opacity-70"></div>
 
                   {/* Engine Tag */}
-                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#0B0F19]/90 text-indigo-400 border border-indigo-500/40 backdrop-blur-sm">
+                  <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-black/80 text-gray-300 border border-white/[0.08] backdrop-blur-sm">
                     {game.engine}
                   </span>
 
-                  {/* Wishlist Quick Toggle (Top Right) */}
+                  {/* Wishlist Quick Toggle */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleWishlist(game.id);
                     }}
-                    title={wishlist?.includes(game.id) ? 'ลบออกจากเกมโปรด' : 'เพิ่มในเกมโปรด (Wishlist)'}
-                    className={`absolute top-3 right-3 p-1.5 rounded-xl backdrop-blur-md transition-all cursor-pointer z-10 ${
+                    title={wishlist?.includes(game.id) ? 'ลบออกจากเกมโปรด' : 'เพิ่มในเกมโปรด'}
+                    className={`absolute top-2.5 right-2.5 p-1.5 rounded-lg backdrop-blur-sm transition-colors cursor-pointer z-10 ${
                       wishlist?.includes(game.id)
-                        ? 'bg-rose-500/30 text-rose-400 border border-rose-500/50 shadow-lg shadow-rose-500/20 ring-1 ring-rose-500/30'
-                        : 'bg-black/60 text-gray-400 hover:text-rose-400 hover:bg-black/80 border border-white/10'
+                        ? 'bg-black/80 text-rose-400 border border-rose-500/30'
+                        : 'bg-black/60 text-gray-400 hover:text-rose-400 border border-white/[0.08]'
                     }`}
                   >
                     <Heart className={`w-3.5 h-3.5 ${wishlist?.includes(game.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
                   </button>
 
                   {/* Rating */}
-                  <div className="absolute top-3 right-11 flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/75 text-amber-400 text-xs font-bold backdrop-blur-sm border border-amber-500/30">
-                    <Star className="w-3.5 h-3.5 fill-amber-400" />
+                  <div className="absolute top-2.5 right-10 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-black/80 text-amber-300 backdrop-blur-sm border border-white/[0.08]">
+                    <Star className="w-3 h-3 fill-amber-300" />
                     <span>{game.rating > 0 ? game.rating.toFixed(1) : 'New'}</span>
                   </div>
 
                   {/* File Size Badge if PC Downloadable */}
                   {game.hasPcDownload && (
-                    <div className="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] font-mono font-bold text-sky-300 bg-sky-950/80 px-2 py-0.5 rounded-md backdrop-blur-sm border border-sky-500/40">
-                      <HardDrive className="w-3 h-3 text-sky-400" />
+                    <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1 text-[10px] font-mono text-gray-300 bg-black/80 px-2 py-0.5 rounded border border-white/[0.08] backdrop-blur-sm">
+                      <HardDrive className="w-3 h-3 text-gray-400" />
                       <span>{game.downloadSize || 'PC .ZIP'}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Content Section */}
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs text-gray-400">
-                      <span className="text-[10px] uppercase font-bold text-indigo-400">
+                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[11px] text-gray-400">
+                      <span className="font-mono text-gray-400">
                         {game.category}
                       </span>
-                      <span>โดย <strong className="text-gray-300">{game.studio || game.developer}</strong></span>
+                      <span>โดย <strong className="text-gray-300 font-normal">{game.studio || game.developer}</strong></span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-1 font-['Rajdhani',sans-serif]">
+                    <h3 className="text-base font-semibold text-white group-hover:text-gray-200 transition-colors line-clamp-1">
                       {game.title}
                     </h3>
 
@@ -345,37 +343,35 @@ export const StorefrontView = () => {
                     </p>
                   </div>
 
-                  {/* Stats and Action Bar: เปลี่ยนเป็นปุ่ม "ดาวน์โหลด PC" ตามที่ผู้ใช้ต้องการ */}
-                  <div className="pt-3 border-t border-gray-800/80 space-y-3">
-                    <div className="flex items-center justify-between text-[11px] text-gray-400">
+                  {/* Stats and Action Bar */}
+                  <div className="pt-2.5 border-t border-white/[0.06] space-y-2.5">
+                    <div className="flex items-center justify-between text-[11px] text-gray-400 font-mono">
                       <span className="flex items-center gap-1">
-                        <Eye className="w-3 h-3 text-emerald-400" />
-                        เล่นแล้ว {(game.playsCount || game.playCount || 0).toLocaleString()} ครั้ง
+                        <Eye className="w-3 h-3 text-gray-500" />
+                        {(game.playsCount || game.playCount || 0).toLocaleString()} เล่น
                       </span>
                       <span className="flex items-center gap-1">
-                        <Download className="w-3 h-3 text-sky-400" />
+                        <Download className="w-3 h-3 text-gray-500" />
                         {game.downloadCount ? game.downloadCount.toLocaleString() : 0} โหลด
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {/* Button: ดูรายละเอียด */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedGameForDetail(game);
                         }}
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold transition cursor-pointer"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-gray-200 text-xs font-medium border border-white/[0.06] transition-colors cursor-pointer"
                       >
                         <span>รายละเอียด</span>
                         <ChevronRight className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Button: ดาวน์โหลด PC (.ZIP) แทนปุ่ม WebGL ที่รก */}
                       <button
                         onClick={(e) => handleDownloadClick(e, game)}
-                        title="ดาวน์โหลดไฟล์เกม PC (.ZIP) ลงเครื่อง"
-                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-gray-950 text-xs font-bold transition shadow-md shadow-sky-500/20 active:scale-95 cursor-pointer"
+                        title="ดาวน์โหลดไฟล์เกม PC (.ZIP)"
+                        className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-white hover:bg-gray-200 text-gray-950 text-xs font-semibold transition-colors cursor-pointer"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>ดาวน์โหลด PC</span>

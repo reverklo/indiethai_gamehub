@@ -98,9 +98,9 @@ export const Navbar = () => {
   const RoleIcon = roleBadgeInfo.icon;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-gray-800/80 bg-[#0B0F19]/90 backdrop-blur-md transition-all">
+    <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#0B0F19]/95 backdrop-blur-md transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-4">
+        <div className="flex items-center justify-between h-16 gap-4">
           
           {/* Logo & Brand */}
           <div 
@@ -110,29 +110,21 @@ export const Navbar = () => {
             }}
             className="flex items-center gap-3 shrink-0 cursor-pointer"
           >
-            <div className="relative group">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#6366F1] via-indigo-500 to-[#10B981] p-0.5 shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-all duration-300">
-                <div className="w-full h-full bg-[#0B0F19] rounded-[10px] flex items-center justify-center">
-                  <Gamepad2 className="w-6 h-6 text-indigo-400 group-hover:scale-110 group-hover:text-emerald-400 transition-transform duration-300" />
-                </div>
-              </div>
-              <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-              </span>
+            <div className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center">
+              <Gamepad2 className="w-5 h-5 text-gray-200" />
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl sm:text-2xl font-black tracking-wider bg-gradient-to-r from-white via-indigo-100 to-indigo-400 bg-clip-text text-transparent font-['Rajdhani',sans-serif]">
-                  INDIETHAI<span className="text-[#6366F1]">.HUB</span>
+                <span className="text-base sm:text-lg font-bold text-white tracking-tight">
+                  IndieThai<span className="text-indigo-400">Hub</span>
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-400 border border-indigo-700/40 hidden sm:inline-block">
-                  WebGL 60FPS
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-gray-400 border border-white/[0.08] hidden sm:inline-block">
+                  WebGL
                 </span>
               </div>
-              <p className="text-xs text-gray-400 hidden sm:block">
-                แพลตฟอร์มศูนย์รวมเกมอินดี้สัญชาติไทย
+              <p className="text-[11px] text-gray-500 hidden sm:block">
+                แพลตฟอร์มเกมอินดี้สัญชาติไทย
               </p>
             </div>
           </div>
@@ -140,13 +132,13 @@ export const Navbar = () => {
           {/* Search & Engine Filter Bar */}
           <div className="flex-1 max-w-xl hidden md:flex items-center gap-2">
             <div className="relative w-full">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ค้นหาชื่อเกม, แท็ก, ครีเอเตอร์ไทย..."
-                className="w-full bg-[#111827] border border-gray-800 rounded-xl pl-10 pr-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner"
+                placeholder="ค้นหาชื่อเกม, แท็ก, ผู้พัฒนา..."
+                className="w-full bg-[#111827] border border-white/[0.08] rounded-lg pl-9 pr-4 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-white/20 transition-colors"
               />
               {searchQuery && (
                 <button
@@ -163,11 +155,11 @@ export const Navbar = () => {
               <select
                 value={selectedEngine}
                 onChange={(e) => setSelectedEngine(e.target.value)}
-                className="bg-[#111827] border border-gray-800 rounded-xl px-3 py-2 text-xs text-gray-300 focus:outline-none focus:border-indigo-500 cursor-pointer hover:border-gray-700 transition"
+                className="bg-[#111827] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-white/20 cursor-pointer transition-colors"
               >
                 {GAME_ENGINES.map((engine) => (
                   <option key={engine} value={engine} className="bg-[#111827]">
-                    {engine === 'All' ? '⚡ ทุก Engine' : engine}
+                    {engine === 'All' ? 'ทุก Engine' : engine}
                   </option>
                 ))}
               </select>
@@ -175,7 +167,7 @@ export const Navbar = () => {
           </div>
 
           {/* Actions & Role Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
 
             {/* Wishlist Shortcut Button */}
             {currentRole === 'player' && (
@@ -185,30 +177,30 @@ export const Navbar = () => {
                   setIsWishlistOnly(!isWishlistOnly);
                 }}
                 title="คลังเกมโปรด (Wishlist)"
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
                   isWishlistOnly
-                    ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-lg shadow-rose-500/10'
-                    : 'bg-[#111827] text-gray-300 border-gray-800 hover:border-rose-500/40 hover:text-rose-400'
+                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                    : 'bg-[#111827] text-gray-300 border-white/[0.08] hover:border-white/20 hover:text-white'
                 }`}
               >
-                <Heart className={`w-4 h-4 ${isWishlistOnly ? 'fill-rose-500 text-rose-500' : 'text-rose-400'}`} />
+                <Heart className={`w-3.5 h-3.5 ${isWishlistOnly ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}`} />
                 <span className="hidden sm:inline">เกมโปรด</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-950/80 text-rose-300 font-mono">
+                <span className="px-1.5 py-0.2 rounded text-[10px] bg-black/60 text-gray-300 font-mono">
                   {wishlist.length}
                 </span>
               </button>
             )}
 
-            {/* 🔔 Notification Center (Steam-style) */}
+            {/* 🔔 Notification Center */}
             <div className="relative">
               <button
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
                 title="ศูนย์การแจ้งเตือน"
-                className="relative p-2.5 rounded-xl bg-[#111827] border border-gray-800 text-gray-300 hover:text-white hover:border-indigo-500 transition cursor-pointer"
+                className="relative p-2 rounded-lg bg-[#111827] border border-white/[0.08] text-gray-300 hover:text-white hover:border-white/20 transition-colors cursor-pointer"
               >
                 <Bell className="w-4 h-4" />
                 {unreadNotificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white shadow-md">
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white">
                     {unreadNotificationCount}
                   </span>
                 )}
@@ -216,8 +208,8 @@ export const Navbar = () => {
 
               {/* Notification Dropdown Menu */}
               {isNotifOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-[#111827] border border-gray-800 shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2">
-                  <div className="flex items-center justify-between border-b border-gray-800 pb-2 mb-2">
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-[#111827] border border-white/[0.08] shadow-2xl p-3 z-50 animate-in fade-in">
+                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-2 mb-2">
                     <div className="flex items-center gap-2">
                       <Bell className="w-4 h-4 text-indigo-400" />
                       <h4 className="text-xs font-bold text-white">การแจ้งเตือน (Notifications)</h4>
