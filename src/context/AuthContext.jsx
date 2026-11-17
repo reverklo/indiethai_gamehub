@@ -6,6 +6,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { MOCK_USERS, MOCK_USERS_LIST } from '../data/mockData';
+import { supabase } from '../lib/supabase';
+import { 
+  registerWithSupabase, 
+  loginWithSupabase, 
+  logoutFromSupabase, 
+  fetchProfileFromSupabase 
+} from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -63,16 +70,80 @@ export const AuthProvider = ({ children }) => {
     }
   }, [currentUser]);
 
+  // ซิงค์โปรไฟล์ผู้ใช้จริงจาก Supabase Database
+  const syncProfileFromSupabase = async (authUser) => {
+    try {
+      const res = await fetchProfileFromSupabase(authUser.id);
+      if (res.success && res.profile) {
+        const p = res.profile;
+        const profileUser = {
+          id: p.id,
+          username: p.username || authUser.email?.split('@')[0],
+          name: p.display_name || p.username || 'ผู้เล่น',
+          email: authUser.email,
+          role: p.role || 'player',
+          avatar: p.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+          walletBalance: Number(p.wallet_balance) || 350,
+          tokenBalance: Number(p.dev_quota) || 100,
+          studioName: p.studio_name,
+          promptPayNumber: p.promptpay_number,
+          bio: p.bio,
+          level: p.level || 1,
+          badge: p.badge || 'Beta Tester',
+          isVerifiedDev: p.is_verified_dev,
+          isBanned: p.is_banned,
+          isRealAuth: true
+        };
+        setCurrentUser(profileUser);
+      }
+    } catch (e) {
+      console.warn('Sync profile error:', e);
+    }
+  };
+
+  // ดักฟังสถานะ Auth จาก Supabase คลาวด์
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        syncProfileFromSupabase(session.user);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        syncProfileFromSupabase(session.user);
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
   /**
    * ฟังก์ชันเข้าสู่ระบบ (Login)
+   * รองรับทั้งระบบ Supabase Auth จริง และบัญชี Demo
    */
-  const login = (email, password) => {
+  const login = async (email, password) => {
+    // 1. ลองล็อกอินผ่าน Supabase Auth ก่อน
+    try {
+      const sbRes = await loginWithSupabase(email, password);
+      if (sbRes.success && sbRes.data?.user) {
+        await syncProfileFromSupabase(sbRes.data.user);
+        setIsAuthModalOpen(false);
+        return { success: true, message: `ยินดีต้อนรับสู่ IndieThai Hub!` };
+      }
+    } catch (e) {
+      console.warn('Supabase auth attempt failed, checking mock accounts:', e);
+    }
+
+    // 2. ถ้าไม่พบหรือเป็นบัญชีเดโม
     const user = usersList.find(
       (u) => u.email.toLowerCase() === email.toLowerCase()
     );
 
     if (!user) {
-      return { success: false, message: 'ไม่พบบัญชีอีเมลนี้ในระบบ' };
+      return { success: false, message: 'ไม่พบบัญชีอีเมลนี้ในระบบ หรือรหัสผ่านไม่ถูกต้อง' };
     }
 
     if (user.isBanned) {
@@ -86,26 +157,46 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * ฟังก์ชันสมัครสมาชิกใหม่ (Register)
+   * ฟังก์ชันสมัครสมาชิกใหม่ (Register) บน Supabase คลาวด์
    */
-  const register = ({ name, username, email, password, role = 'player', studioName, promptPayNumber }) => {
-    // เช็คอีเมลซ้ำ
-    const existing = usersList.find((u) => u.email.toLowerCase() === email.toLowerCase());
-    if (existing) {
-      return { success: false, message: 'อีเมลนี้มีผู้ใช้งานแล้วในระบบ' };
+  const register = async ({ name, username, email, password, role = 'player', studioName, promptPayNumber }) => {
+    // สมัครผ่าน Supabase Auth
+    const sbRes = await registerWithSupabase({
+      email,
+      password,
+      username,
+      displayName: name,
+      role,
+      studioName,
+      promptPayNumber
+    });
+
+    if (sbRes.success && sbRes.data?.user) {
+      await syncProfileFromSupabase(sbRes.data.user);
+      setIsAuthModalOpen(false);
+      return {
+        success: true,
+        message: `สมัครสมาชิกบนคลาวด์สำเร็จ! ยินดีต้อนรับสู่ IndieThai Hub ${role === 'developer' ? '(ได้รับ 100 เครดิตสำหรับลงเกม)' : ''}`,
+        user: sbRes.data.user
+      };
     }
 
+    if (sbRes.error) {
+      return { success: false, message: `การสมัครสมาชิกล้มเหลว: ${sbRes.error}` };
+    }
+
+    // Fallback จำลองถ้าไม่มีเน็ต
     const newUser = {
       id: `usr-${Date.now()}`,
       username: username || email.split('@')[0],
       name,
       email,
-      role, // 'player' หรือ 'developer'
+      role,
       avatar:
         role === 'developer'
           ? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
           : 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
-      tokenBalance: role === 'developer' ? 150 : 0, // Dev ได้เหรียญเริ่มต้น 150 Tokens
+      tokenBalance: role === 'developer' ? 100 : 0,
       studioName: studioName || (role === 'developer' ? `${name} Studio` : ''),
       promptPayNumber: promptPayNumber || '089-000-0000',
       bio: role === 'developer' ? 'นักพัฒนาเกมอินดี้หน้าใหม่ไฟแรง' : 'ผู้เล่นเกมอินดี้',
@@ -119,7 +210,7 @@ export const AuthProvider = ({ children }) => {
 
     return {
       success: true,
-      message: `สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ IndieThai Hub ${role === 'developer' ? '(ได้รับ 150 Tokens สำหรับลงเกม)' : ''}`,
+      message: `สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ IndieThai Hub`,
       user: newUser
     };
   };
@@ -127,7 +218,12 @@ export const AuthProvider = ({ children }) => {
   /**
    * ฟังก์ชันออกจากระบบ (Logout)
    */
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await logoutFromSupabase();
+    } catch (e) {
+      console.warn('Supabase logout error:', e);
+    }
     // รีเซ็ตกลับเป็นผู้เล่น Guest
     setCurrentUser(MOCK_USERS.player);
     return { success: true, message: 'ออกจากระบบเรียบร้อยแล้ว' };

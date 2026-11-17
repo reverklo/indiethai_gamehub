@@ -11,6 +11,15 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { INITIAL_GAMES, TOKEN_COST_PER_GAME, MOCK_NOTIFICATIONS } from '../data/mockData';
 import { useAuth } from './AuthContext';
+import { supabase } from '../lib/supabase';
+import { 
+  fetchAllGamesFromSupabase, 
+  updateGameInSupabase, 
+  createPatchNoteInSupabase, 
+  updateBugStatusInSupabase, 
+  submitBugReportToSupabase, 
+  submitReviewToSupabase 
+} from '../services/gameService';
 
 const GameContext = createContext();
 
@@ -107,6 +116,43 @@ export const GameProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('indiethai_played_games', JSON.stringify(playedGames));
   }, [playedGames]);
+
+  // ดึงข้อมูลเกมจริงจาก Supabase คลาวด์ พร้อมระบบ Realtime ซิงค์สดอัตโนมัติ
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadGames = async () => {
+      try {
+        const res = await fetchAllGamesFromSupabase();
+        if (res.success && res.data && res.data.length > 0 && isMounted) {
+          setGames(res.data);
+        }
+      } catch (e) {
+        console.warn('Could not load games from Supabase, using local fallback:', e);
+      }
+    };
+
+    loadGames();
+
+    // ฟังเหตุการณ์ Realtime เมื่อมีการเพิ่ม/แก้ไขเกม หรือรายงานบั๊กใหม่
+    const channel = supabase
+      .channel('public:games_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'games' }, () => {
+        loadGames();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'game_patches' }, () => {
+        loadGames();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bug_reports' }, () => {
+        loadGames();
+      })
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   // ซิงค์ selectedGameForDetail หากข้อมูลใน games มีการอัปเดต
   useEffect(() => {
@@ -291,6 +337,13 @@ export const GameProvider = ({ children }) => {
     };
     setNotifications((prev) => [newNotif, ...prev]);
 
+    // ซิงค์การอัปเดตไปยัง Supabase
+    createPatchNoteInSupabase(gameId, {
+      version: newVersion,
+      title: patchTitle,
+      details: patchDetails
+    }).catch(err => console.warn('Supabase patch note sync error:', err));
+
     return {
       success: true,
       message: `อัปเดตแพตช์โน้ตเวอร์ชัน ${newVersion} สำเร็จเรียบร้อย!`
@@ -346,6 +399,16 @@ export const GameProvider = ({ children }) => {
       setNotifications((prev) => [newNotif, ...prev]);
     }
 
+    // บันทึกการเปลี่ยนแปลงขึ้น Supabase คลาวด์
+    updateGameInSupabase(gameId, updatedPayload).catch(err => console.warn('Supabase game update error:', err));
+    if (isNewVersion || hasPatchNotes) {
+      createPatchNoteInSupabase(gameId, {
+        version: updatedPayload.version,
+        title: updatedPayload.newPatchTitle,
+        details: updatedPayload.newPatchDetails
+      }).catch(err => console.warn('Supabase patch note sync error:', err));
+    }
+
     return {
       success: true,
       message: `บันทึกข้อมูลและอัปเดตเกม "${targetTitle}" เรียบร้อยแล้ว!`
@@ -370,6 +433,9 @@ export const GameProvider = ({ children }) => {
         return g;
       })
     );
+
+    // ซิงค์สถานะบั๊กไปยัง Supabase คลาวด์
+    updateBugStatusInSupabase(bugId, newStatus).catch(err => console.warn('Supabase bug status sync error:', err));
 
     return {
       success: true,
@@ -458,6 +524,28 @@ export const GameProvider = ({ children }) => {
 
     setGames((prev) => [newGame, ...prev]);
 
+    // ซิงค์เกมใหม่ขึ้น Supabase คลาวด์
+    supabase.from('games').insert({
+      title: newGame.title,
+      slug: `${newGame.slug}-${Date.now().toString().slice(-4)}`,
+      tagline: newGame.tagline,
+      description: newGame.description,
+      developer_name: newGame.developer,
+      category: newGame.category,
+      engine: newGame.engine,
+      version: newGame.version,
+      price: newGame.price || 0,
+      has_webgl: newGame.hasWebgl,
+      has_pc_download: newGame.hasPcDownload,
+      webgl_url: newGame.webglUrl,
+      download_url: newGame.downloadUrl,
+      thumbnail: newGame.thumbnail,
+      header_image: newGame.thumbnail,
+      status: 'pending'
+    }).then(({ error }) => {
+      if (error) console.warn('Supabase game submission sync error:', error);
+    });
+
     // สร้างแจ้งเตือนถึง Admin
     const adminNotif = {
       id: `notif-admin-${Date.now()}`,
@@ -505,6 +593,9 @@ export const GameProvider = ({ children }) => {
     };
     setNotifications((prev) => [devNotif, ...prev]);
 
+    // ซิงค์สถานะอนุมัติขึ้น Supabase
+    updateGameInSupabase(gameId, { status: 'approved' }).catch(err => console.warn('Supabase approve sync error:', err));
+
     return {
       success: true,
       message: 'อนุมัติเกมขึ้นสโตร์เรียบร้อยแล้ว!'
@@ -522,6 +613,9 @@ export const GameProvider = ({ children }) => {
           : game
       )
     );
+
+    // ซิงค์สถานะปฏิเสธขึ้น Supabase
+    updateGameInSupabase(gameId, { status: 'rejected' }).catch(err => console.warn('Supabase reject sync error:', err));
     return {
       success: true,
       message: `ปฏิเสธเกมเรียบร้อยแล้ว (${reason})`
@@ -567,6 +661,14 @@ export const GameProvider = ({ children }) => {
       })
     );
 
+    // ซิงค์รีวิวใหม่ไปยัง Supabase
+    submitReviewToSupabase(gameId, {
+      userId: currentUser?.id,
+      userName: user || currentUser?.name || 'ผู้เล่นทั่วไป',
+      rating: Number(rating),
+      comment
+    }).catch(err => console.warn('Supabase review sync error:', err));
+
     return {
       success: true,
       message: 'ส่งคะแนนรีวิวเรียบร้อยแล้ว ขอบคุณที่สนับสนุนเกมอินดี้ไทย!'
@@ -610,6 +712,13 @@ export const GameProvider = ({ children }) => {
       isRead: false
     };
     setNotifications((prev) => [bugNotif, ...prev]);
+
+    // ซิงค์รายงานบั๊กขึ้น Supabase
+    submitBugReportToSupabase(gameId, {
+      reporterName: user || currentUser?.name || 'ผู้เล่นทั่วไป',
+      title,
+      description
+    }).catch(err => console.warn('Supabase bug report sync error:', err));
 
     return {
       success: true,

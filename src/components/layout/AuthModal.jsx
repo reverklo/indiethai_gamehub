@@ -52,38 +52,60 @@ export const AuthModal = () => {
   // Notifications
   const [errorMsg, setErrorMsg] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isAuthModalOpen) return null;
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg(null);
-    const res = login(loginEmail, loginPassword);
-    if (!res.success) {
-      setErrorMsg(res.message);
+    setIsSubmitting(true);
+    try {
+      const res = await login(loginEmail, loginPassword);
+      if (!res.success) {
+        setErrorMsg(res.message);
+      }
+    } catch (err) {
+      setErrorMsg('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg(null);
-    if (!regEmail || !regName) {
-      setErrorMsg('กรุณากรอกข้อมูลให้ครบถ้วน');
+    if (!regEmail || !regName || !regPassword) {
+      setErrorMsg('กรุณากรอกข้อมูลและรหัสผ่านให้ครบถ้วน');
       return;
     }
 
-    const res = register({
-      name: regName,
-      username: regUsername,
-      email: regEmail,
-      password: regPassword,
-      role: regRole,
-      studioName: regStudioName,
-      promptPayNumber: regPromptPay
-    });
+    if (regPassword.length < 6) {
+      setErrorMsg('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+      return;
+    }
 
-    if (!res.success) {
-      setErrorMsg(res.message);
+    setIsSubmitting(true);
+    try {
+      const res = await register({
+        name: regName,
+        username: regUsername,
+        email: regEmail,
+        password: regPassword,
+        role: regRole,
+        studioName: regStudioName,
+        promptPayNumber: regPromptPay
+      });
+
+      if (!res.success) {
+        setErrorMsg(res.message);
+      } else {
+        setSuccessMsg(res.message);
+      }
+    } catch (err) {
+      setErrorMsg('เกิดข้อผิดพลาดในการสมัครสมาชิก');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -159,6 +181,14 @@ export const AuthModal = () => {
           </button>
         </div>
 
+        {/* Success Alert */}
+        {successMsg && (
+          <div className="p-3.5 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
         {/* Error Alert */}
         {errorMsg && (
           <div className="p-3.5 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
@@ -202,9 +232,10 @@ export const AuthModal = () => {
 
             <button
               type="submit"
-              className="apple-press w-full py-2.5 rounded-xl bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer text-xs"
+              disabled={isSubmitting}
+              className="apple-press w-full py-2.5 rounded-xl bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer text-xs disabled:opacity-50"
             >
-              เข้าสู่ระบบ
+              {isSubmitting ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
             </button>
 
             {/* Quick Demo Logins for Presentations */}
@@ -363,9 +394,10 @@ export const AuthModal = () => {
 
             <button
               type="submit"
-              className="apple-press w-full py-2.5 rounded-xl bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer text-xs"
+              disabled={isSubmitting}
+              className="apple-press w-full py-2.5 rounded-xl bg-white hover:bg-gray-200 text-gray-950 font-semibold transition-colors cursor-pointer text-xs disabled:opacity-50"
             >
-              ยืนยันการสมัครสมาชิก
+              {isSubmitting ? 'กำลังสร้างบัญชีบนคลาวด์...' : 'ยืนยันการสมัครสมาชิก'}
             </button>
           </form>
         )}
