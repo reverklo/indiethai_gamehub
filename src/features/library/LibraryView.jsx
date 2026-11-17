@@ -33,7 +33,7 @@ export const LibraryView = () => {
     openGameDetail 
   } = useGame();
 
-  const { isGameOwned } = useAuth();
+  const { isGameOwned, currentUser, openAuthModal } = useAuth();
 
   const [filterType, setFilterType] = useState('all'); // 'all' | 'owned' | 'played' | 'wishlist'
   const [search, setSearch] = useState('');
@@ -62,6 +62,36 @@ export const LibraryView = () => {
     }
     return true;
   });
+
+  if (!currentUser) {
+    return (
+      <div className="py-24 text-center max-w-md mx-auto space-y-5 animate-in fade-in">
+        <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto text-gray-300">
+          <Gamepad2 className="w-7 h-7 text-gray-400" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-white">เข้าสู่ระบบเพื่อดูคลังเกมของคุณ</h2>
+          <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
+            คลังเกมจะเก็บรวบรวมเกมอินดี้ทั้งหมดที่คุณเป็นเจ้าของ และประวัติการเล่นของคุณ
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <button
+            onClick={() => openAuthModal('login')}
+            className="apple-press px-5 py-2.5 rounded-xl bg-white hover:bg-gray-200 text-gray-950 font-semibold text-xs transition-colors cursor-pointer"
+          >
+            เข้าสู่ระบบ
+          </button>
+          <button
+            onClick={() => openAuthModal('register')}
+            className="apple-press px-5 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white font-medium text-xs border border-white/[0.08] transition-colors cursor-pointer"
+          >
+            สมัครสมาชิกใหม่
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">

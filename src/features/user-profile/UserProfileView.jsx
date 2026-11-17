@@ -28,14 +28,15 @@ import {
   Sparkles,
   Trophy,
   CheckCircle2,
-  HardDrive
+  HardDrive,
+  User
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { EditProfileModal } from './EditProfileModal';
 
 export const UserProfileView = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, openAuthModal } = useAuth();
   const { 
     games, 
     wishlist, 
@@ -87,6 +88,36 @@ export const UserProfileView = () => {
       .filter((b) => b.user === currentUser?.name || b.user === currentUser?.username)
       .map((b) => ({ ...b, gameTitle: g.title, gameId: g.id }))
   );
+
+  if (!currentUser) {
+    return (
+      <div className="py-24 text-center max-w-md mx-auto space-y-5 animate-in fade-in">
+        <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto text-gray-300">
+          <User className="w-7 h-7 text-gray-400" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-white">เข้าสู่ระบบเพื่อดูโปรไฟล์ของคุณ</h2>
+          <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
+            คุณจำเป็นต้องเข้าสู่ระบบเพื่อดูประวัติการเล่น ปลดล็อกความสำเร็จ และจัดการรายการเกมโปรด
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <button
+            onClick={() => openAuthModal('login')}
+            className="apple-press px-5 py-2.5 rounded-xl bg-white hover:bg-gray-200 text-gray-950 font-semibold text-xs transition-colors cursor-pointer"
+          >
+            เข้าสู่ระบบ
+          </button>
+          <button
+            onClick={() => openAuthModal('register')}
+            className="apple-press px-5 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white font-medium text-xs border border-white/[0.08] transition-colors cursor-pointer"
+          >
+            สมัครสมาชิกใหม่
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">

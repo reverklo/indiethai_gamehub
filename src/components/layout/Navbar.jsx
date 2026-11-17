@@ -96,31 +96,31 @@ export const Navbar = () => {
   const roleBadgeInfo = getRoleBadge(currentRole);
   const RoleIcon = roleBadgeInfo.icon;
 
-  // รายการแท็บนำทางหลัก (คงที่ 4 แท็บเสมอสไตล์ Steam เพื่อความสมดุลและไม่รกสายตา)
+  // รายการแท็บนำทางหลัก (สไตล์ Steam: ร้านค้า, คลังเกม, ชุมชน และแท็บโปรไฟล์/สตูดิโอเมื่อล็อกอินเท่านั้น)
   const navTabs = [
     { id: 'store', label: 'ร้านค้า' },
     { id: 'library', label: 'คลังเกม' },
     { id: 'community', label: 'ชุมชน' },
   ];
 
-  if (currentRole === 'developer') {
-    navTabs.push({ id: 'studio', label: 'สตูดิโอ' });
-  } else if (currentRole === 'admin') {
-    navTabs.push({ id: 'admin', label: 'ผู้ดูแลระบบ' });
-  } else {
-    // Player role: แสดง persona name สั้นๆ ตามแบบ Steam เช่น TSUKIKO_83 หรือคำว่า 'โปรไฟล์'
-    const shortLabel = currentUser?.username 
+  if (currentUser) {
+    if (currentRole === 'developer') {
+      navTabs.push({ id: 'studio', label: 'สตูดิโอ' });
+    } else if (currentRole === 'admin') {
+      navTabs.push({ id: 'admin', label: 'ผู้ดูแลระบบ' });
+    }
+
+    const shortLabel = currentUser.username 
       ? (currentUser.username.length > 12 ? currentUser.username.slice(0, 12).toUpperCase() : currentUser.username.toUpperCase())
       : 'โปรไฟล์';
     navTabs.push({ id: 'profile', label: shortLabel });
   }
 
-  // หาก Dev หรือ Admin คลิกเข้าหน้า Profile ให้แสดงแท็บโปรไฟล์เพิ่มเติมอย่างชัดเจน
-  if (activeNavTab === 'profile' && currentRole !== 'player') {
-    navTabs.push({ id: 'profile', label: 'โปรไฟล์' });
-  }
-
   const handleWishlistClick = () => {
+    if (!currentUser) {
+      openAuthModal('login');
+      return;
+    }
     navigateToTab('profile', 'wishlist');
     if (setProfileTab) {
       setProfileTab('wishlist');
@@ -228,16 +228,16 @@ export const Navbar = () => {
             {/* Wishlist Shortcut Button */}
             <button
               onClick={handleWishlistClick}
-              title={`สิ่งที่อยากได้ (${wishlist.length})`}
+              title={`สิ่งที่อยากได้ (${currentUser ? wishlist.length : 0})`}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
-                activeNavTab === 'profile'
+                activeNavTab === 'profile' && currentUser
                   ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
                   : 'bg-[#111827] text-gray-300 border-white/[0.08] hover:border-white/20 hover:text-white'
               }`}
             >
               <Heart className="w-3.5 h-3.5 fill-rose-500/30 text-rose-400 shrink-0" />
               <span className="hidden xl:inline">สิ่งที่อยากได้</span>
-              {wishlist.length > 0 && (
+              {currentUser && wishlist.length > 0 && (
                 <span className="px-1.5 py-0.2 rounded text-[10px] bg-rose-500/20 text-rose-300 font-mono font-bold">
                   {wishlist.length}
                 </span>
