@@ -32,6 +32,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { GAME_CATEGORIES, TOKEN_COST_PER_GAME } from '../../data/mockData';
+import { DropzoneUploader } from '../../components/common/DropzoneUploader';
+import { uploadGameBuild, uploadGameMedia } from '../../services/storageService';
 
 export const UploadGameForm = ({ onCancel, onSuccess }) => {
   const { currentUser, devTokenBalance, topUpTokens } = useAuth();
@@ -564,16 +566,51 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xs font-semibold text-white uppercase tracking-wider font-mono">
-                3. ภาพหน้าจอและวิดีโอตัวอย่างเกม (Media Showcase)
+                3. ภาพหน้าปกเกมและสื่อตัวอย่าง (Media Showcase) *
               </h3>
               <p className="text-[11px] text-gray-400 mt-0.5">
-                ใส่ทั้งรูป Screenshot และวิดีโอ YouTube ไว้ด้วยกัน ระบบจะแสดงผลเป็น Carousel บนหน้าเกม
+                อัปโหลดภาพหน้าปกสำหรับแสดงบนหน้าร้านค้า และเพิ่มภาพสกรีนช็อต/วิดีโอตัวอย่าง
               </p>
             </div>
           </div>
 
+          {/* 3A: Game Poster / Thumbnail Cover Uploader */}
+          <div className="space-y-2 p-4 rounded-xl bg-[#0B0F19] border border-white/[0.06]">
+            <label className="block text-xs font-semibold text-gray-200">
+              ภาพหน้าปกเกม (Game Poster / Store Capsule Art) *
+            </label>
+            <DropzoneUploader
+              label="ลากไฟล์ภาพหน้าปกมาวางที่นี่ หรือคลิกเพื่ออัปโหลดขึ้น Cloud"
+              sublabel="รองรับ .png, .jpg, .webp อัตราส่วน 16:9 ขนาดไม่เกิน 15 MB"
+              accept="image/*"
+              type="image"
+              currentUrl={formData.thumbnail}
+              uploadFn={uploadGameMedia}
+              onUploadComplete={(res) => {
+                if (res.url) {
+                  setFormData((prev) => ({ ...prev, thumbnail: res.url }));
+                }
+              }}
+            />
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-[10px] text-gray-500 font-mono">หรือระบุ URL รูปภาพ:</span>
+              <input
+                type="url"
+                name="thumbnail"
+                value={formData.thumbnail}
+                onChange={handleInputChange}
+                placeholder="https://images.unsplash.com/..."
+                className="flex-1 bg-[#111827] border border-white/[0.08] rounded-md px-2.5 py-1 text-white text-[11px] font-mono focus:outline-none focus:border-white/20"
+              />
+            </div>
+          </div>
+
           {/* Current Media List */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-gray-300">
+              ภาพสกรีนช็อตและวิดีโอตัวอย่าง (Screenshots & Trailers):
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {mediaList.map((item) => (
               <div
                 key={item.id}
@@ -605,6 +642,7 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
                 </button>
               </div>
             ))}
+            </div>
           </div>
 
           {/* Add New Media Controls */}
@@ -688,52 +726,28 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
               </div>
             </div>
 
-            {/* Drag & Drop WebGL Zip Zone */}
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
-                isDragging
-                  ? 'border-emerald-400 bg-emerald-500/10'
-                  : 'border-white/[0.1] bg-[#0B0F19] hover:border-white/20'
-              }`}
-            >
-              {uploadedZipFile ? (
-                <div className="flex flex-col items-center space-y-1.5">
-                  <FileCheck className="w-6 h-6 text-emerald-400" />
-                  <p className="text-xs font-medium text-white">{uploadedZipFile.name}</p>
-                  <p className="text-[11px] text-emerald-400 font-mono">ขนาดไฟล์: {uploadedZipFile.size}</p>
-                  <button
-                    type="button"
-                    onClick={() => setUploadedZipFile(null)}
-                    className="text-[11px] text-rose-400 hover:underline pt-1 cursor-pointer"
-                  >
-                    ลบไฟล์
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center space-y-2">
-                  <FileArchive className="w-6 h-6 text-gray-400" />
-                  <div>
-                    <p className="text-xs font-medium text-white">
-                      ลากและวางไฟล์ WebGL Build (.ZIP) ที่นี่
-                    </p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">
-                      รองรับ Unity WebGL, Godot HTML5, Phaser, หรือ Three.js
-                    </p>
-                  </div>
-                  <label className="px-3.5 py-1.5 rounded-lg bg-white/[0.08] hover:bg-white/[0.12] text-gray-200 text-xs font-medium cursor-pointer border border-white/[0.08] transition-colors">
-                    <span>เลือกไฟล์</span>
-                    <input
-                      type="file"
-                      accept=".zip,.rar,.tar"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              )}
+            {/* Cloud Drag & Drop WebGL Zip Zone */}
+            <div className="space-y-2">
+              <label className="block text-gray-300 font-medium">
+                อัปโหลดไฟล์ WebGL Build (.ZIP) ขึ้น Cloud Storage *
+              </label>
+              <DropzoneUploader
+                label="ลากและวางไฟล์ WebGL Build (.ZIP) ที่นี่เพื่ออัปโหลดขึ้น Cloud"
+                sublabel="รองรับ Unity WebGL, Godot HTML5, Phaser หรือ Three.js (.zip, .rar) ขนาดสูงสุด 500 MB"
+                accept=".zip,.rar,.tar"
+                type="archive"
+                uploadFn={uploadGameBuild}
+                onUploadComplete={(res) => {
+                  if (res.url) {
+                    setUploadedZipFile({ name: res.fileName, size: res.formattedSize });
+                    setFormData((prev) => ({
+                      ...prev,
+                      downloadSize: res.formattedSize,
+                      webglUrl: prev.webglUrl || res.url
+                    }));
+                  }
+                }}
+              />
             </div>
           </div>
         )}
@@ -747,8 +761,32 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
                 <span>{kindOfProject === 'both' ? '5. ไฟล์ดาวน์โหลด PC และสเปกคอม' : '4. ไฟล์ดาวน์โหลด PC และสเปกคอมพิวเตอร์'}</span>
               </h3>
               <p className="text-[11px] text-gray-400 mt-0.5">
-                ระบุลิงก์ดาวน์โหลดตัวติดตั้ง PC ขนาดไฟล์ และสเปกคอมพิวเตอร์ขั้นต่ำที่แนะนำ
+                อัปโหลดไฟล์ติดตั้ง PC (.ZIP / .EXE) ขึ้น Cloud หรือระบุลิงก์ภายนอก
               </p>
+            </div>
+
+            {/* Cloud Drag & Drop PC Game Build */}
+            <div className="space-y-2">
+              <label className="block text-gray-300 font-medium">
+                อัปโหลดบิลด์เกม PC (.ZIP / .EXE / .RAR) *
+              </label>
+              <DropzoneUploader
+                label="ลากไฟล์บิลด์เกม PC (.ZIP / Installer) มาวางที่นี่ หรือคลิกเพื่ออัปโหลด"
+                sublabel="รองรับไฟล์ .zip, .rar, .7z, .exe ขนาดสูงสุด 500 MB ระบบจะสร้าง URL ดาวน์โหลดให้อัตโนมัติ"
+                accept=".zip,.rar,.7z,.exe"
+                type="archive"
+                uploadFn={uploadGameBuild}
+                onUploadComplete={(res) => {
+                  if (res.url) {
+                    setUploadedZipFile({ name: res.fileName, size: res.formattedSize });
+                    setFormData((prev) => ({
+                      ...prev,
+                      downloadUrl: res.url,
+                      downloadSize: res.formattedSize
+                    }));
+                  }
+                }}
+              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -760,13 +798,13 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
                   required={kindOfProject === 'pc' || kindOfProject === 'both'}
                   value={formData.downloadUrl}
                   onChange={handleInputChange}
-                  placeholder="https://... หรือลิงก์ Google Drive / Mega"
+                  placeholder="https://... ลิงก์ดาวน์โหลดไฟล์จาก Cloud"
                   className="w-full bg-[#0B0F19] border border-white/[0.08] rounded-lg px-3.5 py-2 text-white font-mono focus:outline-none focus:border-white/20"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-300 mb-1 font-medium">ขนาดไฟล์โดยประมาณ (เช่น 150 MB หรือ 2.4 GB) *</label>
+                <label className="block text-gray-300 mb-1 font-medium">ขนาดไฟล์โดยประมาณ *</label>
                 <input
                   type="text"
                   name="downloadSize"

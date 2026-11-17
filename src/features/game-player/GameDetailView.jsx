@@ -48,6 +48,8 @@ import {
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { useAuth } from '../../context/AuthContext';
+import { generatePromptPayQRDataUrl } from '../../lib/promptpay';
+import { uploadSlipImage } from '../../services/storageService';
 
 export const GameDetailView = ({ game }) => {
   const { 
@@ -134,6 +136,27 @@ export const GameDetailView = ({ game }) => {
   // โดเนท PromptPay
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
   const [donateSuccess, setDonateSuccess] = useState(false);
+  const [donateAmount, setDonateAmount] = useState(50);
+  const [donateCustomAmount, setDonateCustomAmount] = useState('');
+  const [donateMessage, setDonateMessage] = useState('');
+  const [donateQrUrl, setDonateQrUrl] = useState('');
+  const [copiedPromptPay, setCopiedPromptPay] = useState(false);
+
+  const activeDonateAmount = donateCustomAmount ? (Number(donateCustomAmount) || 0) : donateAmount;
+
+  // สร้าง PromptPay QR สำหรับผู้พัฒนาโดยเฉพาะ
+  useEffect(() => {
+    if (!isDonateModalOpen || activeDonateAmount <= 0) return;
+    const target = game.promptPayNumber || '089-765-4321';
+    generatePromptPayQRDataUrl(target, activeDonateAmount, {
+      width: 240,
+      margin: 1,
+      darkColor: '#0a0f1d',
+      lightColor: '#ffffff'
+    })
+      .then((url) => setDonateQrUrl(url))
+      .catch(console.error);
+  }, [isDonateModalOpen, activeDonateAmount, game.promptPayNumber]);
 
   // ฟังก์ชันกดสั่งซื้อเกม
   const handlePurchase = () => {
@@ -908,13 +931,13 @@ export const GameDetailView = ({ game }) => {
 
       </div>
 
-      {/* Donate Coffee Modal */}
+      {/* Donate Coffee Modal (Real PromptPay Standard) */}
       {isDonateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="relative w-full max-w-sm rounded-2xl bg-[#0f172a] border border-white/[0.1] shadow-2xl p-6 text-center space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-2xl bg-[#0b1120] border border-white/[0.1] shadow-2xl p-6 text-center space-y-4 apple-modal-enter">
             <button
               onClick={() => setIsDonateModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.06] transition cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -923,17 +946,76 @@ export const GameDetailView = ({ game }) => {
               <Coffee className="w-6 h-6" />
             </div>
 
-            <h3 className="text-base font-bold text-white">โดเนทค่ากาแฟให้ผู้พัฒนา</h3>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              สนับสนุนสตูดิโอ <strong>{game.developer}</strong> เพื่อเป็นกำลังใจในการพัฒนาแพตช์และเกมใหม่
-            </p>
-
-            <div className="p-3 bg-white rounded-xl inline-block shadow">
-              <QrCode className="w-36 h-36 text-gray-900" />
-              <p className="text-[10px] font-mono text-gray-700 mt-1 font-bold">
-                {game.promptPayNumber || '089-765-4321'}
+            <div>
+              <h3 className="text-base font-bold text-white">โดเนทสนับสนุนผู้พัฒนาผ่านพร้อมเพย์</h3>
+              <p className="text-xs text-gray-400 mt-1">
+                ส่งค่ากาแฟให้สตูดิโอ <strong className="text-amber-300">{game.developer}</strong> ผู้สร้าง {game.title}
               </p>
             </div>
+
+            {/* Amount Presets */}
+            <div className="grid grid-cols-4 gap-2">
+              {[20, 50, 100, 300].map((amt) => {
+                const isSelected = !donateCustomAmount && donateAmount === amt;
+                return (
+                  <button
+                    key={amt}
+                    type="button"
+                    onClick={() => {
+                      setDonateAmount(amt);
+                      setDonateCustomAmount('');
+                    }}
+                    className={`py-2 px-1 rounded-xl text-xs font-mono border transition cursor-pointer ${
+                      isSelected
+                        ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 font-bold'
+                        : 'bg-[#141d33] border-white/[0.06] text-gray-300 hover:border-white/20'
+                    }`}
+                  >
+                    ฿{amt}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Custom Amount */}
+            <input
+              type="number"
+              placeholder="หรือระบุจำนวนเงินที่ต้องการ (บาท)"
+              value={donateCustomAmount}
+              onChange={(e) => setDonateCustomAmount(e.target.value)}
+              className="w-full bg-[#141d33] border border-white/[0.08] rounded-xl px-3 py-2 text-white text-xs font-mono text-center placeholder-gray-500 focus:outline-none focus:border-amber-400/50"
+            />
+
+            {/* Real PromptPay QR Card */}
+            <div className="p-4 bg-white rounded-2xl shadow-lg border border-gray-200 inline-block text-center">
+              <div className="flex items-center justify-between pb-1 mb-1 border-b border-gray-100 text-[8px] font-bold text-sky-800">
+                <span>PROMPTPAY</span>
+                <span className="text-gray-500 font-mono">EMVCo REAL</span>
+              </div>
+              {donateQrUrl ? (
+                <img 
+                  src={donateQrUrl} 
+                  alt="PromptPay QR Code" 
+                  className="w-40 h-40 object-contain mx-auto"
+                />
+              ) : (
+                <div className="w-40 h-40 flex items-center justify-center bg-gray-100 text-gray-400 text-xs">
+                  กำลังสร้าง QR...
+                </div>
+              )}
+              <div className="text-[10px] font-mono text-gray-800 mt-1 font-bold">
+                ฿{activeDonateAmount} &bull; {game.promptPayNumber || '089-765-4321'}
+              </div>
+            </div>
+
+            {/* Cheer Message */}
+            <input
+              type="text"
+              placeholder="ข้อความให้กำลังใจทีมพัฒนา (ส่งกำลังใจให้ผู้สร้าง)..."
+              value={donateMessage}
+              onChange={(e) => setDonateMessage(e.target.value)}
+              className="w-full bg-[#141d33] border border-white/[0.08] rounded-xl px-3.5 py-2 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-white/20"
+            />
 
             <button
               onClick={() => {
@@ -941,11 +1023,11 @@ export const GameDetailView = ({ game }) => {
                 setTimeout(() => {
                   setDonateSuccess(false);
                   setIsDonateModalOpen(false);
-                }, 1500);
+                }, 1800);
               }}
-              className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold text-xs transition cursor-pointer"
+              className="apple-press w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-gray-950 font-bold text-xs transition cursor-pointer"
             >
-              {donateSuccess ? 'ขอบคุณสำหรับการสนับสนุน!' : 'จำลองโอนเงินสำเร็จ'}
+              {donateSuccess ? 'ส่งกำลังใจและโดเนทสำเร็จเรียบร้อย! 🎉' : `ยืนยันการโดเนท (฿${activeDonateAmount})`}
             </button>
           </div>
         </div>

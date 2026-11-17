@@ -30,12 +30,16 @@ import {
   Check,
   Tag,
   Zap,
-  ArrowRight
+  ArrowRight,
+  Dices
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { useAuth } from '../../context/AuthContext';
 import { useFetchBrowserGames } from '../../hooks/useFetchBrowserGames';
 import { GAME_JAM_DATA } from '../../data/mockData';
+import { LiveCommunityTicker } from './LiveCommunityTicker';
+import { ArcadeLeaderboardWidget } from './ArcadeLeaderboardWidget';
+import { MysteryIndieDropModal } from './MysteryIndieDropModal';
 
 export const StorefrontView = () => {
   const { 
@@ -61,6 +65,9 @@ export const StorefrontView = () => {
 
   // แจ้งเตือนดาวน์โหลด
   const [downloadToast, setDownloadToast] = useState(null);
+
+  // สเตตตู้สุ่มเกมอินดี้ไทย
+  const [isMysteryDropOpen, setIsMysteryDropOpen] = useState(false);
 
   // สไลด์ของ Featured & Recommended Carousel
   const featuredGames = filteredApprovedGames.filter((g) => g.featured || g.rating >= 4.8);
@@ -141,6 +148,20 @@ export const StorefrontView = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       
+      {/* 0. Live Real-time Activity Pulse / Community Marquee */}
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-6 mb-2">
+        <LiveCommunityTicker
+          onPlayGame={(gameId) => {
+            const g = filteredApprovedGames.find((x) => x.id === gameId) || filteredApprovedGames[0];
+            if (g) openGamePlayer(g);
+          }}
+          onOpenLeaderboard={() => {
+            const el = document.getElementById('hall-of-fame-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+        />
+      </div>
+
       {/* Toast Notification */}
       {downloadToast && (
         <div className="fixed top-24 right-6 z-50 p-4 rounded-xl bg-sky-950/90 border border-sky-500/40 text-sky-200 text-xs font-semibold shadow-2xl flex items-center gap-3 animate-in slide-in-from-top-3">
@@ -287,6 +308,20 @@ export const StorefrontView = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {activeFeaturedGame.hasWebgl && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openGamePlayer(activeFeaturedGame);
+                      }}
+                      className="apple-press flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs transition cursor-pointer shadow-lg shadow-emerald-500/20"
+                      title="เปิดเล่นเกมผ่าน WebGL ทันทีในเบราว์เซอร์ ไม่ต้องติดตั้ง"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-gray-950" />
+                      <span>เล่นทันที (Instant Play)</span>
+                    </button>
+                  )}
+
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -428,6 +463,16 @@ export const StorefrontView = () => {
             >
               <Radio className="w-3.5 h-3.5 text-sky-400" />
               <span>FreeToGame API</span>
+            </button>
+
+            {/* Mystery Indie Drop Button */}
+            <button
+              onClick={() => setIsMysteryDropOpen(true)}
+              className="apple-press flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/90 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold text-xs whitespace-nowrap transition cursor-pointer shadow-md ml-1"
+              title="สุ่มค้นพบเกมอินดี้ไทยตามดวงชะตาประจำวัน"
+            >
+              <Dices className="w-3.5 h-3.5" />
+              <span>สุ่มเกมอินดี้ไทย</span>
             </button>
           </div>
 
@@ -657,6 +702,36 @@ export const StorefrontView = () => {
           </div>
         )}
       </section>
+
+      {/* ========================================================
+          4. ARCADE HALL OF FAME & REAL-TIME LEADERBOARD
+         ======================================================== */}
+      <section id="hall-of-fame-section" className="pt-2">
+        <ArcadeLeaderboardWidget
+          onPlayGame={(gameId) => {
+            const g = filteredApprovedGames.find((x) => x.id === gameId) || filteredApprovedGames[0];
+            if (g) openGamePlayer(g);
+          }}
+          gameTitle="2048 Cyber Siam"
+        />
+      </section>
+
+      {/* ========================================================
+          5. MYSTERY INDIE DROP & DISCOVERY MODAL
+         ======================================================== */}
+      <MysteryIndieDropModal
+        isOpen={isMysteryDropOpen}
+        onClose={() => setIsMysteryDropOpen(false)}
+        games={filteredApprovedGames}
+        onPlayGame={(gameId) => {
+          const g = filteredApprovedGames.find((x) => x.id === gameId);
+          if (g) openGamePlayer(g);
+        }}
+        onOpenDetail={(gameId) => {
+          const g = filteredApprovedGames.find((x) => x.id === gameId);
+          if (g) openGameDetail(g);
+        }}
+      />
 
     </div>
   );

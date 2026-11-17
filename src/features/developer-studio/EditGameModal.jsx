@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { GAME_CATEGORIES } from '../../data/mockData';
+import { DropzoneUploader } from '../../components/common/DropzoneUploader';
+import { uploadGameBuild } from '../../services/storageService';
 
 export const EditGameModal = ({ game, onClose, onSaveSuccess }) => {
   const { editGameDetails } = useGame();
@@ -277,10 +279,28 @@ export const EditGameModal = ({ game, onClose, onSaveSuccess }) => {
                   />
                 </div>
 
-                {/* Build URLs */}
+                {/* Build URLs & Cloud File Dropzone */}
                 <div className="pt-3 border-t border-white/[0.06] space-y-3">
-                  <span className="font-semibold text-white block">ลิงก์บิลด์เกมสำหรับผู้เล่น (Game Build URLs)</span>
+                  <span className="font-semibold text-white block">อัปโหลดไฟล์แพตช์เกมใหม่ (.ZIP / Installer)</span>
                   
+                  <DropzoneUploader
+                    label="ลากไฟล์บิลด์แพตช์ใหม่มาวางที่นี่ หรือคลิกเพื่ออัปโหลดขึ้น Cloud Storage"
+                    sublabel="รองรับ .zip, .rar, .7z, .exe ขนาดไม่เกิน 500 MB ระบบจะอัปเดต URL ดาวน์โหลดให้อัตโนมัติ"
+                    accept=".zip,.rar,.7z,.exe"
+                    type="archive"
+                    uploadFn={uploadGameBuild}
+                    onUploadComplete={(res) => {
+                      if (res.url) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          downloadUrl: res.url,
+                          downloadSize: res.formattedSize,
+                          webglUrl: prev.hasWebgl ? res.url : prev.webglUrl
+                        }));
+                      }
+                    }}
+                  />
+
                   {formData.hasWebgl && (
                     <div>
                       <label className="block text-gray-300 mb-1.5 font-medium flex items-center gap-1.5">
