@@ -71,8 +71,8 @@ export const LiveCommunityTicker = ({ onPlayGame, onOpenLeaderboard }) => {
   const IconComponent = current.icon;
 
   return (
-    <div className="w-full bg-[#0a0f1d] border-y border-white/[0.07] px-4 py-2.5 overflow-hidden">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <div className="w-full rounded-2xl bg-[#0c1322] border border-white/[0.08] px-4 py-2.5 overflow-hidden shadow-sm backdrop-blur-md">
+      <div className="flex items-center justify-between gap-4">
         {/* Left Live Badge */}
         <div className="flex items-center gap-2 shrink-0">
           <span className="relative flex h-2 w-2">

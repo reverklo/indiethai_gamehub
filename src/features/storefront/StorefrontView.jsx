@@ -149,7 +149,7 @@ export const StorefrontView = () => {
     <div className="space-y-8 animate-in fade-in duration-300">
       
       {/* 0. Live Real-time Activity Pulse / Community Marquee */}
-      <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-6 mb-2">
+      <div>
         <LiveCommunityTicker
           onPlayGame={(gameId) => {
             const g = filteredApprovedGames.find((x) => x.id === gameId) || filteredApprovedGames[0];
@@ -215,8 +215,8 @@ export const StorefrontView = () => {
             onClick={() => openGameDetail(activeFeaturedGame)}
             className="grid grid-cols-1 lg:grid-cols-12 cursor-pointer group"
           >
-            {/* Left Col (65%): Big High-Res Game Preview */}
-            <div className="lg:col-span-8 relative aspect-[16/10] sm:aspect-[16/9] bg-black overflow-hidden">
+            {/* Left Col (58%): Big High-Res Game Preview */}
+            <div className="lg:col-span-7 relative aspect-[16/10] sm:aspect-[16/9] bg-black overflow-hidden">
               <img
                 src={activeFeaturedGame.headerImage || activeFeaturedGame.thumbnail}
                 alt={activeFeaturedGame.title}
@@ -244,8 +244,8 @@ export const StorefrontView = () => {
               </div>
             </div>
 
-            {/* Right Col (35%): Game Details & Meta & Pricing */}
-            <div className="lg:col-span-4 p-5 sm:p-6 flex flex-col justify-between space-y-4 bg-[#111827]/90 backdrop-blur-md">
+            {/* Right Col (42%): Game Details & Meta & Pricing */}
+            <div className="lg:col-span-5 p-5 sm:p-6 flex flex-col justify-between space-y-4 bg-[#111827]/90 backdrop-blur-md">
               <div className="space-y-3">
                 <h3 className="text-xl sm:text-2xl font-bold text-white group-hover:text-indigo-300 transition-colors tracking-tight">
                   {activeFeaturedGame.title}
@@ -278,74 +278,97 @@ export const StorefrontView = () => {
                 </div>
               </div>
 
-              {/* Price & Action Row */}
-              <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] text-gray-400">ราคาจัดจำหน่าย</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    {activeFeaturedGame.price === 0 ? (
-                      <span className="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-xs font-mono border border-emerald-500/30">
-                        เล่นฟรี (Free)
-                      </span>
-                    ) : (
-                      <>
-                        {activeFeaturedGame.discountPercent > 0 && (
-                          <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-gray-950 font-bold text-xs font-mono">
-                            -{activeFeaturedGame.discountPercent}%
-                          </span>
-                        )}
-                        <span className="text-sm font-bold text-white font-mono">
-                          ฿ {activeFeaturedGame.price}
+              {/* Price & Action Area (Refined 2-Row Layout) */}
+              <div className="pt-3 border-t border-white/[0.08] space-y-3">
+                {/* Row 1: Pricing + Wishlist */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-gray-400 block font-medium">ราคาจัดจำหน่าย</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {activeFeaturedGame.price === 0 ? (
+                        <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-xs font-mono border border-emerald-500/30">
+                          เล่นฟรี (Free)
                         </span>
-                        {activeFeaturedGame.originalPrice > activeFeaturedGame.price && (
-                          <span className="text-xs text-gray-500 line-through font-mono">
-                            ฿ {activeFeaturedGame.originalPrice}
+                      ) : (
+                        <>
+                          {activeFeaturedGame.discountPercent > 0 && (
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-gray-950 font-bold text-xs font-mono">
+                              -{activeFeaturedGame.discountPercent}%
+                            </span>
+                          )}
+                          <span className="text-base font-bold text-white font-mono">
+                            ฿ {activeFeaturedGame.price}
                           </span>
-                        )}
-                      </>
-                    )}
+                          {activeFeaturedGame.originalPrice > activeFeaturedGame.price && (
+                            <span className="text-xs text-gray-500 line-through font-mono">
+                              ฿ {activeFeaturedGame.originalPrice}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  {activeFeaturedGame.hasWebgl && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openGamePlayer(activeFeaturedGame);
-                      }}
-                      className="apple-press flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs transition cursor-pointer shadow-lg shadow-emerald-500/20"
-                      title="เปิดเล่นเกมผ่าน WebGL ทันทีในเบราว์เซอร์ ไม่ต้องติดตั้ง"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-gray-950" />
-                      <span>เล่นทันที (Instant Play)</span>
-                    </button>
-                  )}
-
+                  {/* Wishlist Button */}
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleWishlist(activeFeaturedGame.id);
                     }}
                     title={wishlist?.includes(activeFeaturedGame.id) ? 'ลบออกจากสิ่งที่อยากได้' : 'เพิ่มในสิ่งที่อยากได้'}
-                    className={`p-2 rounded-lg border transition cursor-pointer ${
+                    className={`apple-press flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition cursor-pointer ${
                       wishlist?.includes(activeFeaturedGame.id)
-                        ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
-                        : 'bg-white/[0.06] text-gray-400 hover:text-rose-400 border-white/[0.08]'
+                        ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                        : 'bg-white/[0.06] text-gray-300 hover:text-white hover:bg-white/[0.1] border-white/[0.08]'
                     }`}
                   >
-                    <Heart className={`w-4 h-4 ${wishlist?.includes(activeFeaturedGame.id) ? 'fill-rose-500' : ''}`} />
+                    <Heart className={`w-3.5 h-3.5 ${wishlist?.includes(activeFeaturedGame.id) ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}`} />
+                    <span className="text-[11px]">
+                      {wishlist?.includes(activeFeaturedGame.id) ? 'บันทึกแล้ว' : 'สิ่งที่อยากได้'}
+                    </span>
                   </button>
+                </div>
+
+                {/* Row 2: Dual Action Buttons (Side-by-side, No wrapping) */}
+                <div className="grid grid-cols-2 gap-2.5 w-full">
+                  {activeFeaturedGame.hasWebgl ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openGamePlayer(activeFeaturedGame);
+                      }}
+                      className="apple-press flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs whitespace-nowrap transition cursor-pointer shadow-sm"
+                      title="เปิดเล่นเกมผ่าน WebGL ทันทีในเบราว์เซอร์ ไม่ต้องติดตั้ง"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-gray-950 shrink-0" />
+                      <span>เล่นทันที (Instant Play)</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        downloadPcGame(activeFeaturedGame.id);
+                      }}
+                      className="apple-press flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 font-semibold text-xs whitespace-nowrap transition cursor-pointer border border-white/[0.08]"
+                    >
+                      <Download className="w-3.5 h-3.5 shrink-0" />
+                      <span>ดาวน์โหลด PC</span>
+                    </button>
+                  )}
 
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       openGameDetail(activeFeaturedGame);
                     }}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition cursor-pointer shadow-lg shadow-indigo-600/20"
+                    className="apple-press flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs whitespace-nowrap transition cursor-pointer shadow-md shadow-indigo-600/20"
                   >
                     <span>ดูรายละเอียด</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                   </button>
                 </div>
               </div>
