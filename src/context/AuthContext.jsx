@@ -30,21 +30,22 @@ export const AuthProvider = ({ children }) => {
     return MOCK_USERS_LIST;
   });
 
-  // ข้อมูลผู้ใช้ปัจจุบันที่ล็อกอินอยู่
+  // ข้อมูลผู้ใช้ปัจจุบันที่ล็อกอินอยู่ (ค่าเริ่มต้นเป็น null สำหรับ Guest ผู้เยี่ยมชมทั่วไป)
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('indiethai_current_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.id) return parsed;
       } catch (e) {
         console.error('Failed to parse current user', e);
       }
     }
-    return MOCK_USERS.developer; // ค่าเริ่มต้นให้เป็น Developer เพื่อความสะดวกในการทดสอบ
+    return null;
   });
 
-  // Role ปัจจุบัน
-  const currentRole = currentUser?.role || 'player';
+  // Role ปัจจุบัน (guest | player | developer | admin)
+  const currentRole = currentUser?.role || 'guest';
 
   // สถานะล็อกอิน
   const isAuthenticated = Boolean(currentUser);
@@ -224,8 +225,10 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {
       console.warn('Supabase logout error:', e);
     }
-    // รีเซ็ตกลับเป็นผู้เล่น Guest
-    setCurrentUser(MOCK_USERS.player);
+    // รีเซ็ตกลับเป็น Guest และล้างแคช
+    setCurrentUser(null);
+    localStorage.removeItem('indiethai_current_user');
+    localStorage.removeItem('indiethai_current_role');
     return { success: true, message: 'ออกจากระบบเรียบร้อยแล้ว' };
   };
 

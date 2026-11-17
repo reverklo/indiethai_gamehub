@@ -237,42 +237,6 @@ export const AuthModal = () => {
             >
               {isSubmitting ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
             </button>
-
-            {/* Quick Demo Logins for Presentations */}
-            <div className="pt-3 border-t border-gray-800 space-y-2">
-              <p className="text-[11px] text-gray-400 text-center font-medium">
-                ⚡ หรือคลิกเข้าสู่ระบบด่วนเพื่อการนำเสนอ (Quick Demo):
-              </p>
-
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('player')}
-                  className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-[#0B0F19] hover:bg-emerald-500/20 text-gray-300 hover:text-emerald-400 border border-gray-800 hover:border-emerald-500/40 transition cursor-pointer"
-                >
-                  <User className="w-4 h-4 mb-1 text-emerald-400" />
-                  <span className="text-[11px] font-bold">Player</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('developer')}
-                  className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-[#0B0F19] hover:bg-indigo-500/20 text-gray-300 hover:text-indigo-400 border border-gray-800 hover:border-indigo-500/40 transition cursor-pointer"
-                >
-                  <Code2 className="w-4 h-4 mb-1 text-indigo-400" />
-                  <span className="text-[11px] font-bold">Developer</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('admin')}
-                  className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-[#0B0F19] hover:bg-rose-500/20 text-gray-300 hover:text-rose-400 border border-gray-800 hover:border-rose-500/40 transition cursor-pointer"
-                >
-                  <ShieldCheck className="w-4 h-4 mb-1 text-rose-400" />
-                  <span className="text-[11px] font-bold">Admin</span>
-                </button>
-              </div>
-            </div>
           </form>
         ) : (
           /* 2. Register Form */

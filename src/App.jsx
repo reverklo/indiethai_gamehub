@@ -12,10 +12,10 @@
  */
 
 import React, { useEffect } from 'react';
+import { Code2, ShieldAlert } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider, useGame } from './context/GameContext';
 import { Navbar } from './components/layout/Navbar';
-import { RoleSwitcher } from './components/layout/RoleSwitcher';
 import { Footer } from './components/layout/Footer';
 import { WebGLModal } from './components/views/WebGLModal';
 import { AuthModal } from './components/layout/AuthModal';
@@ -63,9 +63,35 @@ const AppContent = () => {
         return <UserProfileView />;
       
       case 'studio':
+        if (currentRole !== 'developer') {
+          return (
+            <div className="py-24 text-center max-w-md mx-auto space-y-4">
+              <div className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center mx-auto text-gray-300">
+                <Code2 className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-bold text-white">พื้นที่สำหรับสตูดิโอผู้พัฒนาเกม</h2>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                คุณจำเป็นต้องเข้าสู่ระบบด้วยบัญชีนักพัฒนา (Developer) เพื่อเข้าถึงศูนย์ควบคุมสตูดิโอและอัปโหลดเกม
+              </p>
+            </div>
+          );
+        }
         return <DeveloperStudioView />;
       
       case 'admin':
+        if (currentRole !== 'admin') {
+          return (
+            <div className="py-24 text-center max-w-md mx-auto space-y-4">
+              <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto text-rose-400">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-bold text-white">พื้นที่สำหรับผู้ดูแลระบบเท่านั้น</h2>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                หน้านี้สงวนสิทธิ์เฉพาะผู้ดูแลระบบ (Admin) สำหรับตรวจสอบและอนุมัติผลงานเกม
+              </p>
+            </div>
+          );
+        }
         return <AdminDashboardView />;
       
       case 'store':
@@ -93,9 +119,6 @@ const AppContent = () => {
 
       {/* Steam Wallet Top-Up Modal */}
       <TopUpWalletModal />
-
-      {/* Floating Presentation Role Switcher (Player / Developer / Admin) */}
-      <RoleSwitcher />
 
       {/* Footer */}
       <Footer />

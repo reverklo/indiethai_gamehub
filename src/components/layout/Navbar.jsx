@@ -244,85 +244,89 @@ export const Navbar = () => {
               )}
             </button>
 
-            {/* 🔔 Notification Center */}
-            <div className="relative shrink-0 z-50">
-              <button
-                onClick={() => {
-                  setIsNotifOpen(!isNotifOpen);
-                  setIsProfileMenuOpen(false);
-                }}
-                title="ศูนย์การแจ้งเตือน"
-                className="relative p-2 rounded-lg bg-[#111827] border border-white/[0.08] text-gray-300 hover:text-white hover:border-white/20 transition-colors cursor-pointer shrink-0"
-              >
-                <Bell className="w-4 h-4" />
-                {unreadNotificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white font-mono">
-                    {unreadNotificationCount}
-                  </span>
-                )}
-              </button>
+            {/* 🔔 Notification Center (Only when logged in) */}
+            {currentUser && (
+              <div className="relative shrink-0 z-50">
+                <button
+                  onClick={() => {
+                    setIsNotifOpen(!isNotifOpen);
+                    setIsProfileMenuOpen(false);
+                  }}
+                  title="ศูนย์การแจ้งเตือน"
+                  className="relative p-2 rounded-lg bg-[#111827] border border-white/[0.08] text-gray-300 hover:text-white hover:border-white/20 transition-colors cursor-pointer shrink-0"
+                >
+                  <Bell className="w-4 h-4" />
+                  {unreadNotificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white font-mono">
+                      {unreadNotificationCount}
+                    </span>
+                  )}
+                </button>
 
-              {/* Notification Dropdown Menu */}
-              {isNotifOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-[#111827] border border-white/[0.08] shadow-2xl p-3 z-50 animate-in fade-in">
-                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-indigo-400" />
-                      <h4 className="text-xs font-bold text-white">การแจ้งเตือน (Notifications)</h4>
+                {/* Notification Dropdown Menu */}
+                {isNotifOpen && (
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-[#111827] border border-white/[0.08] shadow-2xl p-3 z-50 animate-in fade-in">
+                    <div className="flex items-center justify-between border-b border-white/[0.06] pb-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <Bell className="w-4 h-4 text-indigo-400" />
+                        <h4 className="text-xs font-bold text-white">การแจ้งเตือน (Notifications)</h4>
+                      </div>
+
+                      {unreadNotificationCount > 0 && (
+                        <button
+                          onClick={markAllNotificationsAsRead}
+                          className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
+                        >
+                          <CheckCheck className="w-3 h-3" />
+                          <span>อ่านทั้งหมด</span>
+                        </button>
+                      )}
                     </div>
 
-                    {unreadNotificationCount > 0 && (
-                      <button
-                        onClick={markAllNotificationsAsRead}
-                        className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
-                      >
-                        <CheckCheck className="w-3 h-3" />
-                        <span>อ่านทั้งหมด</span>
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
-                    {notifications.length === 0 ? (
-                      <p className="text-center py-6 text-xs text-gray-500">ไม่มีการแจ้งเตือนในขณะนี้</p>
-                    ) : (
-                      notifications.map((notif) => (
-                        <div
-                          key={notif.id}
-                          onClick={() => markNotificationAsRead(notif.id)}
-                          className={`p-2.5 rounded-xl text-xs transition cursor-pointer border ${
-                            notif.isRead
-                              ? 'bg-[#0B0F19]/60 border-transparent text-gray-400'
-                              : 'bg-indigo-950/20 border-indigo-500/30 text-gray-200'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-white text-[11px]">{notif.title}</span>
-                            <span className="text-[10px] text-gray-500 font-mono">{notif.time}</span>
+                    <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                      {notifications.length === 0 ? (
+                        <p className="text-center py-6 text-xs text-gray-500">ไม่มีการแจ้งเตือนในขณะนี้</p>
+                      ) : (
+                        notifications.map((notif) => (
+                          <div
+                            key={notif.id}
+                            onClick={() => markNotificationAsRead(notif.id)}
+                            className={`p-2.5 rounded-xl text-xs transition cursor-pointer border ${
+                              notif.isRead
+                                ? 'bg-[#0B0F19]/60 border-transparent text-gray-400'
+                                : 'bg-indigo-950/20 border-indigo-500/30 text-gray-200'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-white text-[11px]">{notif.title}</span>
+                              <span className="text-[10px] text-gray-500 font-mono">{notif.time}</span>
+                            </div>
+                            <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{notif.message}</p>
                           </div>
-                          <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{notif.message}</p>
-                        </div>
-                      ))
-                    )}
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
-            {/* Steam Wallet Balance Pill (All Users) */}
-            <div 
-              onClick={openTopUpModal}
-              title="วอลเล็ตสำหรับซื้อเกม (คลิกเพื่อเติมเงิน)"
-              className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/20 px-2.5 py-1.5 rounded-lg shrink-0 cursor-pointer transition-colors"
-            >
-              <Coins className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span className="text-xs font-medium text-white font-mono">
-                ฿{walletBalance}
-              </span>
-              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-white/[0.08] text-gray-300 hover:text-white transition-colors">
-                + เติมเงิน
-              </span>
-            </div>
+            {/* Steam Wallet Balance Pill (Only when logged in) */}
+            {currentUser && (
+              <div 
+                onClick={openTopUpModal}
+                title="วอลเล็ตสำหรับซื้อเกม (คลิกเพื่อเติมเงิน)"
+                className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/20 px-2.5 py-1.5 rounded-lg shrink-0 cursor-pointer transition-colors"
+              >
+                <Coins className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="text-xs font-medium text-white font-mono">
+                  ฿{walletBalance}
+                </span>
+                <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-white/[0.08] text-gray-300 hover:text-white transition-colors">
+                  + เติมเงิน
+                </span>
+              </div>
+            )}
 
             {/* Developer Studio Upload Quota (Dev Role Only) */}
             {currentRole === 'developer' && (
@@ -386,13 +390,20 @@ export const Navbar = () => {
                   <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
                 </button>
               ) : (
-                <button
-                  onClick={() => openAuthModal('login')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 text-xs font-semibold transition-colors cursor-pointer shrink-0"
-                >
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span>เข้าสู่ระบบ</span>
-                </button>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <button
+                    onClick={() => openAuthModal('login')}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-300 hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    เข้าสู่ระบบ
+                  </button>
+                  <button
+                    onClick={() => openAuthModal('register')}
+                    className="apple-press px-3.5 py-1.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    สมัครสมาชิก
+                  </button>
+                </div>
               )}
 
               {/* Profile Dropdown Menu */}
@@ -488,70 +499,15 @@ export const Navbar = () => {
                     )}
                   </div>
 
-                  {/* Switch Role Section */}
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-2 py-1">
-                      สลับบทบาท (Demo Switch)
-                    </p>
+                  {/* Logout */}
+                  <div className="pt-2 border-t border-white/[0.06] mt-1">
                     <button
-                      onClick={() => {
-                        switchRole('player');
-                        navigateToTab('profile');
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-1.5 text-xs rounded-md transition cursor-pointer ${
-                        currentRole === 'player' ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-gray-300 hover:bg-white/[0.06]'
-                      }`}
+                      onClick={logout}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-md cursor-pointer transition-colors"
                     >
-                      <div className="flex items-center gap-2">
-                        <User className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Player (ผู้เล่น)</span>
-                      </div>
-                      {currentRole === 'player' && <span className="text-[10px]">● กำลังใช้</span>}
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>ออกจากระบบ (Logout)</span>
                     </button>
-
-                    <button
-                      onClick={() => {
-                        switchRole('developer');
-                        navigateToTab('studio');
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-1.5 text-xs rounded-md transition cursor-pointer ${
-                        currentRole === 'developer' ? 'bg-indigo-500/20 text-indigo-300 font-semibold' : 'text-gray-300 hover:bg-white/[0.06]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Code2 className="w-3.5 h-3.5 text-indigo-400" />
-                        <span>Developer (สตูดิโอ)</span>
-                      </div>
-                      {currentRole === 'developer' && <span className="text-[10px]">● กำลังใช้</span>}
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        switchRole('admin');
-                        navigateToTab('admin');
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-1.5 text-xs rounded-md transition cursor-pointer ${
-                        currentRole === 'admin' ? 'bg-rose-500/20 text-rose-300 font-semibold' : 'text-gray-300 hover:bg-white/[0.06]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
-                        <span>Admin (ผู้ดูแลระบบ)</span>
-                      </div>
-                      {currentRole === 'admin' && <span className="text-[10px]">● กำลังใช้</span>}
-                    </button>
-
-                    {/* Logout */}
-                    <div className="pt-2 border-t border-white/[0.06] mt-1">
-                      <button
-                        onClick={logout}
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-md cursor-pointer transition-colors"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span>ออกจากระบบ (Logout)</span>
-                      </button>
-                    </div>
-
                   </div>
                 </div>
               )}
