@@ -108,12 +108,9 @@ export const Navbar = () => {
       navTabs.push({ id: 'studio', label: 'สตูดิโอ' });
     } else if (currentRole === 'admin') {
       navTabs.push({ id: 'admin', label: 'ผู้ดูแลระบบ' });
+    } else {
+      navTabs.push({ id: 'profile', label: 'โปรไฟล์' });
     }
-
-    const shortLabel = currentUser.username 
-      ? (currentUser.username.length > 12 ? currentUser.username.slice(0, 12).toUpperCase() : currentUser.username.toUpperCase())
-      : 'โปรไฟล์';
-    navTabs.push({ id: 'profile', label: shortLabel });
   }
 
   const handleWishlistClick = () => {
@@ -187,7 +184,7 @@ export const Navbar = () => {
           </div>
 
           {/* Center: Search Bar (Desktop / Tablet md+) */}
-          <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-sm ml-1 mr-auto">
+          <div className="hidden md:flex items-center flex-1 min-w-[160px] max-w-xs lg:max-w-sm ml-2 mr-auto">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
               <input
@@ -324,37 +321,6 @@ export const Navbar = () => {
                 </span>
                 <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-white/[0.08] text-gray-300 hover:text-white transition-colors">
                   + เติมเงิน
-                </span>
-              </div>
-            )}
-
-            {/* Developer Studio Upload Quota (Dev Role Only) */}
-            {currentRole === 'developer' && (
-              <div 
-                title="โควตาสตูดิโอสำหรับส่งเกมใหม่ขึ้นตรวจ (1 เกม = 50 เครดิต)"
-                className="hidden sm:flex items-center gap-1.5 bg-white/[0.04] border border-white/[0.08] px-2.5 py-1.5 rounded-lg shrink-0"
-              >
-                <Code2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                <span className="text-xs text-gray-300">
-                  โควตา: <strong className="font-mono font-medium text-white">{devTokenBalance}</strong>
-                </span>
-                <button
-                  onClick={handleQuickTopUp}
-                  title="ขอรับโควตาเพิ่มจำลอง (+100 เครดิต)"
-                  className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-white/[0.08] text-gray-300 hover:text-white transition-colors cursor-pointer"
-                >
-                  +
-                </button>
-              </div>
-            )}
-
-            {/* Admin Pending Games Badge (Compact & Clean) */}
-            {currentRole === 'admin' && (
-              <div className="flex items-center gap-1.5 bg-rose-950/30 border border-rose-500/30 px-2.5 py-1 rounded-lg shrink-0">
-                <ShieldCheck className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                <span className="text-[11px] font-medium text-rose-300">
-                  <span className="hidden sm:inline">รอตรวจ </span>
-                  <span className="font-mono font-bold">{pendingGames.length}</span>
                 </span>
               </div>
             )}

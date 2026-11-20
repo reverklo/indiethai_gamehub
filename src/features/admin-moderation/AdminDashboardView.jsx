@@ -14,7 +14,9 @@ import {
   Users, 
   BarChart3, 
   RefreshCw,
-  Layers
+  Layers,
+  Gamepad2,
+  CheckCircle2
 } from 'lucide-react';
 import { ModerationQueue } from './ModerationQueue';
 import { UserManagement } from './UserManagement';
@@ -23,8 +25,8 @@ import { useGame } from '../../context/GameContext';
 import { useAuth } from '../../context/AuthContext';
 
 export const AdminDashboardView = () => {
-  const { pendingGames, resetToDefaultGames } = useGame();
-  const { resetToDefaultUsers } = useAuth();
+  const { pendingGames, approvedGames, resetToDefaultGames } = useGame();
+  const { usersList, resetToDefaultUsers } = useAuth();
 
   // แท็บปัจจุบัน: 'queue' | 'users' | 'analytics'
   const [activeTab, setActiveTab] = useState('queue');
@@ -74,6 +76,52 @@ export const AdminDashboardView = () => {
           </button>
         </div>
       </section>
+
+      {/* 4 Platform Key Metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="p-4 rounded-2xl bg-[#111827] border border-white/[0.08] flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <Gamepad2 className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[10px] text-gray-400 font-medium">เกมบนสโตร์</span>
+            <p className="text-xl font-bold text-white font-mono">{approvedGames?.length || 5} เกม</p>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#111827] border border-white/[0.08] flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[10px] text-gray-400 font-medium">คิวรอตรวจสอบ</span>
+            <p className="text-xl font-bold text-amber-300 font-mono">{pendingGames?.length || 0} เกม</p>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#111827] border border-white/[0.08] flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <Users className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[10px] text-gray-400 font-medium">สมาชิกในระบบ</span>
+            <p className="text-xl font-bold text-white font-mono">{usersList?.length || 4} บัญชี</p>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#111827] border border-white/[0.08] flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[10px] text-gray-400 font-medium">สถานะคลาวด์</span>
+            <p className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 mt-1 font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Online 100%
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Reset Notification */}
       {resetNotice && (

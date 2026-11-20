@@ -31,7 +31,9 @@ import {
   Tag,
   Zap,
   ArrowRight,
-  Dices
+  Dices,
+  List,
+  LayoutGrid
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { useAuth } from '../../context/AuthContext';
@@ -68,6 +70,9 @@ export const StorefrontView = () => {
 
   // สเตตตู้สุ่มเกมอินดี้ไทย
   const [isMysteryDropOpen, setIsMysteryDropOpen] = useState(false);
+
+  // รูปแบบการแสดงผลรายการเกมในสโตร์: 'list' (แบบรายการสบายตา) | 'grid' (แบบการ์ดตาราง)
+  const [viewMode, setViewMode] = useState('list');
 
   // สไลด์ของ Featured & Recommended Carousel
   const featuredGames = filteredApprovedGames.filter((g) => g.featured || g.rating >= 4.8);
@@ -458,16 +463,16 @@ export const StorefrontView = () => {
           3. STEAM CATEGORY TABS & FILTER BAR
          ======================================================== */}
       <section className="space-y-4">
-        <div className="flex items-center justify-between border-b border-white/[0.08] pb-2 overflow-x-auto scrollbar-none gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-2.5 gap-3">
           
-          {/* Main Steam Category Tabs */}
-          <div className="flex items-center gap-1 shrink-0">
+          {/* Main Steam Category Tabs & Filter */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 sm:pb-0 shrink-0">
             {[
               { id: 'all', label: `เกมทั้งหมด (${filteredApprovedGames.length})`, icon: Gamepad2 },
-              { id: 'top_sellers', label: 'ยอดนิยม (Top Sellers)', icon: Zap },
+              { id: 'top_sellers', label: 'ยอดนิยม', icon: Zap },
               { id: 'new_releases', label: 'มาใหม่ล่าสุด', icon: Sparkles },
               { id: 'webgl', label: 'เล่นบนเว็บ WebGL', icon: Globe },
-              { id: 'pc', label: 'เกม PC ดาวน์โหลด', icon: Monitor },
+              { id: 'pc', label: 'ดาวน์โหลด PC', icon: Monitor },
               { id: 'discounted', label: 'ลดราคาพิเศษ', icon: Tag }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -500,31 +505,51 @@ export const StorefrontView = () => {
               }`}
             >
               <Radio className="w-3.5 h-3.5 text-sky-400" />
-              <span>FreeToGame API</span>
+              <span>FreeToGame</span>
             </button>
+          </div>
 
+          {/* Right Action Area: Mystery Drop + View Mode Toggle */}
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
             {/* Mystery Indie Drop Button */}
             <button
               onClick={() => setIsMysteryDropOpen(true)}
-              className="apple-press flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/90 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold text-xs whitespace-nowrap transition cursor-pointer shadow-md ml-1"
+              className="apple-press flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/90 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold text-xs whitespace-nowrap transition cursor-pointer shadow-md"
               title="สุ่มค้นพบเกมอินดี้ไทยตามดวงชะตาประจำวัน"
             >
               <Dices className="w-3.5 h-3.5" />
               <span>สุ่มเกมอินดี้ไทย</span>
             </button>
-          </div>
 
-          {/* User Wallet Shortcut */}
-          <div className="hidden lg:flex items-center gap-2 shrink-0">
-            <span className="text-[11px] text-gray-400">วอลเล็ตของคุณ:</span>
-            <button
-              onClick={openTopUpModal}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-mono font-bold hover:bg-amber-500/25 transition cursor-pointer"
-            >
-              <Coins className="w-3 h-3 text-amber-400" />
-              <span>{walletBalance} T</span>
-              <span className="text-[10px] font-sans font-normal text-amber-400">+เติม</span>
-            </button>
+            {/* View Mode Toggle: List (Default) vs Grid */}
+            <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-[#111827] border border-white/[0.08]">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                title="มุมมองแบบรายการ (List View) สบายตา ไม่รก"
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
+                  viewMode === 'list'
+                    ? 'bg-white text-gray-950 font-bold shadow-sm'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <List className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">รายการ</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                title="มุมมองแบบกริดตาราง (Grid View)"
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer ${
+                  viewMode === 'grid'
+                    ? 'bg-white text-gray-950 font-bold shadow-sm'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">กริด</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -568,7 +593,152 @@ export const StorefrontView = () => {
               ดูเกมอินดี้ทั้งหมด
             </button>
           </div>
+        ) : viewMode === 'list' ? (
+          /* ========================================================
+             4.1 STEAM GAME LIST VIEW (Clean, Spacious, Unslopped)
+             ======================================================== */
+          <div className="space-y-3">
+            {displayedGames.map((game) => {
+              const owned = isGameOwned(game.id);
+              const isWish = Boolean(currentUser && wishlist?.includes(game.id));
+
+              return (
+                <div
+                  key={game.id}
+                  onClick={() => openGameDetail(game)}
+                  className="apple-card group flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 rounded-xl bg-[#111827] border border-white/[0.08] hover:border-white/20 transition-all cursor-pointer gap-3 sm:gap-4 shadow-sm"
+                >
+                  {/* Left: Thumbnail with badges */}
+                  <div className="relative aspect-video w-full sm:w-44 md:w-52 rounded-lg overflow-hidden bg-black shrink-0">
+                    <img
+                      src={game.coverImage || game.thumbnail}
+                      alt={game.title}
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+                    />
+                    <div className="absolute top-2 left-2 flex items-center gap-1">
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-medium bg-black/80 text-gray-300 border border-white/[0.08]">
+                        {game.category}
+                      </span>
+                      {game.hasWebgl && (
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">
+                          WebGL
+                        </span>
+                      )}
+                    </div>
+                    {owned && (
+                      <span className="absolute top-2 right-2 px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-500 text-gray-950 shadow flex items-center gap-1">
+                        <Check className="w-2.5 h-2.5 stroke-[3]" />
+                        <span>ในคลัง</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Center: Details, Studio, Description & Rating */}
+                  <div className="flex-1 min-w-0 space-y-1 sm:space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="text-sm sm:text-base font-bold text-white group-hover:text-indigo-300 transition-colors truncate">
+                        {game.title}
+                      </h4>
+                      <span className="text-[11px] text-gray-400">โดย {game.studio || game.developer}</span>
+                    </div>
+
+                    <p className="text-xs text-gray-400 line-clamp-1 sm:line-clamp-2 leading-relaxed">
+                      {game.description || game.tagline}
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                      <div className="flex items-center gap-1 text-[11px] text-amber-300 font-semibold">
+                        <Star className="w-3 h-3 fill-amber-300" />
+                        <span>{game.rating > 0 ? game.rating.toFixed(1) : '4.5'}</span>
+                        <span className="text-gray-500 font-normal">({game.ratingCount || 100})</span>
+                      </div>
+                      <span className="text-gray-600 text-xs">•</span>
+                      <span className="text-[11px] text-gray-400 font-mono">เวอร์ชัน {game.version || 'v1.0.0'}</span>
+                      {(game.tags || []).slice(0, 3).map((t, idx) => (
+                        <span key={idx} className="hidden md:inline-block px-1.5 py-0.2 rounded text-[10px] bg-white/[0.04] text-gray-400 border border-white/[0.06]">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right: Price & Quick Action Buttons */}
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/[0.06] gap-2.5">
+                    <div className="flex items-center gap-1.5">
+                      {owned ? (
+                        <span className="text-xs font-semibold text-emerald-400">
+                          เป็นเจ้าของแล้ว
+                        </span>
+                      ) : game.price === 0 ? (
+                        <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-xs font-mono border border-emerald-500/30">
+                          เล่นฟรี
+                        </span>
+                      ) : (
+                        <>
+                          {game.discountPercent > 0 && (
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-gray-950 font-bold text-[10px] font-mono">
+                              -{game.discountPercent}%
+                            </span>
+                          )}
+                          <span className="text-sm font-bold text-white font-mono">
+                            ฿{game.price}
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWishlist(game.id);
+                        }}
+                        title={isWish ? 'ลบออกจากสิ่งที่อยากได้' : 'เพิ่มในสิ่งที่อยากได้'}
+                        className={`p-1.5 rounded-lg border text-xs transition cursor-pointer ${
+                          isWish
+                            ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                            : 'bg-white/[0.06] text-gray-400 hover:text-white border-white/[0.08]'
+                        }`}
+                      >
+                        <Heart className={`w-3.5 h-3.5 ${isWish ? 'fill-rose-500 text-rose-500' : ''}`} />
+                      </button>
+
+                      {game.hasWebgl ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openGamePlayer(game);
+                          }}
+                          className="apple-press flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs whitespace-nowrap transition cursor-pointer shadow-sm"
+                        >
+                          <Play className="w-3 h-3 fill-gray-950" />
+                          <span>เล่นเกม</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openGameDetail(game);
+                          }}
+                          className="apple-press flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs whitespace-nowrap transition cursor-pointer"
+                        >
+                          <span>ดูรายละเอียด</span>
+                          <ChevronRight className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ) : (
+          /* ========================================================
+             4.2 STEAM GAME GRID VIEW (3 Columns)
+             ======================================================== */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {displayedGames.map((game) => {
               const owned = isGameOwned(game.id);

@@ -554,6 +554,73 @@ export const INITIAL_GAMES = [
       { id: 'rev-6', user: 'ScaredGamer99', rating: 5, comment: 'หลอนจนไม่กล้าปิดไฟนอน ซาวด์ดีมากครับ!', date: '2026-11-11' }
     ],
     bugReports: []
+  },
+  {
+    id: 'game-pending-1',
+    title: 'Krasue: Bangkok Cyber Nightmare 2088',
+    slug: 'krasue-bangkok-cyber-nightmare-2088',
+    tagline: 'เกมสยองขวัญมุมมองบุคคลที่หนึ่ง เอาชีวิตรอดจากกระสือไซเบอร์ในตรอกเยาวราชยุค 2088',
+    description: 'ผจญภัยสยองขวัญสัญชาติไทย สำรวจตรอกซอกซอยที่เต็มไปด้วยแสงนีออนในยามค่ำคืน หลบหนีกระสือที่ถูกดัดแปลงด้วยเทคโนโลยีชีวภาพ AI ล่องลอยล่าเหยื่อด้วยเสียงคลื่นวิทยุความถี่สูง รันบน WebGL ได้อย่างราบรื่น ปลอดภัย 100%',
+    developer: 'ThaiHorror Lab',
+    developerId: 'usr-dev-2',
+    category: 'Action',
+    engine: 'Three.js WebGL',
+    version: 'v0.9.5-beta',
+    price: 99,
+    originalPrice: 129,
+    discountPercent: 23,
+    rating: 4.8,
+    ratingCount: 15,
+    playCount: 120,
+    downloadCount: 35,
+    downloadSize: '85 MB',
+    hasWebgl: true,
+    hasPcDownload: true,
+    webglUrl: 'https://play2048.co/',
+    downloadUrl: 'https://github.com/gabrielecirulli/2048/archive/refs/heads/master.zip',
+    thumbnail: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
+    headerImage: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
+    mediaGallery: [
+      {
+        id: 'kp1',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80',
+        thumbnail: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400&auto=format&fit=crop&q=80',
+        title: 'บรรยากาศตรอกเยาวราช 2088'
+      }
+    ],
+    controls: [
+      { key: '[ W ] [ A ] [ S ] [ D ]', action: 'เดิน / วิ่งหลบหนี' },
+      { key: '[ Space ]', action: 'กระโดด' },
+      { key: '[ F ]', action: 'เปิด/ปิดไฟฉายยูวี' }
+    ],
+    requirements: {
+      os: 'Windows 10 / 11 / Mac OS 12+',
+      processor: 'Intel Core i3 3.0 GHz / Apple M1',
+      memory: '4 GB RAM',
+      graphics: 'Intel UHD Graphics 620 หรือเทียบเท่า',
+      storage: '200 MB พื้นที่ว่าง'
+    },
+    patchNotes: [
+      {
+        version: 'v0.9.5-beta',
+        date: '2026-11-19',
+        title: 'บิลด์ส่งตรวจขึ้นสโตร์ IndieThai Hub',
+        details: 'เพิ่มเสียงเตือนกระสือคลื่นวิทยุความถี่สูง และปรับให้รันบน WebGL ลื่นไหล 60 FPS'
+      }
+    ],
+    promptPayNumber: '089-111-2233',
+    status: 'pending',
+    createdAt: '2026-11-19',
+    tags: ['สยองขวัญ', 'Cyberpunk', 'Thai Ghost', 'Action', 'WebGL'],
+    featured: false,
+    securityScan: {
+      status: 'Clean',
+      details: 'ผ่านการสแกนโค้ดสคริปต์ ไม่พบมัลแวร์ ไม่มีการเข้าถึง LocalStorage ต้องห้าม',
+      scannedAt: '2026-11-19 14:20'
+    },
+    reviews: [],
+    bugReports: []
   }
 ];
 

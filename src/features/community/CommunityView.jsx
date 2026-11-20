@@ -28,7 +28,12 @@ import {
   ChevronRight,
   Send,
   CheckCircle2,
-  Tag
+  Tag,
+  X,
+  MessageCircle,
+  Play,
+  History,
+  ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
@@ -133,17 +138,81 @@ const COMMUNITY_SCREENSHOTS = [
   }
 ];
 
+// ข้อมูลความคิดเห็นตัวอย่างในกระทู้ (Community Discussion Comments)
+const INITIAL_COMMENTS = {
+  'disc-1': [
+    {
+      id: 'comm-1',
+      author: 'CyberChon Dev',
+      authorAvatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
+      authorBadge: 'Verified Dev',
+      date: '1 ชั่วโมงที่แล้ว',
+      content: 'เห็นด้วยเลยครับ ทีมงาน SiamPixel เขา optimize WebGL shader มาได้ดีมาก ตัวไฟล์โหลดไวไม่ถึง 5 วินาที',
+      upvotes: 8
+    },
+    {
+      id: 'comm-2',
+      author: 'SkyGamer_TH',
+      authorAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80',
+      authorBadge: 'Beta Tester',
+      date: '30 นาทีที่แล้ว',
+      content: 'ชอบดนตรีซาวด์แทร็กตอนคะแนนแตะ 16,384 มาก ดนตรีเปลี่ยนจังหวะเร้าใจสุดๆ!',
+      upvotes: 4
+    }
+  ],
+  'disc-2': [
+    {
+      id: 'comm-3',
+      author: 'SiamPixel Studio',
+      authorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      authorBadge: 'Studio Lead',
+      date: '5 ชั่วโมงที่แล้ว',
+      content: 'น่าสนใจมากครับ แวะมาแชร์ใน Discord กลางคอมมูนิตี้ได้เลย กำลังมี 3D Modeler หลายคนมองหาทีมแยมอยู่',
+      upvotes: 6
+    }
+  ],
+  'disc-3': [
+    {
+      id: 'comm-4',
+      author: 'Tsukiko_83',
+      authorAvatar: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&auto=format&fit=crop&q=80',
+      authorBadge: 'Level 12',
+      date: '1 วันที่แล้ว',
+      content: 'ขอบคุณสำหรับเทคนิคครับ มีประโยชน์กับมือใหม่ Three.js มากๆ ครับ',
+      upvotes: 12
+    }
+  ],
+  'disc-4': [
+    {
+      id: 'comm-5',
+      author: 'NEONPLAYER_T',
+      authorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      authorBadge: 'Player',
+      date: '2 วันที่แล้ว',
+      content: 'ทำตามแล้วปลดล็อกเครื่องบินลับได้จริง ขอบคุณครับ!',
+      upvotes: 3
+    }
+  ]
+};
+
 export const CommunityView = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, openAuthModal } = useAuth();
   const { games, openGameDetail, openGamePlayer } = useGame();
 
-  // ตัวกรองหมวดหมู่คอมมูนิตี้: 'all' | 'discussions' | 'gamejam' | 'reviews' | 'guides' | 'screenshots'
+  // ตัวกรองหมวดหมู่คอมมูนิตี้: 'all' | 'discussions' | 'gamejam' | 'reviews' | 'guides' | 'screenshots' | 'devlog'
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // กระทู้สนทนา
+  // กระทู้สนทนา & ความคิดเห็น
   const [discussions, setDiscussions] = useState(INITIAL_DISCUSSIONS);
   const [upvotedIds, setUpvotedIds] = useState([]);
+  const [commentsMap, setCommentsMap] = useState(INITIAL_COMMENTS);
+  const [upvotedCommentIds, setUpvotedCommentIds] = useState([]);
+
+  // โมดอลกระทู้สนทนาและคอมเมนต์
+  const [activeThread, setActiveThread] = useState(null);
+  const [newCommentInput, setNewCommentInput] = useState('');
+  const [threadCommentNotice, setThreadCommentNotice] = useState(null);
 
   // โมดอลสร้างกระทู้ใหม่
   const [isNewPostModalOpen, setIsNewPostModalOpen] = useState(false);
@@ -165,6 +234,69 @@ export const CommunityView = () => {
       setDiscussions((prev) =>
         prev.map((d) => (d.id === id ? { ...d, upvotes: d.upvotes + 1 } : d))
       );
+    }
+  };
+
+  // ฟังก์ชันส่งความคิดเห็นในกระทู้
+  const handlePostComment = (e) => {
+    e.preventDefault();
+    if (!currentUser) {
+      if (openAuthModal) openAuthModal('login');
+      return;
+    }
+    if (!newCommentInput.trim() || !activeThread) return;
+
+    const newComment = {
+      id: `comm-${Date.now()}`,
+      author: currentUser.name,
+      authorAvatar: currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+      authorBadge: currentUser.badge || (currentUser.role === 'developer' ? 'Verified Dev' : 'Player'),
+      date: 'เมื่อสักครู่',
+      content: newCommentInput.trim(),
+      upvotes: 1
+    };
+
+    setCommentsMap((prev) => ({
+      ...prev,
+      [activeThread.id]: [newComment, ...(prev[activeThread.id] || [])]
+    }));
+
+    // อัปเดตจำนวนตอบกลับในกระทู้
+    setDiscussions((prev) =>
+      prev.map((d) =>
+        d.id === activeThread.id ? { ...d, repliesCount: (d.repliesCount || 0) + 1 } : d
+      )
+    );
+
+    setNewCommentInput('');
+    setThreadCommentNotice('เผยแพร่ความคิดเห็นของคุณสำเร็จ!');
+    setTimeout(() => setThreadCommentNotice(null), 3000);
+  };
+
+  // ฟังก์ชัน Upvote คอมเมนต์
+  const handleToggleCommentUpvote = (commentId) => {
+    if (upvotedCommentIds.includes(commentId)) {
+      setUpvotedCommentIds((prev) => prev.filter((id) => id !== commentId));
+      setCommentsMap((prev) => {
+        const next = { ...prev };
+        Object.keys(next).forEach((key) => {
+          next[key] = next[key].map((c) =>
+            c.id === commentId ? { ...c, upvotes: c.upvotes - 1 } : c
+          );
+        });
+        return next;
+      });
+    } else {
+      setUpvotedCommentIds((prev) => [...prev, commentId]);
+      setCommentsMap((prev) => {
+        const next = { ...prev };
+        Object.keys(next).forEach((key) => {
+          next[key] = next[key].map((c) =>
+            c.id === commentId ? { ...c, upvotes: c.upvotes + 1 } : c
+          );
+        });
+        return next;
+      });
     }
   };
 
@@ -330,6 +462,17 @@ export const CommunityView = () => {
           </button>
 
           <button
+            onClick={() => setActiveFilter('devlog')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              activeFilter === 'devlog'
+                ? 'bg-white text-gray-950 font-semibold'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            🛠️ บันทึกแพตช์ & DevLog
+          </button>
+
+          <button
             onClick={() => setActiveFilter('reviews')}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
               activeFilter === 'reviews'
@@ -372,13 +515,13 @@ export const CommunityView = () => {
         <div className="lg:col-span-2 space-y-4">
           
           {/* View 1: Discussions (Default or when filter matches) */}
-          {activeFilter !== 'reviews' && activeFilter !== 'screenshots' && (
+          {activeFilter !== 'reviews' && activeFilter !== 'screenshots' && activeFilter !== 'devlog' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs text-gray-400">
                 <span className="font-semibold text-gray-300">
                   กระทู้สนทนา ({filteredDiscussions.length})
                 </span>
-                <span>เรียงตามกิจกรรมล่าสุด</span>
+                <span>คลิกเพื่อดูและตอบกลับความคิดเห็น</span>
               </div>
 
               {filteredDiscussions.length === 0 ? (
@@ -389,7 +532,8 @@ export const CommunityView = () => {
                 filteredDiscussions.map((post) => (
                   <div
                     key={post.id}
-                    className="p-5 rounded-xl bg-[#111827] border border-white/[0.08] hover:border-white/20 transition-colors space-y-3"
+                    onClick={() => setActiveThread(post)}
+                    className="p-5 rounded-xl bg-[#111827] border border-white/[0.08] hover:border-white/20 hover:bg-[#131b2c] transition-all space-y-3 cursor-pointer group"
                   >
                     {/* Header info */}
                     <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -419,12 +563,12 @@ export const CommunityView = () => {
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-sm sm:text-base font-semibold text-white hover:text-indigo-300 transition-colors cursor-pointer">
+                    <h3 className="text-sm sm:text-base font-semibold text-white group-hover:text-indigo-300 transition-colors">
                       {post.title}
                     </h3>
 
                     {/* Content snippet */}
-                    <p className="text-xs text-gray-400 leading-relaxed">
+                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">
                       {post.content}
                     </p>
 
@@ -440,7 +584,10 @@ export const CommunityView = () => {
                       <div className="flex items-center gap-4">
                         {/* Upvote button */}
                         <button
-                          onClick={() => handleToggleUpvote(post.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleUpvote(post.id);
+                          }}
                           className={`flex items-center gap-1.5 text-xs font-mono transition-colors cursor-pointer ${
                             upvotedIds.includes(post.id)
                               ? 'text-indigo-400 font-semibold'
@@ -452,10 +599,16 @@ export const CommunityView = () => {
                         </button>
 
                         {/* Reply count */}
-                        <div className="flex items-center gap-1.5 text-xs font-mono text-gray-400">
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          <span>{post.repliesCount} ตอบกลับ</span>
-                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveThread(post);
+                          }}
+                          className="flex items-center gap-1.5 text-xs font-mono text-gray-400 group-hover:text-indigo-300 transition-colors"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
+                          <span className="font-semibold text-gray-300">{post.repliesCount} ตอบกลับ</span>
+                        </button>
 
                         {/* Views count */}
                         <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono text-gray-500">
@@ -562,6 +715,144 @@ export const CommunityView = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* View 4: DevLog & Game Patch Notes */}
+          {activeFilter === 'devlog' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between text-xs text-gray-400">
+                <span className="font-semibold text-gray-300">
+                  บันทึกการพัฒนาและอัปเดตแพตช์ (DevLogs & Patch Notes)
+                </span>
+                <span>อัปเดตตรงจากทีมผู้สร้างเกม</span>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    id: 'devlog-1',
+                    gameId: 'game-1',
+                    gameTitle: '2048 Cyber Siam',
+                    version: 'v1.4.2 Hotfix',
+                    date: '20 พ.ย. 2026',
+                    author: 'SiamPixel Studio',
+                    authorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+                    tag: 'Performance & Shader',
+                    summary: 'ปรับปรุงความลื่นไหล WebGL 60 FPS บนมือถือ และเพิ่มเพลงซาวด์แทร็ก synthwave สไตล์ไทยใหม่ 2 เพลง',
+                    changes: [
+                      'ลดขนาดไฟล์ Bundle จาก 55MB เหลือ 45MB โหลดไวขึ้น 30%',
+                      'แก้บั๊กแอนิเมชันรวมบล็อกเลข 8192 ค้างใน Safari',
+                      'เพิ่มตัวเลือกปรับระดับเสียง FX แยกกับ BGM'
+                    ]
+                  },
+                  {
+                    id: 'devlog-2',
+                    gameId: 'game-2',
+                    gameTitle: 'Ayutthaya Cyber Samurai: Prototype',
+                    version: 'v0.9.5 Combat Polish',
+                    date: '18 พ.ย. 2026',
+                    author: 'NeonAyodhya Games',
+                    authorAvatar: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150',
+                    tag: 'Gameplay Update',
+                    summary: 'ปรับสมดุลวิชาดาบพลาสมา Parry Window 0.3s เพิ่มระบบ Dash Dodge และปรับปรุง Hitbox บอสป้อมประตูเมือง',
+                    changes: [
+                      'เพิ่มเอฟเฟกต์ประกายไฟเมื่อกด Parry สำเร็จ',
+                      'รองรับจอยคอนโทรลเลอร์ DualSense และ Xbox ผ่าน Web Gamepad API',
+                      'แก้ปัญหาเสียงกระตุกเมื่อศัตรูปรากฏตัวพร้อมกันเกิน 8 ตัว'
+                    ]
+                  },
+                  {
+                    id: 'devlog-3',
+                    gameId: 'game-3',
+                    gameTitle: 'Bangkok Drift 2088',
+                    version: 'v1.1.0 New Track',
+                    date: '15 พ.ย. 2026',
+                    author: 'BKK Speed Syndicate',
+                    authorAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150',
+                    tag: 'Content Update',
+                    summary: 'เปิดตัวสนามแข่งด่วนลอยฟ้าสะพานพระราม 8 ยามค่ำคืน พร้อมการแต่งรถตุ๊กตุ๊กเทอร์โบไอพ่นพลังงานพลาสมา',
+                    changes: [
+                      'สนามแข่งใหม่: Rama VIII Skyway (Night Circuit)',
+                      'ระบบ Ghost Car เทียบเวลากับอันดับ 1 ของโลกแบบ Real-time',
+                      'ปรับจูนฟิสิกส์ Drift ให้ควบคุมง่ายขึ้นบนคีย์บอร์ด'
+                    ]
+                  }
+                ].map((log) => {
+                  const targetGame = games.find((g) => g.id === log.gameId);
+                  return (
+                    <div
+                      key={log.id}
+                      className="p-5 rounded-xl bg-[#111827] border border-white/[0.08] hover:border-white/20 transition-colors space-y-4"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={log.authorAvatar}
+                            alt={log.author}
+                            className="w-7 h-7 rounded-md object-cover border border-white/10"
+                          />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-white">{log.gameTitle}</span>
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-semibold">
+                                {log.version}
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-gray-500 font-mono">
+                              โดย {log.author} • {log.date}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          {log.tag}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-gray-300 leading-relaxed">
+                        {log.summary}
+                      </p>
+
+                      <div className="bg-[#0B0F19] rounded-lg p-3 border border-white/[0.04] space-y-1.5">
+                        <span className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
+                          <History className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>รายการเปลี่ยนแปลงในเวอร์ชันนี้:</span>
+                        </span>
+                        <ul className="text-xs text-gray-300 space-y-1 list-disc list-inside">
+                          {log.changes.map((change, idx) => (
+                            <li key={idx} className="text-[11px] text-gray-300">{change}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2">
+                        <span className="text-[11px] text-gray-500">เวอร์ชันนี้พร้อมให้เล่นบนเว็บแล้ว</span>
+                        <div className="flex items-center gap-2">
+                          {targetGame && (
+                            <>
+                              <button
+                                onClick={() => openGamePlayer(targetGame)}
+                                className="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-semibold border border-emerald-500/30 transition-colors cursor-pointer flex items-center gap-1.5"
+                              >
+                                <Play className="w-3 h-3 fill-current" />
+                                <span>ลองเล่น WebGL</span>
+                              </button>
+                              <button
+                                onClick={() => openGameDetail(targetGame)}
+                                className="px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-gray-300 hover:text-white text-xs font-medium border border-white/[0.08] transition-colors cursor-pointer flex items-center gap-1"
+                              >
+                                <span>ดูหน้าร้าน</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -716,6 +1007,186 @@ export const CommunityView = () => {
               </div>
 
             </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* 5. Discussion Thread & Comments Modal */}
+      {activeThread && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-[#111827] border border-white/[0.1] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/[0.08] bg-[#0B0F19]">
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${activeThread.categoryColor}`}>
+                  {activeThread.categoryLabel}
+                </span>
+                <span className="text-xs text-gray-400 font-mono">• {activeThread.gameRelated}</span>
+              </div>
+              <button
+                onClick={() => setActiveThread(null)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
+                title="ปิดหน้าต่าง"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+              
+              {/* Original Post */}
+              <div className="space-y-4 border-b border-white/[0.08] pb-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={activeThread.authorAvatar}
+                      alt={activeThread.author}
+                      className="w-9 h-9 rounded-lg object-cover border border-white/10"
+                    />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-white">{activeThread.author}</span>
+                        <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-white/[0.06] text-gray-300 border border-white/[0.06]">
+                          {activeThread.authorBadge}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-gray-500 font-mono">{activeThread.date}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleToggleUpvote(activeThread.id)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-colors cursor-pointer ${
+                        upvotedIds.includes(activeThread.id)
+                          ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'
+                          : 'bg-white/[0.04] text-gray-300 border-white/[0.08] hover:text-white'
+                      }`}
+                    >
+                      <ThumbsUp className={`w-3.5 h-3.5 ${upvotedIds.includes(activeThread.id) ? 'fill-current' : ''}`} />
+                      <span>{activeThread.upvotes}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <h2 className="text-lg sm:text-xl font-bold text-white">
+                  {activeThread.title}
+                </h2>
+
+                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed whitespace-pre-line bg-[#0B0F19]/50 p-4 rounded-xl border border-white/[0.04]">
+                  {activeThread.content}
+                </p>
+              </div>
+
+              {/* Comments Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-indigo-400" />
+                    <span>ความคิดเห็นทั้งหมด ({(commentsMap[activeThread.id] || []).length})</span>
+                  </h4>
+                  <span className="text-[11px] text-gray-500">เรียงตามล่าสุด</span>
+                </div>
+
+                {threadCommentNotice && (
+                  <div className="p-3 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-200 text-xs flex items-center gap-2 animate-in fade-in">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>{threadCommentNotice}</span>
+                  </div>
+                )}
+
+                {/* Comment List */}
+                <div className="space-y-3">
+                  {(!commentsMap[activeThread.id] || commentsMap[activeThread.id].length === 0) ? (
+                    <div className="p-8 text-center rounded-xl bg-[#0B0F19] border border-white/[0.06] text-gray-500 text-xs">
+                      ยังไม่มีความคิดเห็นในกระทู้นี้ ร่วมแสดงความคิดเห็นคนแรกเลย!
+                    </div>
+                  ) : (
+                    commentsMap[activeThread.id].map((comm) => (
+                      <div
+                        key={comm.id}
+                        className="p-3.5 rounded-xl bg-[#0B0F19] border border-white/[0.06] space-y-2 hover:border-white/10 transition-colors"
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={comm.authorAvatar}
+                              alt={comm.author}
+                              className="w-6 h-6 rounded-md object-cover border border-white/10"
+                            />
+                            <span className="font-semibold text-white">{comm.author}</span>
+                            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-white/[0.04] text-gray-400 border border-white/[0.06]">
+                              {comm.authorBadge}
+                            </span>
+                            <span className="text-gray-500 text-[11px] font-mono">• {comm.date}</span>
+                          </div>
+
+                          <button
+                            onClick={() => handleToggleCommentUpvote(comm.id)}
+                            className={`flex items-center gap-1 text-[11px] font-mono transition-colors cursor-pointer ${
+                              upvotedCommentIds.includes(comm.id)
+                                ? 'text-indigo-400 font-semibold'
+                                : 'text-gray-500 hover:text-gray-300'
+                            }`}
+                          >
+                            <ThumbsUp className={`w-3 h-3 ${upvotedCommentIds.includes(comm.id) ? 'fill-current' : ''}`} />
+                            <span>{comm.upvotes}</span>
+                          </button>
+                        </div>
+
+                        <p className="text-xs text-gray-300 pl-8 leading-relaxed">
+                          {comm.content}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Comment Input Footer */}
+            <div className="p-3 sm:p-4 border-t border-white/[0.08] bg-[#0B0F19]">
+              {currentUser ? (
+                <form onSubmit={handlePostComment} className="flex gap-2">
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="w-8 h-8 rounded-lg object-cover border border-white/10 shrink-0 hidden sm:block"
+                  />
+                  <div className="flex-1 flex gap-2">
+                    <input
+                      type="text"
+                      value={newCommentInput}
+                      onChange={(e) => setNewCommentInput(e.target.value)}
+                      placeholder="เขียนแสดงความคิดเห็นในกระทู้นี้..."
+                      className="flex-1 bg-[#111827] border border-white/[0.1] rounded-lg px-3.5 py-2 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-400"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!newCommentInput.trim()}
+                      className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">ตอบกลับ</span>
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="flex items-center justify-between p-2 rounded-lg bg-[#111827] border border-white/[0.06] text-xs">
+                  <span className="text-gray-400">เข้าสู่ระบบเพื่อร่วมแสดงความคิดเห็นในกระทู้นี้</span>
+                  <button
+                    onClick={() => openAuthModal && openAuthModal('login')}
+                    className="px-3 py-1.5 rounded-lg bg-white text-gray-950 font-semibold text-xs hover:bg-gray-200 transition-colors cursor-pointer"
+                  >
+                    เข้าสู่ระบบ
+                  </button>
+                </div>
+              )}
+            </div>
 
           </div>
         </div>

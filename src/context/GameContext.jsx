@@ -31,7 +31,15 @@ export const GameProvider = ({ children }) => {
     const saved = localStorage.getItem('indiethai_games');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const hasPending = parsed.some((g) => g.status === 'pending');
+          if (!hasPending) {
+            const pendingInitial = INITIAL_GAMES.filter((g) => g.status === 'pending');
+            return [...parsed, ...pendingInitial];
+          }
+          return parsed;
+        }
       } catch (e) {
         console.error('Failed to parse saved games', e);
       }
@@ -648,6 +656,94 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
+   * สร้างเกมตัวอย่างส่งตรวจสำหรับ Admin เพื่อใช้ทดสอบคิว Moderation Queue
+   */
+  const createMockPendingGame = () => {
+    const demoId = `game-pending-${Date.now()}`;
+    const sampleOptions = [
+      {
+        title: 'Siam Cyber Drift 2088',
+        tagline: 'เกมแข่งรถดริฟต์ลอยฟ้าบนทางด่วนกรุงเทพฯ ยุคไซเบอร์พังก์ รันบน WebGL ลื่นไหล',
+        developer: 'BKK Speed Syndicate',
+        category: 'Racing',
+        price: 89,
+        thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80'
+      },
+      {
+        title: 'Krasue: Bangkok Cyber Nightmare 2088',
+        tagline: 'เกมสยองขวัญมุมมองบุคคลที่หนึ่ง เอาชีวิตรอดจากกระสือไซเบอร์ในตรอกเยาวราช',
+        developer: 'ThaiHorror Lab',
+        category: 'Action',
+        price: 99,
+        thumbnail: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80'
+      },
+      {
+        title: 'Muay Thai Cyber Arena',
+        tagline: 'เกมต่อสู้แม่ไม้มวยไทยผสมเกราะไซบอร์ก แข่งขันแบบ 1v1 บนเบราว์เซอร์',
+        developer: 'Siam Fighting Games',
+        category: 'Action',
+        price: 0,
+        thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80'
+      }
+    ];
+    const picked = sampleOptions[Math.floor(Math.random() * sampleOptions.length)];
+    const mockPending = {
+      id: demoId,
+      title: `${picked.title} #${Math.floor(Math.random() * 900 + 100)}`,
+      slug: picked.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      tagline: picked.tagline,
+      description: picked.tagline + ' สัมผัสประสบการณ์เกมอินดี้สัญชาติไทยที่พัฒนาด้วยเทคโนโลยี WebGL กราฟิกลื่นไหล 60FPS ปลอดภัย ไร้มัลแวร์ 100%',
+      developer: picked.developer,
+      developerId: 'usr-dev-demo',
+      category: picked.category,
+      engine: 'WebGL / Three.js',
+      version: 'v1.0.0-rc',
+      price: picked.price,
+      originalPrice: picked.price > 0 ? picked.price + 30 : 0,
+      discountPercent: picked.price > 0 ? 15 : 0,
+      rating: 4.8,
+      ratingCount: 12,
+      playCount: 150,
+      downloadCount: 40,
+      downloadSize: '65 MB',
+      hasWebgl: true,
+      hasPcDownload: true,
+      webglUrl: 'https://play2048.co/',
+      downloadUrl: 'https://github.com/gabrielecirulli/2048/archive/refs/heads/master.zip',
+      thumbnail: picked.thumbnail,
+      headerImage: picked.thumbnail,
+      mediaGallery: [
+        { id: 'm1', type: 'image', url: picked.thumbnail, thumbnail: picked.thumbnail, title: 'ภาพโปรโมต' }
+      ],
+      requirements: {
+        os: 'Windows 10/11 / MacOS',
+        processor: '2.0 GHz Dual-Core',
+        memory: '4 GB RAM',
+        graphics: 'WebGL 2.0 Compatible',
+        storage: '100 MB'
+      },
+      patchNotes: [
+        { version: 'v1.0.0-rc', date: 'วันนี้', title: 'ส่งตรวจสอบขึ้นสโตร์ครั้งแรก', details: 'บิลด์แรกพร้อมให้แอดมินทดลองเล่นและอนุมัติขึ้นสโตร์' }
+      ],
+      promptPayNumber: '089-999-8888',
+      status: 'pending',
+      createdAt: 'วันนี้ (เมื่อสักครู่)',
+      tags: [picked.category, 'อินดี้ไทย', 'WebGL', 'PC Download'],
+      featured: false,
+      securityScan: {
+        status: 'Clean',
+        details: 'ผ่านการสแกนโค้ดสคริปต์ ไม่พบมัลแวร์ ไม่มีการเข้าถึง LocalStorage ต้องห้าม',
+        scannedAt: 'เมื่อสักครู่'
+      },
+      reviews: [],
+      bugReports: []
+    };
+
+    setGames((prev) => [mockPending, ...prev]);
+    return mockPending;
+  };
+
+  /**
    * ดาวน์โหลดไฟล์ PC
    */
   const downloadPcGame = (gameId) => {
@@ -858,6 +954,7 @@ export const GameProvider = ({ children }) => {
     editGameDetails,
     approveGame,
     rejectGame,
+    createMockPendingGame,
     updateGameVersionWithPatchNotes,
     updateBugStatus,
     downloadPcGame,

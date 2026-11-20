@@ -20,12 +20,13 @@ import {
   Download,
   ExternalLink,
   Globe,
-  Monitor
+  Monitor,
+  Plus
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 
 export const ModerationQueue = () => {
-  const { pendingGames, approveGame, rejectGame, openGamePlayer } = useGame();
+  const { pendingGames, approveGame, rejectGame, openGamePlayer, createMockPendingGame } = useGame();
 
   const [notification, setNotification] = useState(null);
   const [rejectModalGame, setRejectModalGame] = useState(null);
@@ -67,7 +68,7 @@ export const ModerationQueue = () => {
       )}
 
       {/* Header Info */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-white flex items-center gap-2">
             <Clock className="w-4 h-4 text-amber-400" />
@@ -77,16 +78,49 @@ export const ModerationQueue = () => {
             มีเกมรอตรวจทั้งหมด <strong className="text-amber-400 font-mono">{pendingGames.length} เกม</strong> — เมื่ออนุมัติ เกมจะไปปรากฏที่หน้าร้านค้าทันที
           </p>
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            const newMock = createMockPendingGame();
+            setNotification({
+              success: true,
+              message: `จำลองสตูดิโอส่งเกมใหม่ "${newMock.title}" เข้าคิวตรวจสอบสำเร็จ!`
+            });
+            setTimeout(() => setNotification(null), 3500);
+          }}
+          className="apple-press flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition cursor-pointer shadow-sm"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>จำลองนักพัฒนาส่งเกมตรวจใหม่</span>
+        </button>
       </div>
 
       {/* Pending Items List */}
       {pendingGames.length === 0 ? (
-        <div className="p-16 text-center bg-[#111827] rounded-2xl border border-white/[0.06] space-y-3">
+        <div className="p-16 text-center bg-[#111827] rounded-2xl border border-white/[0.06] space-y-4">
           <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
-          <h4 className="text-sm font-semibold text-white">ไม่มีเกมค้างอยู่ในคิวตรวจสอบ</h4>
-          <p className="text-xs text-gray-400">
-            ระบบตรวจสอบความปลอดภัยและอนุมัติเกมอินดี้ทั้งหมดเรียบร้อยแล้ว
-          </p>
+          <div>
+            <h4 className="text-sm font-semibold text-white">ไม่มีเกมค้างอยู่ในคิวตรวจสอบ</h4>
+            <p className="text-xs text-gray-400 mt-1">
+              ระบบตรวจสอบความปลอดภัยและอนุมัติเกมอินดี้ทั้งหมดเรียบร้อยแล้ว
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const newMock = createMockPendingGame();
+              setNotification({
+                success: true,
+                message: `จำลองสตูดิโอส่งเกมใหม่ "${newMock.title}" เข้าคิวตรวจสอบสำเร็จ!`
+              });
+              setTimeout(() => setNotification(null), 3500);
+            }}
+            className="apple-press inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-gray-200 text-gray-950 text-xs font-semibold transition cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>กดเพื่อสร้างเกมตัวอย่างส่งตรวจ (+1 เกม)</span>
+          </button>
         </div>
       ) : (
         <div className="space-y-4">
