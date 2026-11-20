@@ -70,7 +70,7 @@ export const GameDetailView = ({ game }) => {
     openTopUpModal 
   } = useAuth();
 
-  const isWishlisted = wishlist?.includes(game.id);
+  const isWishlisted = Boolean(currentUser && wishlist?.includes(game.id));
   const isOwned = isGameOwned(game.id);
 
   // เลื่อนหน้าจอขึ้นบนสุดทันทีเมื่อเข้าสู่หน้ารายละเอียดเกม ป้องกันปัญหาหน้าจอเลื่อนค้างหรือตำแหน่งไม่ตรง

@@ -229,7 +229,7 @@ export const Navbar = () => {
             <button
               onClick={handleWishlistClick}
               title={`สิ่งที่อยากได้ (${currentUser ? wishlist.length : 0})`}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
+              className={`flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
                 activeNavTab === 'profile' && currentUser
                   ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
                   : 'bg-[#111827] text-gray-300 border-white/[0.08] hover:border-white/20 hover:text-white'
@@ -390,16 +390,16 @@ export const Navbar = () => {
                   <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
                 </button>
               ) : (
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   <button
                     onClick={() => openAuthModal('login')}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-300 hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer whitespace-nowrap"
+                    className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold sm:font-medium text-white sm:text-gray-300 hover:text-white bg-white/[0.08] sm:bg-transparent sm:hover:bg-white/[0.06] border border-white/[0.12] sm:border-transparent transition-colors cursor-pointer whitespace-nowrap"
                   >
                     เข้าสู่ระบบ
                   </button>
                   <button
                     onClick={() => openAuthModal('register')}
-                    className="apple-press px-3.5 py-1.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap"
+                    className="hidden sm:inline-flex apple-press px-3.5 py-1.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shadow-sm"
                   >
                     สมัครสมาชิก
                   </button>

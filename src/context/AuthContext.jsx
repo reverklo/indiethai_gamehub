@@ -32,13 +32,19 @@ export const AuthProvider = ({ children }) => {
 
   // ข้อมูลผู้ใช้ปัจจุบันที่ล็อกอินอยู่ (ค่าเริ่มต้นเป็น null สำหรับ Guest ผู้เยี่ยมชมทั่วไป)
   const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('indiethai_current_user');
+    // ล้างแคชเก่าที่เคยจำ Tsukiko demo ไว้ เพื่อให้เริ่มต้นเป็น Guest เสมอ (ตามรูปที่ 3)
+    try {
+      localStorage.removeItem('indiethai_current_user');
+      localStorage.removeItem('indiethai_current_role');
+    } catch (e) {}
+
+    const saved = sessionStorage.getItem('indiethai_session_user');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.id) return parsed;
       } catch (e) {
-        console.error('Failed to parse current user', e);
+        console.error('Failed to parse session user', e);
       }
     }
     return null;
@@ -57,21 +63,21 @@ export const AuthProvider = ({ children }) => {
   // ควบคุมการเปิดปิด Steam Wallet Top-Up Modal
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
 
-  // บันทึกลง LocalStorage
+  // บันทึกลง LocalStorage สำหรับ User List
   useEffect(() => {
     localStorage.setItem('indiethai_users_list', JSON.stringify(usersList));
   }, [usersList]);
 
+  // ซิงค์ Session User ใน SessionStorage (คงอยู่เฉพาะในแท็บปัจจุบัน ไม่ติดค้างถาวร)
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem('indiethai_current_user', JSON.stringify(currentUser));
-      localStorage.setItem('indiethai_current_role', currentUser.role);
+      sessionStorage.setItem('indiethai_session_user', JSON.stringify(currentUser));
     } else {
-      localStorage.removeItem('indiethai_current_user');
+      sessionStorage.removeItem('indiethai_session_user');
     }
   }, [currentUser]);
 
-  // ซิงค์โปรไฟล์ผู้ใช้จริงจาก Supabase Database
+  // ซิงค์โปรไฟล์ผู้ใช้จริงจาก Supabase Database (เฉพาะเมื่อมีการล็อกอินจริงในเซสชันนี้)
   const syncProfileFromSupabase = async (authUser) => {
     try {
       const res = await fetchProfileFromSupabase(authUser.id);
@@ -102,17 +108,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ดักฟังสถานะ Auth จาก Supabase คลาวด์
+  // ดักฟังสถานะ Auth จาก Supabase คลาวด์ (เฉพาะเมื่อเซสชันในแท็บนี้ถูกสร้างขึ้น)
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        syncProfileFromSupabase(session.user);
-      }
-    });
+    const activeSessionUser = sessionStorage.getItem('indiethai_session_user');
+    if (activeSessionUser) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          syncProfileFromSupabase(session.user);
+        }
+      });
+    }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
         syncProfileFromSupabase(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setCurrentUser(null);
+        sessionStorage.removeItem('indiethai_session_user');
       }
     });
 
@@ -227,15 +239,21 @@ export const AuthProvider = ({ children }) => {
     }
     // รีเซ็ตกลับเป็น Guest และล้างแคช
     setCurrentUser(null);
+    sessionStorage.removeItem('indiethai_session_user');
     localStorage.removeItem('indiethai_current_user');
     localStorage.removeItem('indiethai_current_role');
+    localStorage.removeItem('indiethai_wishlist');
     return { success: true, message: 'ออกจากระบบเรียบร้อยแล้ว' };
   };
 
   /**
-   * ฟังก์ชัน Quick Login สำหรับ Demo (สลับเป็น Player, Dev, Admin ได้ทันที)
+   * ฟังก์ชัน Quick Login สำหรับ Demo (สลับเป็น Player, Dev, Admin หรือกลับเป็น Guest ได้ทันที)
    */
   const switchRole = (newRole) => {
+    if (newRole === 'guest') {
+      logout();
+      return;
+    }
     if (MOCK_USERS[newRole]) {
       // ค้นหาข้อมูลล่าสุดใน usersList
       const userInList = usersList.find((u) => u.role === newRole) || MOCK_USERS[newRole];

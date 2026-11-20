@@ -54,7 +54,7 @@ export const StorefrontView = () => {
     setIsWishlistOnly 
   } = useGame();
 
-  const { isGameOwned, openTopUpModal, walletBalance } = useAuth();
+  const { currentUser, isGameOwned, openTopUpModal, walletBalance } = useAuth();
 
   // ดึงข้อมูลเกมเบราว์เซอร์สดจาก FreeToGame API
   const { games: apiGames, loading: apiLoading } = useFetchBrowserGames();
@@ -180,28 +180,37 @@ export const StorefrontView = () => {
           onMouseLeave={() => setIsCarouselHovered(false)}
         >
           {/* Section Heading */}
-          <div className="px-5 py-3 border-b border-white/[0.06] bg-[#111827]/80 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-white">
-                เกมเด่นและแนะนำ (Featured & Recommended)
+          <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 border-b border-white/[0.06] bg-[#111827]/80 flex items-center justify-between">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-white truncate">
+                <span className="hidden sm:inline">เกมเด่นและแนะนำ (Featured & Recommended)</span>
+                <span className="sm:hidden">เกมเด่นแนะนำ</span>
               </h2>
             </div>
 
             {/* Slide Indicators & Controls */}
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono text-gray-400">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <span className="text-[10px] sm:text-[11px] font-mono text-gray-400">
                 {currentSlide + 1} / {carouselGames.length}
               </span>
               <button
-                onClick={() => setCurrentSlide((prev) => (prev - 1 + carouselGames.length) % carouselGames.length)}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentSlide((prev) => (prev - 1 + carouselGames.length) % carouselGames.length);
+                }}
                 className="p-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] text-gray-300 hover:text-white transition cursor-pointer"
                 title="เกมก่อนหน้า"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setCurrentSlide((prev) => (prev + 1) % carouselGames.length)}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentSlide((prev) => (prev + 1) % carouselGames.length);
+                }}
                 className="p-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] text-gray-300 hover:text-white transition cursor-pointer"
                 title="เกมถัดไป"
               >
@@ -225,19 +234,19 @@ export const StorefrontView = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent opacity-80 lg:hidden" />
               
               {/* Floating badges on image */}
-              <div className="absolute top-4 left-4 flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-md bg-black/80 text-amber-300 border border-amber-500/30 text-xs font-semibold backdrop-blur-md flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5 fill-amber-300" />
+              <div className="absolute top-2.5 sm:top-4 left-2.5 sm:left-4 flex flex-wrap gap-1.5 max-w-[92%] z-10">
+                <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-black/80 text-amber-300 border border-amber-500/30 text-[10px] sm:text-xs font-semibold backdrop-blur-md flex items-center gap-1 sm:gap-1.5">
+                  <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-300" />
                   <span>{activeFeaturedGame.rating} ({activeFeaturedGame.ratingCount})</span>
                 </span>
                 
                 {activeFeaturedGame.hasWebgl && (
-                  <span className="px-2.5 py-1 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 text-xs font-medium backdrop-blur-md">
+                  <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 text-[10px] sm:text-xs font-medium backdrop-blur-md">
                     🌐 เล่นบนเว็บ WebGL
                   </span>
                 )}
                 {activeFeaturedGame.hasPcDownload && (
-                  <span className="px-2.5 py-1 rounded-md bg-sky-950/80 text-sky-300 border border-sky-500/30 text-xs font-medium backdrop-blur-md">
+                  <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-sky-950/80 text-sky-300 border border-sky-500/30 text-[10px] sm:text-xs font-medium backdrop-blur-md">
                     💻 ดาวน์โหลด PC
                   </span>
                 )}
@@ -245,14 +254,14 @@ export const StorefrontView = () => {
             </div>
 
             {/* Right Col (42%): Game Details & Meta & Pricing */}
-            <div className="lg:col-span-5 p-5 sm:p-6 flex flex-col justify-between space-y-4 bg-[#111827]/90 backdrop-blur-md">
-              <div className="space-y-3">
-                <h3 className="text-xl sm:text-2xl font-bold text-white group-hover:text-indigo-300 transition-colors tracking-tight">
+            <div className="lg:col-span-5 p-4 sm:p-6 flex flex-col justify-between space-y-3 sm:space-y-4 bg-[#111827]/90 backdrop-blur-md">
+              <div className="space-y-2.5 sm:space-y-3">
+                <h3 className="text-lg sm:text-2xl font-bold text-white group-hover:text-indigo-300 transition-colors tracking-tight">
                   {activeFeaturedGame.title}
                 </h3>
 
                 {/* 4 Mini Thumbnails Grid (Steam Style) */}
-                <div className="grid grid-cols-2 gap-2">
+                <div className="hidden sm:grid grid-cols-2 gap-2">
                   {(activeFeaturedGame.mediaGallery || []).slice(0, 4).map((item, idx) => (
                     <div key={idx} className="relative aspect-video rounded-lg overflow-hidden bg-black/60 border border-white/[0.08]">
                       <img
@@ -310,28 +319,33 @@ export const StorefrontView = () => {
                   </div>
 
                   {/* Wishlist Button */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleWishlist(activeFeaturedGame.id);
-                    }}
-                    title={wishlist?.includes(activeFeaturedGame.id) ? 'ลบออกจากสิ่งที่อยากได้' : 'เพิ่มในสิ่งที่อยากได้'}
-                    className={`apple-press flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition cursor-pointer ${
-                      wishlist?.includes(activeFeaturedGame.id)
-                        ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                        : 'bg-white/[0.06] text-gray-300 hover:text-white hover:bg-white/[0.1] border-white/[0.08]'
-                    }`}
-                  >
-                    <Heart className={`w-3.5 h-3.5 ${wishlist?.includes(activeFeaturedGame.id) ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}`} />
-                    <span className="text-[11px]">
-                      {wishlist?.includes(activeFeaturedGame.id) ? 'บันทึกแล้ว' : 'สิ่งที่อยากได้'}
-                    </span>
-                  </button>
+                  {(() => {
+                    const isFeaturedWishlisted = Boolean(currentUser && wishlist?.includes(activeFeaturedGame.id));
+                    return (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWishlist(activeFeaturedGame.id);
+                        }}
+                        title={isFeaturedWishlisted ? 'ลบออกจากสิ่งที่อยากได้' : 'เพิ่มในสิ่งที่อยากได้'}
+                        className={`apple-press flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition cursor-pointer ${
+                          isFeaturedWishlisted
+                            ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                            : 'bg-white/[0.06] text-gray-300 hover:text-white hover:bg-white/[0.1] border-white/[0.08]'
+                        }`}
+                      >
+                        <Heart className={`w-3.5 h-3.5 ${isFeaturedWishlisted ? 'fill-rose-500 text-rose-500' : 'text-gray-400'}`} />
+                        <span className="text-[11px]">
+                          {isFeaturedWishlisted ? 'บันทึกแล้ว' : 'สิ่งที่อยากได้'}
+                        </span>
+                      </button>
+                    );
+                  })()}
                 </div>
 
                 {/* Row 2: Dual Action Buttons (Side-by-side, No wrapping) */}
-                <div className="grid grid-cols-2 gap-2.5 w-full">
+                <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full">
                   {activeFeaturedGame.hasWebgl ? (
                     <button
                       type="button"
@@ -339,11 +353,12 @@ export const StorefrontView = () => {
                         e.stopPropagation();
                         openGamePlayer(activeFeaturedGame);
                       }}
-                      className="apple-press flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs whitespace-nowrap transition cursor-pointer shadow-sm"
+                      className="apple-press flex items-center justify-center gap-1 sm:gap-1.5 py-2.5 px-2 sm:px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs whitespace-nowrap transition cursor-pointer shadow-sm"
                       title="เปิดเล่นเกมผ่าน WebGL ทันทีในเบราว์เซอร์ ไม่ต้องติดตั้ง"
                     >
                       <Play className="w-3.5 h-3.5 fill-gray-950 shrink-0" />
-                      <span>เล่นทันที (Instant Play)</span>
+                      <span>เล่นทันที</span>
+                      <span className="hidden sm:inline"> (Instant Play)</span>
                     </button>
                   ) : (
                     <button
@@ -352,7 +367,7 @@ export const StorefrontView = () => {
                         e.stopPropagation();
                         downloadPcGame(activeFeaturedGame.id);
                       }}
-                      className="apple-press flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 font-semibold text-xs whitespace-nowrap transition cursor-pointer border border-white/[0.08]"
+                      className="apple-press flex items-center justify-center gap-1 sm:gap-1.5 py-2.5 px-2 sm:px-3 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 font-semibold text-xs whitespace-nowrap transition cursor-pointer border border-white/[0.08]"
                     >
                       <Download className="w-3.5 h-3.5 shrink-0" />
                       <span>ดาวน์โหลด PC</span>
@@ -365,7 +380,7 @@ export const StorefrontView = () => {
                       e.stopPropagation();
                       openGameDetail(activeFeaturedGame);
                     }}
-                    className="apple-press flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs whitespace-nowrap transition cursor-pointer shadow-md shadow-indigo-600/20"
+                    className="apple-press flex items-center justify-center gap-1 sm:gap-1.5 py-2.5 px-2 sm:px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs whitespace-nowrap transition cursor-pointer shadow-md shadow-indigo-600/20"
                   >
                     <span>ดูรายละเอียด</span>
                     <ArrowRight className="w-3.5 h-3.5 shrink-0" />
@@ -557,7 +572,7 @@ export const StorefrontView = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {displayedGames.map((game) => {
               const owned = isGameOwned(game.id);
-              const isWish = wishlist?.includes(game.id);
+              const isWish = Boolean(currentUser && wishlist?.includes(game.id));
 
               return (
                 <div

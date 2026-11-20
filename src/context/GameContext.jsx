@@ -24,7 +24,7 @@ import {
 const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
-  const { currentUser, currentRole, devTokenBalance, updateTokenBalance } = useAuth();
+  const { currentUser, currentRole, devTokenBalance, updateTokenBalance, openAuthModal } = useAuth();
 
   // รายการเกมทั้งหมด
   const [games, setGames] = useState(() => {
@@ -39,11 +39,29 @@ export const GameProvider = ({ children }) => {
     return INITIAL_GAMES;
   });
 
-  // รายการเกมที่กดบันทึกเป็นรายการโปรด (Wishlist)
-  const [wishlist, setWishlist] = useState(() => {
-    const saved = localStorage.getItem('indiethai_wishlist');
-    return saved ? JSON.parse(saved) : ['game-1', 'game-3'];
-  });
+  // รายการเกมที่กดบันทึกเป็นรายการโปรด (Wishlist) - ค่าเริ่มต้นว่างเปล่าสำหรับ Guest
+  const [wishlist, setWishlist] = useState([]);
+
+  // ล้างแคช Wishlist สากลเก่าทิ้ง (เพื่อป้องกันค่าตกค้างสำหรับ Guest)
+  useEffect(() => {
+    try {
+      localStorage.removeItem('indiethai_wishlist');
+    } catch (e) {}
+  }, []);
+
+  // ซิงค์ Wishlist ตามผู้ใช้ที่ล็อกอินอยู่
+  useEffect(() => {
+    if (!currentUser) {
+      setWishlist([]);
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(`indiethai_wishlist_${currentUser.id}`);
+      setWishlist(saved ? JSON.parse(saved) : []);
+    } catch (e) {
+      setWishlist([]);
+    }
+  }, [currentUser?.id]);
 
   // ระบบแจ้งเตือน (Notification Center 🔔)
   const [notifications, setNotifications] = useState(() => {
@@ -106,8 +124,10 @@ export const GameProvider = ({ children }) => {
   }, [games]);
 
   useEffect(() => {
-    localStorage.setItem('indiethai_wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
+    if (currentUser?.id) {
+      localStorage.setItem(`indiethai_wishlist_${currentUser.id}`, JSON.stringify(wishlist));
+    }
+  }, [wishlist, currentUser?.id]);
 
   useEffect(() => {
     localStorage.setItem('indiethai_notifications', JSON.stringify(notifications));
@@ -273,17 +293,22 @@ export const GameProvider = ({ children }) => {
   }, [approvedGames, searchQuery, selectedEngine, selectedCategory, isWishlistOnly, wishlist]);
 
   /**
-   * สลับสถานะ Wishlist
+   * สลับสถานะ Wishlist (ต้องล็อกอินก่อนจึงจะเพิ่มเข้าคลังสิ่งที่อยากได้)
    */
   const toggleWishlist = (gameId) => {
+    if (!currentUser) {
+      if (openAuthModal) openAuthModal('login');
+      return false;
+    }
     setWishlist((prev) => {
       const isExist = prev.includes(gameId);
-      if (isExist) {
-        return prev.filter((id) => id !== gameId);
-      } else {
-        return [...prev, gameId];
+      const next = isExist ? prev.filter((id) => id !== gameId) : [...prev, gameId];
+      if (currentUser?.id) {
+        localStorage.setItem(`indiethai_wishlist_${currentUser.id}`, JSON.stringify(next));
       }
+      return next;
     });
+    return true;
   };
 
   /**
