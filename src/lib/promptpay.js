@@ -28,13 +28,23 @@ export function calculateCrc16(data) {
 }
 
 /**
+ * ตรวจสอบความถูกต้องของหมายเลขพร้อมเพย์ (เบอร์มือถือ 10 หลัก หรือเลขบัตร/นิติบุคคล 13 หลัก)
+ * @param {string} target
+ * @returns {boolean}
+ */
+export function isValidPromptPayTarget(target) {
+  const sanitized = String(target || '').replace(/[^0-9]/g, '');
+  return (sanitized.length === 10 && sanitized.startsWith('0')) || sanitized.length === 13;
+}
+
+/**
  * สร้าง PromptPay EMVCo Payload String
  * @param {string} target - เบอร์โทรศัพท์ (เช่น 0897654321) หรือเลขบัตร ปชช. 13 หลัก
  * @param {number|string} [amount] - ยอดเงิน (บาท) ถ้าไม่ระบุจะเป็น Static QR ให้ผู้โอนกรอกเอง
  * @returns {string} EMVCo QR Code Payload
  */
 export function generatePromptPayPayload(target = '0897654321', amount = null) {
-  const sanitized = String(target).replace(/[^0-9]/g, '');
+  const sanitized = String(target || '').replace(/[^0-9]/g, '');
   let targetType = '01'; // 01 = Mobile, 02 = National ID / Tax ID
   let formattedTarget = '';
 
@@ -47,9 +57,7 @@ export function generatePromptPayPayload(target = '0897654321', amount = null) {
     targetType = '02';
     formattedTarget = sanitized;
   } else {
-    // ค่าเริ่มต้นถ้ากรอกไม่ครบ
-    targetType = '01';
-    formattedTarget = '0066' + (sanitized.padEnd(9, '0')).slice(-9);
+    throw new Error('หมายเลขพร้อมเพย์ไม่ถูกต้อง (ต้องเป็นเบอร์มือถือ 10 หลักขึ้นต้นด้วย 0 หรือเลขประจำตัว 13 หลัก)');
   }
 
   // Tag 29: Merchant Account Information
@@ -63,7 +71,7 @@ export function generatePromptPayPayload(target = '0897654321', amount = null) {
 
   // Tag 01: Point of Initiation Method (11 = Static, 12 = Dynamic with Amount)
   const numericAmount = Number(amount);
-  const hasAmount = numericAmount && numericAmount > 0;
+  const hasAmount = Number.isFinite(numericAmount) && numericAmount > 0;
   const tag01 = hasAmount ? '010212' : '010211';
 
   // Tag 53: Transaction Currency (764 = THB)

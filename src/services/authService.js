@@ -108,3 +108,36 @@ export const updateProfileInSupabase = async (userId, updates) => {
     return { success: false, error: err.message };
   }
 };
+
+/**
+ * เปลี่ยนสิทธิ์ผู้ใช้ (Player / Developer / Admin) ผ่าน Secure RPC
+ */
+export const setUserRoleInSupabase = async (targetUserId, newRole) => {
+  try {
+    const { error } = await supabase.rpc('admin_set_user_role', {
+      target_user_id: targetUserId,
+      new_role: newRole
+    });
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.error('Failed to set user role:', err);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * แบน/ปลดแบนผู้ใช้ผ่าน Secure RPC
+ */
+export const toggleBanUserInSupabase = async (targetUserId) => {
+  try {
+    const { data, error } = await supabase.rpc('admin_toggle_ban_user', {
+      target_user_id: targetUserId
+    });
+    if (error) throw error;
+    return { success: true, isBanned: data };
+  } catch (err) {
+    console.error('Failed to toggle ban user:', err);
+    return { success: false, error: err.message };
+  }
+};

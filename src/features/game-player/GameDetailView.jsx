@@ -49,6 +49,7 @@ import {
 import { useGame } from '../../context/GameContext';
 import { useAuth } from '../../context/AuthContext';
 import { generatePromptPayQRDataUrl } from '../../lib/promptpay';
+import { getSafeExternalUrl } from '../../lib/urlSafety';
 import { uploadSlipImage } from '../../services/storageService';
 
 export const GameDetailView = ({ game }) => {
@@ -146,7 +147,11 @@ export const GameDetailView = ({ game }) => {
 
   // สร้าง PromptPay QR สำหรับผู้พัฒนาโดยเฉพาะ
   useEffect(() => {
-    if (!isDonateModalOpen || activeDonateAmount <= 0) return;
+    if (!isDonateModalOpen || activeDonateAmount <= 0) {
+      setDonateQrUrl('');
+      return;
+    }
+    let isMounted = true;
     const target = game.promptPayNumber || '089-765-4321';
     generatePromptPayQRDataUrl(target, activeDonateAmount, {
       width: 240,
@@ -154,8 +159,15 @@ export const GameDetailView = ({ game }) => {
       darkColor: '#0a0f1d',
       lightColor: '#ffffff'
     })
-      .then((url) => setDonateQrUrl(url))
-      .catch(console.error);
+      .then((url) => {
+        if (isMounted) setDonateQrUrl(url);
+      })
+      .catch(() => {
+        if (isMounted) setDonateQrUrl('');
+      });
+    return () => {
+      isMounted = false;
+    };
   }, [isDonateModalOpen, activeDonateAmount, game.promptPayNumber]);
 
   // ฟังก์ชันกดสั่งซื้อเกม
@@ -168,8 +180,9 @@ export const GameDetailView = ({ game }) => {
   // ดาวน์โหลดไฟล์ PC
   const handleDownloadPc = () => {
     downloadPcGame(game.id);
-    if (game.downloadUrl && game.downloadUrl !== '#') {
-      window.open(game.downloadUrl, '_blank');
+    const safeDownloadUrl = getSafeExternalUrl(game.downloadUrl);
+    if (safeDownloadUrl) {
+      window.open(safeDownloadUrl, '_blank', 'noopener,noreferrer');
     }
     setDownloadSuccessNotice(true);
     setTimeout(() => setDownloadSuccessNotice(false), 3500);
@@ -356,13 +369,20 @@ export const GameDetailView = ({ game }) => {
             {/* Active Display Screen */}
             <div className="relative aspect-video w-full rounded-xl bg-black overflow-hidden border border-white/[0.08] shadow-inner">
               {activeMedia?.type === 'video' ? (
-                <iframe
-                  src={activeMedia.url}
-                  title={activeMedia.title}
-                  className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                getSafeExternalUrl(activeMedia.url) ? (
+                  <iframe
+                    src={getSafeExternalUrl(activeMedia.url)}
+                    title={activeMedia.title}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                    ไม่สามารถแสดงวิดีโอได้ (URL ไม่รองรับ)
+                  </div>
+                )
               ) : (
                 <img
                   src={activeMedia?.url || game.thumbnail}
@@ -838,22 +858,22 @@ export const GameDetailView = ({ game }) => {
               ช่องทางคอมมูนิตี้ (Community Links)
             </h4>
             <div className="space-y-1.5 text-xs">
-              {game.socialLinks?.discord && (
+              {getSafeExternalUrl(game.socialLinks?.discord) && (
                 <a 
-                  href={game.socialLinks.discord} 
+                  href={getSafeExternalUrl(game.socialLinks.discord)} 
                   target="_blank" 
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-between p-2 rounded-lg bg-[#0B0F19] hover:bg-white/[0.06] text-gray-300 hover:text-white transition"
                 >
                   <span>เข้าร่วม Discord ผู้พัฒนา</span>
                   <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
                 </a>
               )}
-              {game.socialLinks?.twitter && (
+              {getSafeExternalUrl(game.socialLinks?.twitter) && (
                 <a 
-                  href={game.socialLinks.twitter} 
+                  href={getSafeExternalUrl(game.socialLinks.twitter)} 
                   target="_blank" 
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-between p-2 rounded-lg bg-[#0B0F19] hover:bg-white/[0.06] text-gray-300 hover:text-white transition"
                 >
                   <span>ติดตามผ่าน X (Twitter)</span>
@@ -861,9 +881,9 @@ export const GameDetailView = ({ game }) => {
                 </a>
               )}
               <a 
-                href={game.socialLinks?.website || 'https://indiethai.hub'} 
+                href={getSafeExternalUrl(game.socialLinks?.website) || 'https://indiethai.hub'} 
                 target="_blank" 
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="flex items-center justify-between p-2 rounded-lg bg-[#0B0F19] hover:bg-white/[0.06] text-gray-300 hover:text-white transition"
               >
                 <span>เยี่ยมชมเว็บไซต์ทางการ</span>

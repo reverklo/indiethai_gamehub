@@ -11,8 +11,12 @@ import {
   registerWithSupabase, 
   loginWithSupabase, 
   logoutFromSupabase, 
-  fetchProfileFromSupabase 
+  fetchProfileFromSupabase,
+  setUserRoleInSupabase,
+  toggleBanUserInSupabase
 } from '../services/authService';
+
+const ADMIN_DEMO_PIN = import.meta.env.VITE_ADMIN_DEMO_PIN || '208826';
 
 const AuthContext = createContext();
 
@@ -62,6 +66,26 @@ export const AuthProvider = ({ children }) => {
 
   // ควบคุมการเปิดปิด Steam Wallet Top-Up Modal
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
+
+  // สถานะปลดล็อกโหมดสาธิต Admin ด้วยรหัส PIN (จำเฉพาะในแท็บปัจจุบัน)
+  const [isAdminDemoUnlocked, setIsAdminDemoUnlocked] = useState(() => {
+    try {
+      return sessionStorage.getItem('indiethai_admin_unlocked') === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  const verifyAdminDemoPin = (pin) => {
+    if (String(pin || '').trim() === ADMIN_DEMO_PIN) {
+      setIsAdminDemoUnlocked(true);
+      try {
+        sessionStorage.setItem('indiethai_admin_unlocked', '1');
+      } catch {}
+      return true;
+    }
+    return false;
+  };
 
   // บันทึกลง LocalStorage สำหรับ User List
   useEffect(() => {
@@ -163,7 +187,18 @@ export const AuthProvider = ({ children }) => {
       return { success: false, message: 'บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อแอดมิน' };
     }
 
-    // ในระบบจำลอง ยอมรับรหัสผ่านที่กรอก
+    if (user.role === 'admin' && String(password || '').trim() !== ADMIN_DEMO_PIN) {
+      return { success: false, message: 'รหัสผ่าน Admin ไม่ถูกต้อง' };
+    }
+
+    if (user.role === 'admin') {
+      setIsAdminDemoUnlocked(true);
+      try {
+        sessionStorage.setItem('indiethai_admin_unlocked', '1');
+      } catch {}
+    }
+
+    // ในระบบจำลอง ยอมรับรหัสผ่านที่กรอกสำหรับผู้ใช้ทั่วไป
     setCurrentUser(user);
     setIsAuthModalOpen(false);
     return { success: true, message: `ยินดีต้อนรับกลับมา, ${user.name}!`, user };
@@ -426,6 +461,9 @@ export const AuthProvider = ({ children }) => {
    * ฟังก์ชันสำหรับ Admin: สลับสถานะ แบน / ปลดแบน
    */
   const adminToggleBanUser = (userId) => {
+    if (userId === currentUser?.id) {
+      return { success: false, message: 'ไม่สามารถระงับบัญชีตัวเองได้' };
+    }
     let updatedStatus = false;
     setUsersList((prev) =>
       prev.map((u) => {
@@ -437,10 +475,37 @@ export const AuthProvider = ({ children }) => {
       })
     );
 
+    if (currentUser?.isRealAuth && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
+      toggleBanUserInSupabase(userId).catch((e) => console.warn('Ban sync error:', e));
+    }
+
     return {
       success: true,
       message: updatedStatus ? 'ระงับบัญชีผู้ใช้เรียบร้อยแล้ว' : 'ปลดระงับบัญชีผู้ใช้เรียบร้อยแล้ว'
     };
+  };
+
+  /**
+   * ฟังก์ชันสำหรับ Admin: แต่งตั้งหรือเปลี่ยนสิทธิ์ผู้ใช้ (Player / Developer / Admin)
+   */
+  const adminSetUserRole = (userId, newRole) => {
+    if (!['player', 'developer', 'admin'].includes(newRole)) {
+      return { success: false, message: 'บทบาทไม่ถูกต้อง' };
+    }
+    if (userId === currentUser?.id && newRole !== 'admin') {
+      return { success: false, message: 'ไม่สามารถถอดสิทธิ์ Admin ของบัญชีที่ใช้งานอยู่เองได้' };
+    }
+
+    setUsersList((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
+    );
+
+    if (currentUser?.isRealAuth && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
+      setUserRoleInSupabase(userId, newRole).catch((e) => console.warn('Role sync error:', e));
+    }
+
+    const roleLabel = newRole === 'admin' ? 'Admin (ผู้ดูแลระบบ)' : newRole === 'developer' ? 'Developer (นักพัฒนา)' : 'Player (ผู้เล่น)';
+    return { success: true, message: `เปลี่ยนสิทธิ์ผู้ใช้เป็น ${roleLabel} เรียบร้อยแล้ว` };
   };
 
   /**
@@ -496,6 +561,9 @@ export const AuthProvider = ({ children }) => {
     isGameOwned,
     adminAdjustUserToken,
     adminToggleBanUser,
+    adminSetUserRole,
+    isAdminDemoUnlocked,
+    verifyAdminDemoPin,
     updateUserProfile
   };
 

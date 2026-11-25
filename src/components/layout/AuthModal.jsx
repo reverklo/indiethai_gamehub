@@ -5,7 +5,7 @@
  * - สมัครสมาชิกใหม่ เลือกได้ว่าจะเป็นผู้เล่น หรือสตูดิโอผู้พัฒนา (รับฟรี 150 Tokens)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   LogIn, 
@@ -32,10 +32,25 @@ export const AuthModal = () => {
     openAuthModal, 
     login, 
     register, 
-    switchRole 
+    switchRole,
+    isAdminDemoUnlocked,
+    verifyAdminDemoPin
   } = useAuth();
 
   const [mode, setMode] = useState(authModalMode || 'login'); // 'login' | 'register'
+  const [showAdminPinPrompt, setShowAdminPinPrompt] = useState(false);
+  const [adminPinInput, setAdminPinInput] = useState('');
+
+  // ซิงค์แท็บ Login / Register ทุกครั้งที่เปิด Modal หรือเปลี่ยนโหมดจากภายนอก
+  useEffect(() => {
+    if (isAuthModalOpen) {
+      setMode(authModalMode || 'login');
+      setErrorMsg(null);
+      setSuccessMsg(null);
+      setShowAdminPinPrompt(false);
+      setAdminPinInput('');
+    }
+  }, [isAuthModalOpen, authModalMode]);
 
   // Form states
   const [loginEmail, setLoginEmail] = useState('');
@@ -112,8 +127,24 @@ export const AuthModal = () => {
 
   // Quick Demo Login
   const handleQuickLogin = (role) => {
+    if (role === 'admin' && !isAdminDemoUnlocked) {
+      setErrorMsg(null);
+      setShowAdminPinPrompt(true);
+      return;
+    }
     switchRole(role);
     closeAuthModal();
+  };
+
+  const handleAdminPinUnlock = () => {
+    if (verifyAdminDemoPin(adminPinInput)) {
+      setShowAdminPinPrompt(false);
+      setAdminPinInput('');
+      switchRole('admin');
+      closeAuthModal();
+    } else {
+      setErrorMsg('รหัสผ่าน Admin ไม่ถูกต้อง');
+    }
   };
 
   return (
@@ -283,9 +314,39 @@ export const AuthModal = () => {
                 >
                   <ShieldCheck className="w-4 h-4 mb-1 text-rose-400 group-hover:scale-110 transition-transform" />
                   <span className="text-xs font-semibold text-white">ผู้ดูแล</span>
-                  <span className="text-[9px] text-gray-400 mt-0.5 font-mono">Admin</span>
+                  <span className="text-[9px] text-gray-400 mt-0.5 font-mono">Admin PIN</span>
                 </button>
               </div>
+
+              {showAdminPinPrompt && (
+                <div className="p-3 rounded-xl bg-rose-950/30 border border-rose-500/30 space-y-2 animate-in fade-in">
+                  <label className="block text-[11px] font-semibold text-rose-300">
+                    กรอกรหัสผ่าน Admin เพื่อปลดล็อก:
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      value={adminPinInput}
+                      onChange={(e) => setAdminPinInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAdminPinUnlock();
+                        }
+                      }}
+                      placeholder="รหัสผ่าน Admin..."
+                      className="flex-1 bg-[#0B0F19] border border-rose-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-rose-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAdminPinUnlock}
+                      className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold cursor-pointer"
+                    >
+                      ยืนยัน
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </form>
         ) : (

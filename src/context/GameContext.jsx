@@ -73,8 +73,12 @@ export const GameProvider = ({ children }) => {
 
   // ระบบแจ้งเตือน (Notification Center 🔔)
   const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem('indiethai_notifications');
-    return saved ? JSON.parse(saved) : MOCK_NOTIFICATIONS;
+    try {
+      const saved = localStorage.getItem('indiethai_notifications');
+      return saved ? JSON.parse(saved) : MOCK_NOTIFICATIONS;
+    } catch {
+      return MOCK_NOTIFICATIONS;
+    }
   });
 
   // แท็บหน้าหลักที่เปิดอยู่: 'store' | 'library' | 'community' | 'profile' | 'studio' | 'admin'
@@ -85,8 +89,11 @@ export const GameProvider = ({ children }) => {
 
   // ข้อมูลเกมที่เคยเล่น / กิจกรรมล่าสุด (Steam-style Recent Activity)
   const [playedGames, setPlayedGames] = useState(() => {
-    const saved = localStorage.getItem('indiethai_played_games');
-    return saved ? JSON.parse(saved) : [
+    try {
+      const saved = localStorage.getItem('indiethai_played_games');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
       { 
         gameId: 'game-1', 
         hoursPlayed: 42.5, 
@@ -497,11 +504,12 @@ export const GameProvider = ({ children }) => {
       slug: (gameData.title || 'game').toLowerCase().replace(/\s+/g, '-'),
       tagline: gameData.tagline || 'เกมอินดี้ใหม่โดยนักพัฒนาไทย',
       description: gameData.description || 'เกม WebGL สร้างสรรค์โดยสตูดิโอเกมสัญชาติไทย รันได้ลื่นไหลบนเบราว์เซอร์',
-      developer: currentUser.studioName || currentUser.name || 'SiamPixel Studio',
-      developerId: currentUser.id || 'usr-dev-1',
+      developer: currentUser?.studioName || currentUser?.name || 'SiamPixel Studio',
+      developerId: currentUser?.id || 'usr-dev-1',
       category: gameData.category || 'Action',
       engine: gameData.engine || 'Unity WebGL',
       version: gameData.version || 'v1.0.0',
+      price: Math.max(0, Number(gameData.price) || 0),
       rating: 0,
       ratingCount: 0,
       playCount: 0,
@@ -541,7 +549,7 @@ export const GameProvider = ({ children }) => {
           details: 'เปิดให้ผู้เล่นทดสอบผ่านระบบ WebGL และดาวน์โหลดไฟล์ PC'
         }
       ],
-      promptPayNumber: gameData.promptPayNumber || currentUser.promptPayNumber || '089-765-4321',
+      promptPayNumber: gameData.promptPayNumber || currentUser?.promptPayNumber || '089-765-4321',
       status: 'pending',
       createdAt: new Date().toISOString().split('T')[0],
       tags: gameData.tags || ['Thai Indie', 'WebGL', 'New Release'],
@@ -557,17 +565,20 @@ export const GameProvider = ({ children }) => {
 
     setGames((prev) => [newGame, ...prev]);
 
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentUser?.id || '');
+
     // ซิงค์เกมใหม่ขึ้น Supabase คลาวด์
     supabase.from('games').insert({
       title: newGame.title,
       slug: `${newGame.slug}-${Date.now().toString().slice(-4)}`,
       tagline: newGame.tagline,
       description: newGame.description,
+      ...(isUuid ? { developer_id: currentUser.id } : {}),
       developer_name: newGame.developer,
       category: newGame.category,
       engine: newGame.engine,
       version: newGame.version,
-      price: newGame.price || 0,
+      price: Number(gameData.price) || 0,
       has_webgl: newGame.hasWebgl,
       has_pc_download: newGame.hasPcDownload,
       webgl_url: newGame.webglUrl,

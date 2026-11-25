@@ -1,11 +1,19 @@
 import React from 'react';
-import { X, ExternalLink, Maximize2, Shield, Heart, QrCode } from 'lucide-react';
+import { X, ExternalLink, Maximize2, Shield, Heart, QrCode, AlertTriangle } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
+import { getSafeExternalUrl } from '../../lib/urlSafety';
 
 export const WebGLModal = () => {
   const { activePlayingGame, closeGamePlayer } = useGame();
 
   if (!activePlayingGame) return null;
+
+  const safeWebglUrl = getSafeExternalUrl(activePlayingGame.webglUrl);
+  const isSameOrigin = safeWebglUrl ? new URL(safeWebglUrl).origin === window.location.origin : false;
+  // ป้องกันการถอด sandbox attribute หากเป็นโดเมนเดียวกัน (หลีกเลี่ยง allow-scripts + allow-same-origin คู่กันบน origin เดียวกัน)
+  const sandboxPolicy = isSameOrigin
+    ? 'allow-scripts allow-popups allow-forms'
+    : 'allow-scripts allow-same-origin allow-popups allow-forms';
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
@@ -34,15 +42,17 @@ export const WebGLModal = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <a
-              href={activePlayingGame.webglUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="เปิดในแท็บใหม่"
-              className="p-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </a>
+            {safeWebglUrl && (
+              <a
+                href={safeWebglUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="เปิดในแท็บใหม่"
+                className="p-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            )}
             <button
               onClick={closeGamePlayer}
               title="ปิดหน้าต่างเล่นเกม"
@@ -55,13 +65,23 @@ export const WebGLModal = () => {
 
         {/* WebGL Iframe Canvas Container */}
         <div className="relative flex-1 bg-black">
-          <iframe
-            src={activePlayingGame.webglUrl}
-            title={activePlayingGame.title}
-            className="w-full h-full border-0"
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-          />
+          {safeWebglUrl ? (
+            <iframe
+              src={safeWebglUrl}
+              title={activePlayingGame.title}
+              className="w-full h-full border-0"
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              sandbox={sandboxPolicy}
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center space-y-3">
+              <AlertTriangle className="w-10 h-10 text-amber-400" />
+              <h4 className="text-sm font-bold text-white">ไม่สามารถโหลดเกมได้ (URL ไม่ปลอดภัยหรือไม่ถูกต้อง)</h4>
+              <p className="text-xs text-gray-400 max-w-md">
+                ระบบความปลอดภัยรองรับเฉพาะลิงก์เกมที่เป็น HTTPS เพื่อป้องกันอันตรายต่อผู้เล่น
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Modal Footer (Support Thai Dev with PromptPay) */}

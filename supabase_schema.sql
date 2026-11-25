@@ -45,10 +45,83 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
     COALESCE(NEW.raw_user_meta_data->>'display_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
     COALESCE(NEW.raw_user_meta_data->>'avatar_url', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'player'),
+    CASE
+      WHEN NEW.raw_user_meta_data->>'role' IN ('player', 'developer') THEN NEW.raw_user_meta_data->>'role'
+      ELSE 'player'
+    END,
     COALESCE(NEW.raw_user_meta_data->>'studio_name', 'Indie Studio')
   );
   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Protect sensitive profile columns from direct client REST API tampering
+CREATE OR REPLACE FUNCTION public.protect_sensitive_profile_fields()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF current_setting('app.bypass_profile_protection', true) IS DISTINCT FROM 'on'
+     AND auth.role() = 'authenticated' THEN
+    NEW.role := OLD.role;
+    NEW.wallet_balance := OLD.wallet_balance;
+    NEW.dev_quota := OLD.dev_quota;
+    NEW.is_verified_dev := OLD.is_verified_dev;
+    NEW.is_banned := OLD.is_banned;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_protect_sensitive_profile_fields ON public.profiles;
+CREATE TRIGGER trg_protect_sensitive_profile_fields
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.protect_sensitive_profile_fields();
+
+-- Admin RPC: Promote or change another user's role safely
+CREATE OR REPLACE FUNCTION public.admin_set_user_role(target_user_id UUID, new_role TEXT)
+RETURNS VOID AS $$
+DECLARE
+  caller_role TEXT;
+BEGIN
+  SELECT role INTO caller_role FROM public.profiles WHERE id = auth.uid();
+  IF caller_role IS DISTINCT FROM 'admin' THEN
+    RAISE EXCEPTION 'Permission denied: admin role required';
+  END IF;
+  IF new_role NOT IN ('player', 'developer', 'admin') THEN
+    RAISE EXCEPTION 'Invalid role: %', new_role;
+  END IF;
+  IF target_user_id = auth.uid() AND new_role <> 'admin' THEN
+    RAISE EXCEPTION 'Cannot demote yourself';
+  END IF;
+
+  PERFORM set_config('app.bypass_profile_protection', 'on', true);
+  UPDATE public.profiles
+  SET role = new_role, updated_at = NOW()
+  WHERE id = target_user_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Admin RPC: Toggle ban status safely
+CREATE OR REPLACE FUNCTION public.admin_toggle_ban_user(target_user_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+  caller_role TEXT;
+  next_banned BOOLEAN;
+BEGIN
+  SELECT role INTO caller_role FROM public.profiles WHERE id = auth.uid();
+  IF caller_role IS DISTINCT FROM 'admin' THEN
+    RAISE EXCEPTION 'Permission denied: admin role required';
+  END IF;
+  IF target_user_id = auth.uid() THEN
+    RAISE EXCEPTION 'Cannot ban yourself';
+  END IF;
+
+  PERFORM set_config('app.bypass_profile_protection', 'on', true);
+  UPDATE public.profiles
+  SET is_banned = NOT COALESCE(is_banned, false), updated_at = NOW()
+  WHERE id = target_user_id
+  RETURNING is_banned INTO next_banned;
+
+  RETURN next_banned;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -189,10 +262,42 @@ CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR 
 CREATE POLICY "Users can insert their own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
--- Games: Anyone can read approved games; developers can view and manage their own
-CREATE POLICY "Anyone can view approved games" ON public.games FOR SELECT USING (status = 'approved' OR auth.uid() = developer_id);
+-- Games: Anyone can read approved games; developers can view/manage own; admins can view/moderate all
+CREATE POLICY "Anyone can view approved games" ON public.games FOR SELECT USING (
+  status = 'approved'
+  OR auth.uid() = developer_id
+  OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
 CREATE POLICY "Authenticated users can create games" ON public.games FOR INSERT WITH CHECK (auth.uid() = developer_id);
-CREATE POLICY "Developers can update their own games" ON public.games FOR UPDATE USING (auth.uid() = developer_id);
+CREATE POLICY "Developers or admins can update games" ON public.games FOR UPDATE USING (
+  auth.uid() = developer_id
+  OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+);
+
+-- Prevent non-admin developers from self-approving their own games on INSERT or UPDATE
+CREATE OR REPLACE FUNCTION public.protect_game_moderation_status()
+RETURNS TRIGGER AS $$
+DECLARE
+  caller_role TEXT;
+BEGIN
+  IF auth.role() = 'authenticated' THEN
+    SELECT role INTO caller_role FROM public.profiles WHERE id = auth.uid();
+    IF caller_role IS DISTINCT FROM 'admin' THEN
+      IF TG_OP = 'INSERT' THEN
+        NEW.status := 'pending';
+      ELSIF NEW.status IS DISTINCT FROM OLD.status THEN
+        NEW.status := OLD.status;
+      END IF;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_protect_game_moderation_status ON public.games;
+CREATE TRIGGER trg_protect_game_moderation_status
+  BEFORE INSERT OR UPDATE ON public.games
+  FOR EACH ROW EXECUTE FUNCTION public.protect_game_moderation_status();
 
 -- Game Patches: Viewable by all; manageable by game developer
 CREATE POLICY "Patches viewable by everyone" ON public.game_patches FOR SELECT USING (true);
@@ -206,7 +311,7 @@ CREATE POLICY "Authenticated users can create reviews" ON public.reviews FOR INS
 
 -- Bug Reports: Viewable by all; developers can update bug status
 CREATE POLICY "Bug reports viewable by everyone" ON public.bug_reports FOR SELECT USING (true);
-CREATE POLICY "Users can submit bug reports" ON public.bug_reports FOR INSERT WITH CHECK (true);
+CREATE POLICY "Authenticated users can submit bug reports" ON public.bug_reports FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "Developers can update bug status" ON public.bug_reports FOR UPDATE USING (
   EXISTS (SELECT 1 FROM public.games WHERE games.id = bug_reports.game_id AND games.developer_id = auth.uid())
 );

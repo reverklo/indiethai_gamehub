@@ -24,7 +24,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 
 export const UserManagement = () => {
-  const { usersList, adminAdjustUserToken, adminToggleBanUser } = useAuth();
+  const { currentUser, usersList, adminAdjustUserToken, adminToggleBanUser, adminSetUserRole } = useAuth();
 
   const [searchEmail, setSearchEmail] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
@@ -219,6 +219,24 @@ export const UserManagement = () => {
                   {/* Actions: Edit Token & Ban/Unban */}
                   <td className="px-5 py-4 text-right space-x-2">
                     
+                    {/* Role Switcher (Player / Developer / Admin) */}
+                    <select
+                      aria-label={`เปลี่ยนสิทธิ์ของ ${user.name}`}
+                      value={user.role}
+                      disabled={user.id === currentUser?.id}
+                      onChange={(e) => {
+                        const res = adminSetUserRole(user.id, e.target.value);
+                        setNotification(res.message);
+                        setTimeout(() => setNotification(null), 3000);
+                      }}
+                      title={user.id === currentUser?.id ? 'ไม่สามารถเปลี่ยนสิทธิ์ของบัญชีตัวเองได้' : 'แต่งตั้งหรือเปลี่ยนบทบาทผู้ใช้'}
+                      className="px-2 py-1.5 rounded-lg bg-[#0B0F19] border border-white/[0.1] text-gray-200 text-xs font-semibold focus:outline-none focus:border-indigo-400 cursor-pointer disabled:opacity-50"
+                    >
+                      <option value="player">Player</option>
+                      <option value="developer">Developer</option>
+                      <option value="admin">Admin</option>
+                    </select>
+
                     {/* Edit Token Button */}
                     <button
                       onClick={() => {
