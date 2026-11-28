@@ -187,8 +187,15 @@ export const AuthProvider = ({ children }) => {
       return { success: false, message: 'บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อแอดมิน' };
     }
 
-    if (user.role === 'admin' && String(password || '').trim() !== ADMIN_DEMO_PIN) {
-      return { success: false, message: 'รหัสผ่าน Admin ไม่ถูกต้อง' };
+    const demoPasswords = {
+      'tsukiko@indiethai.hub': 'player1234',
+      'dev@indiethai.hub': 'dev1234',
+      'admin@indiethai.hub': ADMIN_DEMO_PIN
+    };
+    const expectedPassword = user.password || demoPasswords[user.email.toLowerCase()];
+
+    if (expectedPassword && String(password || '').trim() !== expectedPassword) {
+      return { success: false, message: 'รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง' };
     }
 
     if (user.role === 'admin') {
@@ -198,7 +205,6 @@ export const AuthProvider = ({ children }) => {
       } catch {}
     }
 
-    // ในระบบจำลอง ยอมรับรหัสผ่านที่กรอกสำหรับผู้ใช้ทั่วไป
     setCurrentUser(user);
     setIsAuthModalOpen(false);
     return { success: true, message: `ยินดีต้อนรับกลับมา, ${user.name}!`, user };

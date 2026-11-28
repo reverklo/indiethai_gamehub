@@ -12,15 +12,13 @@ import {
   UserPlus, 
   User, 
   Code2, 
-  ShieldCheck, 
   Coins, 
   CheckCircle2, 
   AlertCircle,
   Gamepad2,
   Lock,
   Mail,
-  Sparkles,
-  Zap
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -31,15 +29,10 @@ export const AuthModal = () => {
     closeAuthModal, 
     openAuthModal, 
     login, 
-    register, 
-    switchRole,
-    isAdminDemoUnlocked,
-    verifyAdminDemoPin
+    register
   } = useAuth();
 
   const [mode, setMode] = useState(authModalMode || 'login'); // 'login' | 'register'
-  const [showAdminPinPrompt, setShowAdminPinPrompt] = useState(false);
-  const [adminPinInput, setAdminPinInput] = useState('');
 
   // ซิงค์แท็บ Login / Register ทุกครั้งที่เปิด Modal หรือเปลี่ยนโหมดจากภายนอก
   useEffect(() => {
@@ -47,8 +40,6 @@ export const AuthModal = () => {
       setMode(authModalMode || 'login');
       setErrorMsg(null);
       setSuccessMsg(null);
-      setShowAdminPinPrompt(false);
-      setAdminPinInput('');
     }
   }, [isAuthModalOpen, authModalMode]);
 
@@ -125,27 +116,7 @@ export const AuthModal = () => {
     }
   };
 
-  // Quick Demo Login
-  const handleQuickLogin = (role) => {
-    if (role === 'admin' && !isAdminDemoUnlocked) {
-      setErrorMsg(null);
-      setShowAdminPinPrompt(true);
-      return;
-    }
-    switchRole(role);
-    closeAuthModal();
-  };
-
-  const handleAdminPinUnlock = () => {
-    if (verifyAdminDemoPin(adminPinInput)) {
-      setShowAdminPinPrompt(false);
-      setAdminPinInput('');
-      switchRole('admin');
-      closeAuthModal();
-    } else {
-      setErrorMsg('รหัสผ่าน Admin ไม่ถูกต้อง');
-    }
-  };
+  if (!isAuthModalOpen) return null;
 
   return (
     <div 
@@ -269,85 +240,6 @@ export const AuthModal = () => {
             >
               {isSubmitting ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
             </button>
-
-            {/* Quick Access Demo Accounts (1-Click เข้าสู่ระบบด่วน) */}
-            <div className="pt-4 border-t border-white/[0.08] space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-gray-300 flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30" />
-                  <span>เข้าสู่ระบบด่วน (Quick Access Demo)</span>
-                </span>
-                <span className="text-[10px] text-gray-500 font-mono">คลิกเดียวเข้าได้ทันที</span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                {/* 1. Demo Player */}
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('player')}
-                  className="apple-press flex flex-col items-center justify-center p-2.5 rounded-xl bg-white/[0.03] hover:bg-emerald-500/10 border border-white/[0.08] hover:border-emerald-500/40 text-gray-300 hover:text-emerald-300 transition-colors cursor-pointer group"
-                  title="เข้าสู่ระบบในฐานะผู้เล่นทั่วไป (Tsukiko_83)"
-                >
-                  <User className="w-4 h-4 mb-1 text-emerald-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-semibold text-white">ผู้เล่น</span>
-                  <span className="text-[9px] text-gray-400 mt-0.5 font-mono">Player</span>
-                </button>
-
-                {/* 2. Demo Developer */}
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('developer')}
-                  className="apple-press flex flex-col items-center justify-center p-2.5 rounded-xl bg-white/[0.03] hover:bg-indigo-500/10 border border-white/[0.08] hover:border-indigo-500/40 text-gray-300 hover:text-indigo-300 transition-colors cursor-pointer group"
-                  title="เข้าสู่ระบบในฐานะนักพัฒนาเกม (สมชาย ผู้สร้างเกม)"
-                >
-                  <Code2 className="w-4 h-4 mb-1 text-indigo-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-semibold text-white">สตูดิโอ</span>
-                  <span className="text-[9px] text-gray-400 mt-0.5 font-mono">Developer</span>
-                </button>
-
-                {/* 3. Demo Admin */}
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('admin')}
-                  className="apple-press flex flex-col items-center justify-center p-2.5 rounded-xl bg-white/[0.03] hover:bg-rose-500/10 border border-white/[0.08] hover:border-rose-500/40 text-gray-300 hover:text-rose-300 transition-colors cursor-pointer group"
-                  title="เข้าสู่ระบบในฐานะผู้ดูแลระบบ (Admin Console)"
-                >
-                  <ShieldCheck className="w-4 h-4 mb-1 text-rose-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-semibold text-white">ผู้ดูแล</span>
-                  <span className="text-[9px] text-gray-400 mt-0.5 font-mono">Admin PIN</span>
-                </button>
-              </div>
-
-              {showAdminPinPrompt && (
-                <div className="p-3 rounded-xl bg-rose-950/30 border border-rose-500/30 space-y-2 animate-in fade-in">
-                  <label className="block text-[11px] font-semibold text-rose-300">
-                    กรอกรหัสผ่าน Admin เพื่อปลดล็อก:
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="password"
-                      value={adminPinInput}
-                      onChange={(e) => setAdminPinInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAdminPinUnlock();
-                        }
-                      }}
-                      placeholder="รหัสผ่าน Admin..."
-                      className="flex-1 bg-[#0B0F19] border border-rose-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-rose-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAdminPinUnlock}
-                      className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold cursor-pointer"
-                    >
-                      ยืนยัน
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
           </form>
         ) : (
           /* 2. Register Form */
