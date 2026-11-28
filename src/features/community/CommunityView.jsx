@@ -224,16 +224,15 @@ export const CommunityView = () => {
 
   // การกด Upvote กระทู้
   const handleToggleUpvote = (id) => {
-    if (upvotedIds.includes(id)) {
-      setUpvotedIds((prev) => prev.filter((i) => i !== id));
-      setDiscussions((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, upvotes: d.upvotes - 1 } : d))
-      );
-    } else {
-      setUpvotedIds((prev) => [...prev, id]);
-      setDiscussions((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, upvotes: d.upvotes + 1 } : d))
-      );
+    const isAlreadyUpvoted = upvotedIds.includes(id);
+    const delta = isAlreadyUpvoted ? -1 : 1;
+
+    setUpvotedIds((prev) => (isAlreadyUpvoted ? prev.filter((i) => i !== id) : [...prev, id]));
+    setDiscussions((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, upvotes: d.upvotes + delta } : d))
+    );
+    if (activeThread?.id === id) {
+      setActiveThread((prev) => (prev ? { ...prev, upvotes: prev.upvotes + delta } : prev));
     }
   };
 

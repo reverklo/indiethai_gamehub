@@ -605,18 +605,11 @@ export const GameProvider = ({ children }) => {
    * อนุมัติเกม
    */
   const approveGame = (gameId) => {
-    let approvedGameTitle = '';
-    let targetDevId = '';
+    const targetGame = games.find((g) => g.id === gameId);
+    const approvedGameTitle = targetGame?.title || 'เกมอินดี้';
 
     setGames((prev) =>
-      prev.map((game) => {
-        if (game.id === gameId) {
-          approvedGameTitle = game.title;
-          targetDevId = game.developerId;
-          return { ...game, status: 'approved' };
-        }
-        return game;
-      })
+      prev.map((game) => (game.id === gameId ? { ...game, status: 'approved' } : game))
     );
 
     // แจ้งเตือนไปยัง Dev

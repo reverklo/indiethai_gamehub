@@ -24,6 +24,7 @@ import {
   Plus
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
+import { getSafeExternalUrl } from '../../lib/urlSafety';
 
 export const ModerationQueue = () => {
   const { pendingGames, approveGame, rejectGame, openGamePlayer, createMockPendingGame } = useGame();
@@ -213,11 +214,11 @@ export const ModerationQueue = () => {
                     </button>
                   )}
 
-                  {game.hasPcDownload && (
+                  {game.hasPcDownload && getSafeExternalUrl(game.downloadUrl) && (
                     <a
-                      href={game.downloadUrl || '#'}
+                      href={getSafeExternalUrl(game.downloadUrl)}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-gray-200 text-xs font-medium border border-white/[0.08] transition-colors cursor-pointer"
                     >
                       <Download className="w-3.5 h-3.5" />

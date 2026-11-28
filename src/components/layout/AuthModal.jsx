@@ -273,7 +273,7 @@ export const AuthModal = () => {
                 >
                   <Code2 className="w-4 h-4 mb-1 text-indigo-400" />
                   <p className="font-bold">สตูดิโอเกม (Developer)</p>
-                  <p className="text-[10px] text-amber-400">รับฟรี 150 Tokens</p>
+                  <p className="text-[10px] text-emerald-400">ลงเกมฟรี ไม่มีค่าธรรมเนียม</p>
                 </button>
               </div>
             </div>

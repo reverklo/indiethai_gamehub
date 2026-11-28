@@ -479,15 +479,11 @@ export const AuthProvider = ({ children }) => {
     if (userId === currentUser?.id) {
       return { success: false, message: 'ไม่สามารถระงับบัญชีตัวเองได้' };
     }
-    let updatedStatus = false;
+    const targetUser = usersList.find((u) => u.id === userId);
+    const updatedStatus = !targetUser?.isBanned;
+
     setUsersList((prev) =>
-      prev.map((u) => {
-        if (u.id === userId) {
-          updatedStatus = !u.isBanned;
-          return { ...u, isBanned: updatedStatus };
-        }
-        return u;
-      })
+      prev.map((u) => (u.id === userId ? { ...u, isBanned: updatedStatus } : u))
     );
 
     if (currentUser?.isRealAuth && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
@@ -498,6 +494,17 @@ export const AuthProvider = ({ children }) => {
       success: true,
       message: updatedStatus ? 'ระงับบัญชีผู้ใช้เรียบร้อยแล้ว' : 'ปลดระงับบัญชีผู้ใช้เรียบร้อยแล้ว'
     };
+  };
+
+  /**
+   * รีเซ็ตรายชื่อผู้ใช้กลับเป็นค่าเริ่มต้น (สำหรับ Admin Reset)
+   */
+  const resetToDefaultUsers = () => {
+    setUsersList(MOCK_USERS_LIST);
+    try {
+      localStorage.removeItem('indiethai_users_list');
+    } catch {}
+    return { success: true, message: 'รีเซ็ตรายชื่อผู้ใช้เริ่มต้นเรียบร้อยแล้ว' };
   };
 
   /**
@@ -577,6 +584,7 @@ export const AuthProvider = ({ children }) => {
     adminAdjustUserToken,
     adminToggleBanUser,
     adminSetUserRole,
+    resetToDefaultUsers,
     isAdminDemoUnlocked,
     verifyAdminDemoPin,
     updateUserProfile
