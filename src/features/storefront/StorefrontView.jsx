@@ -715,7 +715,7 @@ export const StorefrontView = () => {
                         <Heart className={`w-3.5 h-3.5 ${isWish ? 'fill-rose-500 text-rose-500' : ''}`} />
                       </button>
 
-                      {game.hasWebgl && ((Number(game.price) || 0) === 0 || isOwned) ? (
+                      {game.hasWebgl && ((Number(game.price) || 0) === 0 || owned) ? (
                         <button
                           type="button"
                           onClick={(e) => {
@@ -736,7 +736,7 @@ export const StorefrontView = () => {
                           }}
                           className="apple-press flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs whitespace-nowrap transition cursor-pointer"
                         >
-                          <span>{(Number(game.price) || 0) > 0 && !isOwned ? 'ซื้อ / ดูเกม' : 'ดูรายละเอียด'}</span>
+                          <span>{(Number(game.price) || 0) > 0 && !owned ? 'ซื้อ / ดูเกม' : 'ดูรายละเอียด'}</span>
                           <ChevronRight className="w-3 h-3" />
                         </button>
                       )}
@@ -898,7 +898,7 @@ export const StorefrontView = () => {
                         </button>
 
                         {/* Quick Play if WebGL and free or owned */}
-                        {game.hasWebgl && ((Number(game.price) || 0) === 0 || isOwned) && (
+                        {game.hasWebgl && ((Number(game.price) || 0) === 0 || owned) && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
