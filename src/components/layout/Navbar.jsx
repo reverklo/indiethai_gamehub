@@ -90,7 +90,7 @@ export const Navbar = () => {
   const renderSearchDropdown = () => {
     if (!trimmedQuery) return null;
     return (
-      <div className="absolute left-0 right-0 mt-1.5 rounded-xl bg-[#1b2230] border border-white/[0.12] shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-1">
+      <div className="absolute top-full left-0 w-full min-w-[280px] sm:min-w-[340px] mt-2 rounded-xl bg-[#1b2230] border border-white/[0.12] shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-1">
         <div className="px-3 py-2 border-b border-white/[0.06] bg-[#141a24] flex items-center justify-between">
           <span className="text-[11px] font-medium text-gray-400">ผลลัพธ์การค้นหา</span>
           {liveSearchResults.length > 0 && (
