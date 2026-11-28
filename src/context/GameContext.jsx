@@ -87,38 +87,16 @@ export const GameProvider = ({ children }) => {
   // แท็บย่อยของหน้า Profile: 'recent' | 'wishlist' | 'reviews' | 'bugs'
   const [profileTab, setProfileTab] = useState('recent');
 
-  // ข้อมูลเกมที่เคยเล่น / กิจกรรมล่าสุด (Steam-style Recent Activity)
+  // ข้อมูลเกมที่เคยเล่นจริง (อิงตามเกมที่ผู้ใช้กดเล่นผ่าน WebGL ในระบบ)
   const [playedGames, setPlayedGames] = useState(() => {
     try {
       const saved = localStorage.getItem('indiethai_played_games');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [
-      { 
-        gameId: 'game-1', 
-        hoursPlayed: 42.5, 
-        lastPlayed: 'วันนี้', 
-        achievementsCount: 4, 
-        totalAchievements: 8,
-        achievementIcons: ['🏆', '⚡', '🔥', '🧩']
-      },
-      { 
-        gameId: 'game-3', 
-        hoursPlayed: 18.2, 
-        lastPlayed: 'เมื่อวาน', 
-        achievementsCount: 3, 
-        totalAchievements: 6,
-        achievementIcons: ['✈️', '🌤️', '🎖️']
-      },
-      { 
-        gameId: 'game-2', 
-        hoursPlayed: 7.0, 
-        lastPlayed: '3 วันที่แล้ว', 
-        achievementsCount: 2, 
-        totalAchievements: 5,
-        achievementIcons: ['🔷', '⏱️']
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
       }
-    ];
+    } catch {}
+    return [];
   });
 
   // ตัวกรอง (Search, Engine, Category, Sort, WishlistOnly)

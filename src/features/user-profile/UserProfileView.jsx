@@ -36,7 +36,7 @@ import { useGame } from '../../context/GameContext';
 import { EditProfileModal } from './EditProfileModal';
 
 export const UserProfileView = () => {
-  const { currentUser, openAuthModal } = useAuth();
+  const { currentUser, openAuthModal, ownedGames } = useAuth();
   const { 
     games, 
     wishlist, 
@@ -45,6 +45,7 @@ export const UserProfileView = () => {
     openGamePlayer, 
     downloadPcGame,
     openGameDetail,
+    navigateToTab,
     profileTab: contextProfileTab,
     setProfileTab: contextSetProfileTab
   } = useGame();
@@ -57,20 +58,20 @@ export const UserProfileView = () => {
   // ควบคุมการเปิดปิด Edit Profile Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // ค้นหาข้อมูลเกมที่เคยเล่น (Recent Activity)
-  const recentGamesList = playedGames.map((played) => {
-    const game = games.find((g) => g.id === played.gameId);
-    return {
-      ...played,
-      game: game || {
-        id: played.gameId,
-        title: 'Unknown Indie Game',
-        thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-        engine: 'WebGL',
-        category: 'Indie'
-      }
-    };
-  });
+  // ค้นหาข้อมูลเกมที่เคยเล่นจริงเท่านั้น (กรองเฉพาะเกมที่มีอยู่จริงในระบบ ไม่แสดง Unknown/Mock)
+  const recentGamesList = playedGames
+    .map((played) => {
+      const game = games.find((g) => g.id === played.gameId);
+      if (!game) return null;
+      return {
+        ...played,
+        game
+      };
+    })
+    .filter(Boolean);
+
+  // เกมในคลังที่มีอยู่จริง
+  const ownedRealGamesCount = games.filter((g) => (ownedGames || []).includes(g.id)).length;
 
   // ค้นหาข้อมูลเกมใน Wishlist
   const wishlistGamesList = games.filter((g) => wishlist.includes(g.id));
@@ -249,6 +250,20 @@ export const UserProfileView = () => {
                   <span>บันทึกชั่วโมงการเล่นบน WebGL</span>
                 </div>
 
+                {recentGamesList.length === 0 ? (
+                  <div className="p-10 text-center rounded-xl bg-[#0B0F19] border border-white/[0.06] space-y-3">
+                    <Gamepad2 className="w-8 h-8 text-gray-500 mx-auto" />
+                    <p className="text-xs text-gray-400">
+                      ยังไม่มีประวัติการเล่นเกมในระบบ ลองเข้าไปเล่นเกม WebGL จากหน้าร้านค้าได้เลย!
+                    </p>
+                    <button
+                      onClick={() => navigateToTab && navigateToTab('store')}
+                      className="px-4 py-2 rounded-lg bg-white hover:bg-gray-200 text-gray-950 text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      ไปที่หน้าร้านค้า
+                    </button>
+                  </div>
+                ) : (
                 <div className="space-y-3">
                   {recentGamesList.map((item, idx) => (
                     <div
@@ -324,6 +339,7 @@ export const UserProfileView = () => {
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             )}
 
@@ -537,7 +553,7 @@ export const UserProfileView = () => {
                 className="w-full flex items-center justify-between py-2.5 text-gray-300 hover:text-white transition-colors cursor-pointer"
               >
                 <span>เกมในคลัง</span>
-                <span className="font-mono text-gray-500">{recentGamesList.length}</span>
+                <span className="font-mono text-gray-500">{ownedRealGamesCount}</span>
               </button>
 
               <button
@@ -550,16 +566,6 @@ export const UserProfileView = () => {
                 </span>
                 <span className="font-mono text-gray-500">{wishlistGamesList.length}</span>
               </button>
-
-              <div className="flex items-center justify-between py-2.5 text-gray-400">
-                <span>ช่องเก็บของ / โดเนท</span>
-                <span className="font-mono text-gray-500">2</span>
-              </div>
-
-              <div className="flex items-center justify-between py-2.5 text-gray-400">
-                <span>ภาพหน้าจอ</span>
-                <span className="font-mono text-gray-500">8</span>
-              </div>
 
               <button
                 onClick={() => setProfileTab('reviews')}
