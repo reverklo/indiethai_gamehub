@@ -351,7 +351,18 @@ export const StorefrontView = () => {
 
                 {/* Row 2: Dual Action Buttons (Side-by-side, No wrapping) */}
                 <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full">
-                  {activeFeaturedGame.hasWebgl ? (
+                  {(Number(activeFeaturedGame.price) || 0) > 0 && !isGameOwned(activeFeaturedGame.id) ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openGameDetail(activeFeaturedGame);
+                      }}
+                      className="apple-press flex items-center justify-center gap-1 sm:gap-1.5 py-2.5 px-2 sm:px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold text-xs whitespace-nowrap transition cursor-pointer shadow-sm"
+                    >
+                      <span>ซื้อเกม ฿{activeFeaturedGame.price}</span>
+                    </button>
+                  ) : activeFeaturedGame.hasWebgl ? (
                     <button
                       type="button"
                       onClick={(e) => {
@@ -704,7 +715,7 @@ export const StorefrontView = () => {
                         <Heart className={`w-3.5 h-3.5 ${isWish ? 'fill-rose-500 text-rose-500' : ''}`} />
                       </button>
 
-                      {game.hasWebgl ? (
+                      {game.hasWebgl && ((Number(game.price) || 0) === 0 || isOwned) ? (
                         <button
                           type="button"
                           onClick={(e) => {
@@ -725,7 +736,7 @@ export const StorefrontView = () => {
                           }}
                           className="apple-press flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs whitespace-nowrap transition cursor-pointer"
                         >
-                          <span>ดูรายละเอียด</span>
+                          <span>{(Number(game.price) || 0) > 0 && !isOwned ? 'ซื้อ / ดูเกม' : 'ดูรายละเอียด'}</span>
                           <ChevronRight className="w-3 h-3" />
                         </button>
                       )}
@@ -886,8 +897,8 @@ export const StorefrontView = () => {
                           <ChevronRight className="w-3 h-3" />
                         </button>
 
-                        {/* Quick Play if WebGL */}
-                        {game.hasWebgl && (
+                        {/* Quick Play if WebGL and free or owned */}
+                        {game.hasWebgl && ((Number(game.price) || 0) === 0 || isOwned) && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

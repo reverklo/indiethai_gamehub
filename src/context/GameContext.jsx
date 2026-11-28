@@ -24,7 +24,7 @@ import {
 const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
-  const { currentUser, currentRole, devTokenBalance, updateTokenBalance, openAuthModal } = useAuth();
+  const { currentUser, currentRole, devTokenBalance, updateTokenBalance, openAuthModal, isGameOwned } = useAuth();
 
   // รายการเกมทั้งหมด
   const [games, setGames] = useState(() => {
@@ -871,9 +871,17 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * เล่นเกม WebGL
+   * เล่นเกม WebGL (ตรวจสอบสิทธิ์การเป็นเจ้าของสำหรับเกมเสียเงินก่อนเปิดเล่น)
    */
   const openGamePlayer = (game) => {
+    if (!game) return;
+    const isPaid = (Number(game.price) || 0) > 0;
+    const isAdminOrOwnerDev = currentRole === 'admin' || (currentUser?.id && game.developerId === currentUser.id);
+    if (isPaid && !isGameOwned(game.id) && !isAdminOrOwnerDev) {
+      openGameDetail(game);
+      return;
+    }
+
     setActivePlayingGame(game);
     setGames((prev) =>
       prev.map((g) => (g.id === game.id ? { ...g, playCount: (g.playCount || 0) + 1 } : g))

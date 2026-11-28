@@ -36,7 +36,7 @@ import { useGame } from '../../context/GameContext';
 import { EditProfileModal } from './EditProfileModal';
 
 export const UserProfileView = () => {
-  const { currentUser, openAuthModal, ownedGames } = useAuth();
+  const { currentUser, openAuthModal, ownedGames, isGameOwned } = useAuth();
   const { 
     games, 
     wishlist, 
@@ -58,11 +58,12 @@ export const UserProfileView = () => {
   // ควบคุมการเปิดปิด Edit Profile Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // ค้นหาข้อมูลเกมที่เคยเล่นจริงเท่านั้น (กรองเฉพาะเกมที่มีอยู่จริงในระบบ ไม่แสดง Unknown/Mock)
+  // ค้นหาข้อมูลเกมที่เคยเล่นจริงเท่านั้น (กรองเฉพาะเกมฟรีหรือเกมที่ซื้อเป็นเจ้าของแล้ว)
   const recentGamesList = playedGames
     .map((played) => {
       const game = games.find((g) => g.id === played.gameId);
       if (!game) return null;
+      if ((Number(game.price) || 0) > 0 && !isGameOwned(game.id)) return null;
       return {
         ...played,
         game

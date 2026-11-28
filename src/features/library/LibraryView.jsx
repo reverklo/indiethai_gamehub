@@ -38,17 +38,19 @@ export const LibraryView = () => {
   const [filterType, setFilterType] = useState('all'); // 'all' | 'owned' | 'played' | 'wishlist'
   const [search, setSearch] = useState('');
 
-  // รวมรายการเกมทั้งหมดที่เกี่ยวข้องกับผู้ใช้ (เป็นเจ้าของ, เคยเล่น, หรืออยู่ใน Wishlist)
+  // รวมรายการเกมทั้งหมดที่เกี่ยวข้องกับผู้ใช้ (เป็นเจ้าของ, เคยเล่นเกมฟรี/ที่ซื้อแล้ว, หรืออยู่ใน Wishlist)
   const userGamesList = games.map((game) => {
     const playRecord = playedGames.find((p) => p.gameId === game.id);
     const isWishlisted = wishlist.includes(game.id);
     const isOwned = isGameOwned(game.id);
+    const canAccess = (Number(game.price) || 0) === 0 || isOwned;
     return {
       ...game,
       playRecord,
       isWishlisted,
       isOwned,
-      isPlayed: Boolean(playRecord)
+      canAccess,
+      isPlayed: Boolean(playRecord) && canAccess
     };
   }).filter((g) => g.isOwned || g.isPlayed || g.isWishlisted);
 
@@ -228,24 +230,35 @@ export const LibraryView = () => {
 
                 {/* Actions */}
                 <div className="pt-2 border-t border-white/[0.06] flex items-center gap-2">
-                  {game.hasWebgl && (
+                  {!game.canAccess ? (
                     <button
-                      onClick={() => openGamePlayer(game)}
-                      className="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                      onClick={() => openGameDetail(game)}
+                      className="flex-1 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-gray-950 font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>เล่น WebGL</span>
+                      <span>ซื้อเกม (฿{game.price})</span>
                     </button>
-                  )}
+                  ) : (
+                    <>
+                      {game.hasWebgl && (
+                        <button
+                          onClick={() => openGamePlayer(game)}
+                          className="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                          <span>เล่น WebGL</span>
+                        </button>
+                      )}
 
-                  {game.hasPcDownload && (
-                    <button
-                      onClick={() => downloadPcGame(game.id)}
-                      title="ดาวน์โหลดไฟล์ PC (.ZIP)"
-                      className="px-3 py-2 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold text-xs transition-colors cursor-pointer"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                    </button>
+                      {game.hasPcDownload && (
+                        <button
+                          onClick={() => downloadPcGame(game.id)}
+                          title="ดาวน์โหลดไฟล์ PC (.ZIP)"
+                          className="px-3 py-2 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold text-xs transition-colors cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
 
