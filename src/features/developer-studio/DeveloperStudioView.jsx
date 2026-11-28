@@ -34,10 +34,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { UploadGameForm } from './UploadGameForm';
 import { EditGameModal } from './EditGameModal';
-import { TOKEN_COST_PER_GAME } from '../../data/mockData';
 
 export const DeveloperStudioView = () => {
-  const { currentUser, devTokenBalance, topUpTokens } = useAuth();
+  const { currentUser, walletBalance, openTopUpModal } = useAuth();
   const { 
     myDeveloperGames, 
     updateGameVersionWithPatchNotes, 
@@ -71,13 +70,6 @@ export const DeveloperStudioView = () => {
   const totalApproved = myDeveloperGames.filter((g) => g.status === 'approved').length;
   const totalPending = myDeveloperGames.filter((g) => g.status === 'pending').length;
   const totalBugsReported = myDeveloperGames.reduce((acc, g) => acc + (g.bugReports?.length || 0), 0);
-
-  // ฟังก์ชันเติมเหรียญจำลอง
-  const handleTopUp = () => {
-    topUpTokens(100);
-    setToastMessage(`เติมเหรียญสำเร็จ! ได้รับ +100 Tokens ยอดคงเหลือคือ ${devTokenBalance + 100} Tokens`);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
 
   // ฟังก์ชันเปิดโมดอลอัปเดตเวอร์ชันและแพตช์โน้ต
   const handleOpenVersionModal = (game) => {
@@ -175,40 +167,40 @@ export const DeveloperStudioView = () => {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold text-xs transition-colors cursor-pointer"
               >
                 <UploadCloud className="w-4 h-4 text-gray-700" />
-                <span>ลงเกมใหม่ (ใช้ {TOKEN_COST_PER_GAME} Tokens)</span>
+                <span>ลงเกมใหม่</span>
               </button>
 
             </div>
           </section>
 
-          {/* Metric Cards & Token Wallet Box */}
+          {/* Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             
-            {/* 1. Wallet Box */}
+            {/* 1. Studio Games Summary */}
             <div className="p-4 rounded-xl bg-[#111827] border border-white/[0.08] flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400 font-medium">โควตาสตูดิโอ (สำหรับส่งเกม)</span>
+                <span className="text-xs text-gray-400 font-medium">ผลงานเกมในสตูดิโอ</span>
                 <Code2 className="w-4 h-4 text-gray-400" />
               </div>
 
               <div className="my-2">
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-2xl font-semibold text-white font-mono">
-                    {devTokenBalance}
+                    {myDeveloperGames.length}
                   </span>
-                  <span className="text-xs text-gray-400">เครดิต</span>
+                  <span className="text-xs text-gray-400">เกม</span>
                 </div>
                 <p className="text-[10px] text-gray-500">
-                  (ส่งเกมใหม่ได้อีก {Math.floor(devTokenBalance / TOKEN_COST_PER_GAME)} เกม — 50 เครดิต/เกม)
+                  อนุมัติแล้ว {totalApproved} • รอตรวจ {totalPending}
                 </p>
               </div>
 
               <button
-                onClick={handleTopUp}
+                onClick={openTopUpModal}
                 className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-gray-200 font-medium text-xs border border-white/[0.08] transition-colors cursor-pointer"
               >
-                <PlusCircle className="w-3.5 h-3.5 text-gray-400" />
-                <span>+ ขอรับโควตาจำลอง (+100)</span>
+                <Coins className="w-3.5 h-3.5 text-amber-400" />
+                <span>วอลเล็ต: ฿{walletBalance}</span>
               </button>
             </div>
 

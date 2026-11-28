@@ -31,12 +31,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
-import { GAME_CATEGORIES, TOKEN_COST_PER_GAME } from '../../data/mockData';
+import { GAME_CATEGORIES } from '../../data/mockData';
 import { DropzoneUploader } from '../../components/common/DropzoneUploader';
 import { uploadGameBuild, uploadGameMedia } from '../../services/storageService';
 
 export const UploadGameForm = ({ onCancel, onSuccess }) => {
-  const { currentUser, devTokenBalance, topUpTokens } = useAuth();
+  const { currentUser } = useAuth();
   const { submitNewGame } = useGame();
 
   // 1. รูปแบบโปรเจกต์: 'webgl' (เล่นบนเว็บ) | 'pc' (ดาวน์โหลด PC) | 'both' (มีทั้งสองแบบ)
@@ -182,11 +182,6 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
       return;
     }
 
-    if (devTokenBalance < TOKEN_COST_PER_GAME) {
-      setFormError(`ยอดเหรียญสตูดิโอของคุณไม่พอ (ต้องการ ${TOKEN_COST_PER_GAME} Tokens แต่คุณมี ${devTokenBalance} Tokens) กรุณากดเติม Token ก่อนส่งเกม`);
-      return;
-    }
-
     setIsSubmitting(true);
 
     const hasWebgl = kindOfProject === 'webgl' || kindOfProject === 'both';
@@ -258,7 +253,7 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
             ส่งเกมใหม่เข้าสู่ระบบ (Create New Game)
           </h2>
           <p className="text-xs text-gray-400 mt-1">
-            ระบุรูปแบบเกม ข้อมูลเบื้องต้น และไฟล์เกมสำหรับเข้าคิวตรวจสอบความปลอดภัย (ค่าธรรมเนียม: <strong className="text-amber-400 font-mono">{TOKEN_COST_PER_GAME} Tokens</strong>)
+            ระบุรูปแบบเกม ข้อมูลเบื้องต้น และไฟล์เกมสำหรับเข้าคิวตรวจสอบความปลอดภัย (ส่งเกมฟรี ไม่มีค่าธรรมเนียม)
           </p>
         </div>
 
@@ -270,34 +265,6 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>ย้อนกลับ</span>
-          </button>
-        )}
-      </div>
-
-      {/* Wallet Token Info Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#0B0F19] border border-white/[0.06]">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <Coins className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-xs text-gray-300">
-              เหรียญสตูดิโอของคุณ: <strong className="text-amber-400 font-mono font-bold text-sm">{devTokenBalance} Tokens</strong>
-            </p>
-            <p className="text-[11px] text-gray-500">
-              เมื่อกดยืนยัน ระบบจะหัก 50 Tokens และส่งเกมเข้าสู่คิวรอตรวจสอบทันที
-            </p>
-          </div>
-        </div>
-
-        {devTokenBalance < TOKEN_COST_PER_GAME && (
-          <button
-            type="button"
-            onClick={() => topUpTokens(100)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-gray-950 font-semibold text-xs transition-colors cursor-pointer shrink-0"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>เติม 100 Tokens ด่วน</span>
           </button>
         )}
       </div>
@@ -940,7 +907,7 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
         {/* Submit Actions */}
         <div className="pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-400">
-            หัก <strong className="text-amber-400 font-mono">{TOKEN_COST_PER_GAME} Tokens</strong> เพื่อส่งเข้าคิวตรวจ
+            ส่งเกมเข้าคิวตรวจสอบความปลอดภัยฟรี ไม่มีค่าธรรมเนียม
           </p>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -956,11 +923,11 @@ export const UploadGameForm = ({ onCancel, onSuccess }) => {
 
             <button
               type="submit"
-              disabled={isSubmitting || devTokenBalance < TOKEN_COST_PER_GAME}
+              disabled={isSubmitting}
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-white hover:bg-gray-200 text-gray-950 font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <UploadCloud className="w-4 h-4" />
-              <span>ส่งเกมเข้าคิวตรวจ ({TOKEN_COST_PER_GAME} Tokens)</span>
+              <span>ส่งเกมเข้าคิวตรวจ</span>
             </button>
           </div>
         </div>

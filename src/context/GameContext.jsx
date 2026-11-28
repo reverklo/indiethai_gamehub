@@ -484,19 +484,9 @@ export const GameProvider = ({ children }) => {
   };
 
   /**
-   * ลงเกมใหม่สำหรับ Developer (หัก 50 Tokens)
+   * ลงเกมใหม่สำหรับ Developer (ส่งเข้าคิวตรวจฟรี)
    */
   const submitNewGame = (gameData) => {
-    const cost = TOKEN_COST_PER_GAME;
-
-    if (devTokenBalance < cost) {
-      return {
-        success: false,
-        message: `ยอดเหรียญ Token ไม่เพียงพอ (ต้องการ ${cost} Tokens แต่คุณมี ${devTokenBalance} Tokens) กรุณาเติมเหรียญก่อนส่งเกม`
-      };
-    }
-
-    updateTokenBalance(-cost, 'developer');
 
     const newGame = {
       id: `game-${Date.now()}`,
@@ -603,7 +593,7 @@ export const GameProvider = ({ children }) => {
 
     return {
       success: true,
-      message: `ส่งเกม "${newGame.title}" เข้าคิวตรวจสอบเรียบร้อยแล้ว! (หักค่าธรรมเนียม ${cost} Tokens)`,
+      message: `ส่งเกม "${newGame.title}" เข้าคิวตรวจสอบเรียบร้อยแล้ว!`,
       game: newGame
     };
   };
