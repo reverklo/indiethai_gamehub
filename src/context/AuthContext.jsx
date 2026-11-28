@@ -21,12 +21,19 @@ const ADMIN_DEMO_PIN = import.meta.env.VITE_ADMIN_DEMO_PIN || '208826';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // รายชื่อผู้ใช้ทั้งหมดในระบบ
+  // รายชื่อผู้ใช้ทั้งหมดในระบบ (รวมบัญชีหลักจาก MOCK_USERS_LIST เสมอ ป้องกันแคชเก่าใน localStorage ขาดบัญชี)
   const [usersList, setUsersList] = useState(() => {
     const saved = localStorage.getItem('indiethai_users_list');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const existingEmails = new Set(parsed.map((u) => (u.email || '').toLowerCase()));
+          const missingDefaults = MOCK_USERS_LIST.filter(
+            (u) => !existingEmails.has((u.email || '').toLowerCase())
+          );
+          return [...parsed, ...missingDefaults];
+        }
       } catch (e) {
         console.error('Failed to parse saved users list', e);
       }
@@ -175,9 +182,10 @@ export const AuthProvider = ({ children }) => {
     }
 
     // 2. ถ้าไม่พบหรือเป็นบัญชีเดโม
-    const user = usersList.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    );
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const user =
+      usersList.find((u) => (u.email || '').toLowerCase() === normalizedEmail) ||
+      Object.values(MOCK_USERS).find((u) => (u.email || '').toLowerCase() === normalizedEmail);
 
     if (!user) {
       return { success: false, message: 'ไม่พบบัญชีอีเมลนี้ในระบบ หรือรหัสผ่านไม่ถูกต้อง' };
@@ -189,6 +197,7 @@ export const AuthProvider = ({ children }) => {
 
     const demoPasswords = {
       'tsukiko@indiethai.hub': 'player1234',
+      'player@indiethai.hub': 'player1234',
       'dev@indiethai.hub': 'dev1234',
       'admin@indiethai.hub': ADMIN_DEMO_PIN
     };
