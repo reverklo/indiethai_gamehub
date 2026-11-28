@@ -138,7 +138,15 @@ export const GameProvider = ({ children }) => {
       try {
         const res = await fetchAllGamesFromSupabase();
         if (res.success && res.data && res.data.length > 0 && isMounted) {
-          setGames(res.data);
+          setGames((prevLocalGames) => {
+            const supabaseIds = new Set(res.data.map((g) => g.id));
+            const supabaseTitles = new Set(res.data.map((g) => (g.title || '').toLowerCase()));
+            // คงเกมที่ส่งตรวจหรือสร้างในเครื่องไว้ ไม่ให้ถูก Supabase เขียนทับหายไป
+            const localOnlyGames = prevLocalGames.filter(
+              (lg) => !supabaseIds.has(lg.id) && !supabaseTitles.has((lg.title || '').toLowerCase())
+            );
+            return [...localOnlyGames, ...res.data];
+          });
         }
       } catch (e) {
         console.warn('Could not load games from Supabase, using local fallback:', e);
@@ -146,6 +154,22 @@ export const GameProvider = ({ children }) => {
     };
 
     loadGames();
+
+    // ซิงค์ข้อมูลเกมและการแจ้งเตือนข้ามแท็บอัตโนมัติ (เช่น แท็บ Dev ส่งเกม -> แท็บ Admin เห็นทันที)
+    const handleStorageSync = (e) => {
+      if (e.key === 'indiethai_games' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setGames(parsed);
+        } catch {}
+      } else if (e.key === 'indiethai_notifications' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setNotifications(parsed);
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorageSync);
 
     // ฟังเหตุการณ์ Realtime เมื่อมีการเพิ่ม/แก้ไขเกม หรือรายงานบั๊กใหม่
     const channel = supabase
@@ -163,6 +187,7 @@ export const GameProvider = ({ children }) => {
 
     return () => {
       isMounted = false;
+      window.removeEventListener('storage', handleStorageSync);
       supabase.removeChannel(channel);
     };
   }, []);
