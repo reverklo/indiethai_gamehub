@@ -10,7 +10,7 @@
  * - เมนูนำทางด้านล่างแบบเลื่อนได้ (Horizontal Scroll Strip) สำหรับอุปกรณ์หน้าจอเล็ก/มือถือ/แท็บเล็ต
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Gamepad2, 
   Search, 
@@ -45,6 +45,8 @@ export const Navbar = () => {
   const { 
     searchQuery, 
     setSearchQuery, 
+    approvedGames,
+    openGameDetail,
     pendingGames,
     wishlist,
     notifications,
@@ -60,6 +62,95 @@ export const Navbar = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const desktopSearchRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (desktopSearchRef.current && !desktopSearchRef.current.contains(e.target)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const trimmedQuery = searchQuery.trim().toLowerCase();
+  const liveSearchResults = trimmedQuery
+    ? (approvedGames || [])
+        .filter(
+          (g) =>
+            g.title.toLowerCase().includes(trimmedQuery) ||
+            (g.developer || '').toLowerCase().includes(trimmedQuery) ||
+            (g.category || '').toLowerCase().includes(trimmedQuery)
+        )
+        .slice(0, 6)
+    : [];
+
+  const renderSearchDropdown = () => {
+    if (!trimmedQuery) return null;
+    return (
+      <div className="absolute left-0 right-0 mt-1.5 rounded-xl bg-[#1b2230] border border-white/[0.12] shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-1">
+        <div className="px-3 py-2 border-b border-white/[0.06] bg-[#141a24] flex items-center justify-between">
+          <span className="text-[11px] font-medium text-gray-400">ผลลัพธ์การค้นหา</span>
+          {liveSearchResults.length > 0 && (
+            <span className="text-[10px] font-mono text-gray-500">{liveSearchResults.length} เกม</span>
+          )}
+        </div>
+
+        {liveSearchResults.length === 0 ? (
+          <div className="px-4 py-5 text-center text-xs text-gray-400">
+            ไม่พบเกมที่ตรงกับ "{searchQuery.trim()}"
+          </div>
+        ) : (
+          <div className="divide-y divide-white/[0.05] max-h-80 overflow-y-auto">
+            {liveSearchResults.map((game) => (
+              <button
+                key={game.id}
+                type="button"
+                onClick={() => {
+                  openGameDetail(game);
+                  setIsSearchFocused(false);
+                  setIsMobileSearchOpen(false);
+                }}
+                className="w-full flex items-center gap-3 p-2.5 hover:bg-white/[0.08] transition-colors text-left cursor-pointer group"
+              >
+                <img
+                  src={game.thumbnail}
+                  alt={game.title}
+                  className="w-24 aspect-video rounded object-cover bg-black shrink-0 border border-white/[0.08]"
+                />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="text-xs font-semibold text-gray-100 group-hover:text-white truncate">
+                    {game.title}
+                  </p>
+                  <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                    {game.price === 0 ? (
+                      <span className="text-gray-300 font-sans">ฟรี</span>
+                    ) : game.discountPercent > 0 ? (
+                      <>
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold leading-none">
+                          -{game.discountPercent}%
+                        </span>
+                        <span className="text-gray-500 line-through text-[10px]">
+                          ฿{game.originalPrice}
+                        </span>
+                        <span className="text-emerald-300 font-semibold">
+                          ฿{game.price}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-gray-200 font-semibold">฿{game.price}</span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // เติมเหรียญด่วน 100 Tokens สำหรับ Developer
   const handleQuickTopUp = (e) => {
@@ -183,27 +274,54 @@ export const Navbar = () => {
             </nav>
           </div>
 
-          {/* Center: Search Bar (Desktop / Tablet md+) */}
-          <div className="hidden md:flex items-center flex-1 min-w-[160px] max-w-xs lg:max-w-sm ml-2 mr-auto">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ค้นหาเกม, สตูดิโอ..."
-                className="w-full bg-[#111827] border border-white/[0.08] rounded-lg pl-8.5 pr-7 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-400/40 transition-colors"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  title="ล้างคำค้นหา"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-white"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
+          {/* Center: Steam-style Live Search Bar (Desktop / Tablet md+) */}
+          <div ref={desktopSearchRef} className="hidden md:flex items-center flex-1 min-w-[180px] max-w-xs lg:max-w-sm ml-2 mr-auto relative z-50">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                navigateToTab('store');
+                setIsSearchFocused(false);
+              }}
+              className={`flex items-center w-full bg-[#111827] border rounded-lg overflow-hidden transition-colors ${
+                isSearchFocused ? 'border-sky-400/70 ring-1 ring-sky-400/30' : 'border-white/[0.1]'
+              }`}
+            >
+              <div className="relative flex-1 flex items-center">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setIsSearchFocused(true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setIsSearchFocused(false);
+                  }}
+                  placeholder="ค้นหาเกม, สตูดิโอ..."
+                  className="w-full bg-transparent pl-3 pr-7 py-1.5 text-xs text-gray-100 placeholder-gray-500 focus:outline-none"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    title="ล้างคำค้นหา"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-white cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <button
+                type="submit"
+                title="ค้นหา"
+                className="px-2.5 py-1.5 bg-sky-500 hover:bg-sky-400 text-white transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
+            </form>
+
+            {isSearchFocused && renderSearchDropdown()}
           </div>
 
           {/* Right: Actions, Notifications & Profile Controls */}
@@ -485,7 +603,7 @@ export const Navbar = () => {
 
         {/* Mobile Search Input Drawer (Slidedown when search is toggled on mobile) */}
         {isMobileSearchOpen && (
-          <div className="md:hidden py-2 px-1 border-t border-white/[0.08] animate-in fade-in slide-in-from-top-1">
+          <div className="md:hidden py-2 px-1 border-t border-white/[0.08] animate-in fade-in slide-in-from-top-1 relative z-50">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
               <input
@@ -494,7 +612,7 @@ export const Navbar = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ค้นหาชื่อเกม, สตูดิโอผู้พัฒนา..."
-                className="w-full bg-[#111827] border border-white/[0.12] rounded-lg pl-8.5 pr-8 py-2 text-xs text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-400"
+                className="w-full bg-[#111827] border border-white/[0.12] rounded-lg pl-9 pr-8 py-2 text-xs text-gray-100 placeholder-gray-500 focus:outline-none focus:border-sky-400"
               />
               {searchQuery && (
                 <button
@@ -505,6 +623,7 @@ export const Navbar = () => {
                 </button>
               )}
             </div>
+            {renderSearchDropdown()}
           </div>
         )}
 
